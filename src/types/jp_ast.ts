@@ -13,7 +13,7 @@ export interface AST {
   children?: AST[]; // 子句的递归结构
 }
 
-export interface TranslationResult {
+export type TranslationResult = {
   sentence?: string; // 原始句子
   translation?: string; // 翻译后的句子
   ast?: AST; // 抽象语法树（AST）结构

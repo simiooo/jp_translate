@@ -97,13 +97,14 @@ function App() {
           "model": "deepseek-chat",
           "messages": [
             {"role": "system", "content": translate_prompt},
-            {"role": "user", "content": inputText}
+            {"role": "user", "content": inputText.trim()}
           ],
           "stream": false
         },
       })
       console.log(response)
       const data: TranslationResult = JSON.parse(response.data.choices?.[0]?.message?.content ?? "{}") 
+      
       setTranslation(data)
       updateUrl(inputText, sourceLanguage)
     } catch (error) {
