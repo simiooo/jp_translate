@@ -12,6 +12,8 @@ export const translate_prompt = `你是一个严格的中日语言翻译引擎�
      - \`type\`: 节点类型，必须是 \`"sentence"\` 或 \`"clause"\`。
      - \`tokens\`: 句子或子句中的词或短语列表，每个词或短语包含以下字段：
        - \`word\`: 单词或短语（字符串）。
+       - \`kana\`: 假名（当词中含有汉字时出现，字符串，如果没有则为 \`null\`）。
+       - \`meaning\`: 中文含义（字符串，如果没有则为 \`null\`）。
        - \`pos\`: 词性，必须是以下之一：\`"adverb"\`、\`"conjunction"\`、\`"verb"\`、\`"adjective"\`、\`"numeral"\`、\`"particle"\`、\`"fixed_phrase"\`、\`"other"\`。
        - \`lemma\`: 词的原型（字符串，如果没有则为 \`null\`）。
        - \`inflection\`: 词的变形（字符串，如果没有则为 \`null\`）。

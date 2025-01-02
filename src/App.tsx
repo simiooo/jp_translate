@@ -205,6 +205,12 @@ function App() {
                               {token.inflection && (
                                 <Tag type="inflection" label="变形" value={token.inflection} />
                               )}
+                              {token.meaning && (
+                                <Tag type="meaning" label="含义" value={token.meaning} />
+                              )}
+                              {token.kana && (
+                                <Tag type="pos" label="假名" value={token.kana} />
+                              )}
                             </div>
                           </div>
                         ))}

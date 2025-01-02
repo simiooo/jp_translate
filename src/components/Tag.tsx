@@ -1,13 +1,14 @@
 interface TagProps {
   label: string;
-  type: 'pos' | 'lemma' | 'inflection';
+  type: 'pos' | 'lemma' | 'inflection'| "meaning";
   value?: string;
 }
 
 const TAG_STYLES = {
   pos: 'bg-blue-100 text-blue-800 hover:bg-blue-200 focus:ring-blue-500',
   lemma: 'bg-green-100 text-green-800 hover:bg-green-200 focus:ring-green-500',
-  inflection: 'bg-purple-100 text-purple-800 hover:bg-purple-200 focus:ring-purple-500'
+  inflection: 'bg-purple-100 text-purple-800 hover:bg-purple-200 focus:ring-purple-500',
+  meaning: 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200 focus:ring-yellow-500'
 };
 
 export const Tag = ({ label, type, value }: TagProps) => {

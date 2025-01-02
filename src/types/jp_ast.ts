@@ -3,6 +3,8 @@ export type POS = "adverb" | "conjunction" | "verb" | "adjective" | "numeral" | 
 export interface Token {
   word: string; // 单词或短语
   pos: POS; // 词性
+  meaning: string | null; //词的含义
+  kana: string | null; //词的含义
   lemma: string | null; // 词的原型（如果有的话）
   inflection: string | null; // 词的变形（如果有的话）
 }
