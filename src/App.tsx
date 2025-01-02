@@ -4,6 +4,7 @@ import type { TranslationResult } from './types/jp_ast'
 import axios from 'axios'
 import { translate_prompt } from './prompt'
 import { ConfigModal } from './components/ConfigModal'
+import { Tag } from './components/Tag'
 
 interface Message {
   role: string; // 可以是 "system", "user", 或 "assistant"
@@ -194,21 +195,15 @@ function App() {
                     <div className="flex-1 p-4 overflow-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 hover:scrollbar-thumb-gray-400">
                       <div className="flex flex-wrap gap-3">
                         {(translation?.ast?.tokens ?? []).map((token, index) => (
-                          <div key={index} className="inline-flex items-center bg-gray-50 rounded-lg p-2 shadow-sm">
+                          <div key={index} className="inline-flex items-center bg-gray-50 rounded-lg p-2 shadow-sm hover:bg-gray-100 transition-colors duration-200">
                             <span className="text-gray-900 font-medium">{token.word}</span>
                             <div className="flex gap-2 ml-2">
-                              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                {token.pos}
-                              </span>
+                              <Tag type="pos" label={token.pos} />
                               {token.lemma && (
-                                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                  原型: {token.lemma}
-                                </span>
+                                <Tag type="lemma" label="原型" value={token.lemma} />
                               )}
                               {token.inflection && (
-                                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                                  变形: {token.inflection}
-                                </span>
+                                <Tag type="inflection" label="变形" value={token.inflection} />
                               )}
                             </div>
                           </div>

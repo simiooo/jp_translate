@@ -1,0 +1,12 @@
+{
+  "pos": {
+    "adverb": "Adverb",
+    "conjunction": "Conjunction",
+    "verb": "Verb",
+    "adjective": "Adjective",
+    "numeral": "Numeral",
+    "particle": "Particle",
+    "fixed_phrase": "Fixed Phrase",
+    "other": "Other"
+  }
+} 

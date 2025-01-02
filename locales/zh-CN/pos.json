@@ -1,0 +1,12 @@
+{
+  "pos": {
+    "adverb": "副词",
+    "conjunction": "连词",
+    "verb": "动词",
+    "adjective": "形容词",
+    "numeral": "数词",
+    "particle": "助词",
+    "fixed_phrase": "固定短语",
+    "other": "其他"
+  }
+} 
