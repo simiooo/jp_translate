@@ -5,6 +5,37 @@ import axios from 'axios'
 import { translate_prompt } from './prompt'
 import { ConfigModal } from './components/ConfigModal'
 
+interface Message {
+  role: string; // 可以是 "system", "user", 或 "assistant"
+  content: string;
+}
+
+interface Choice {
+  index: number;
+  message: Message;
+  logprobs: null | any; // 根据实际情况可以进一步定义 logprobs 的类型
+  finish_reason: string; // 例如 "stop", "length", 或其他原因
+}
+
+interface Usage {
+  prompt_tokens: number;
+  completion_tokens: number;
+  total_tokens: number;
+  prompt_cache_hit_tokens: number;
+  prompt_cache_miss_tokens: number;
+}
+
+interface ChatCompletion {
+  id: string;
+  object: string; // 例如 "chat.completion"
+  created: number; // 时间戳
+  model: string; // 例如 "deepseek-chat"
+  choices: Choice[];
+  usage: Usage;
+  system_fingerprint: string;
+}
+
+
 function App() {
   const [inputText, setInputText] = useState('')
   const [sourceLanguage, setSourceLanguage] = useState<'zh' | 'ja'>('ja')
@@ -55,7 +86,7 @@ function App() {
     
     setLoading(true)
     try {
-      const response = await axios({
+      const response = await axios<ChatCompletion>({
         method: 'post',
         url: config.apiUrl,
         headers: {
@@ -72,7 +103,7 @@ function App() {
         },
       })
       console.log(response)
-      const data: TranslationResult = JSON.parse(response.data.choices?.[0]?.message?.content) 
+      const data: TranslationResult = JSON.parse(response.data.choices?.[0]?.message?.content ?? "{}") 
       setTranslation(data)
       updateUrl(inputText, sourceLanguage)
     } catch (error) {
@@ -84,7 +115,7 @@ function App() {
 
   const handleSwitch = () => {
     if (!translation) return
-    setInputText(translation.translation)
+    setInputText(translation?.translation ?? "-")
     setSourceLanguage(sourceLanguage === 'zh' ? 'ja' : 'zh')
     setTranslation(null)
   }
@@ -161,7 +192,7 @@ function App() {
                     {/* 可滚动的详细解释区域 */}
                     <div className="flex-1 p-4 overflow-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 hover:scrollbar-thumb-gray-400">
                       <div className="flex flex-wrap gap-3">
-                        {translation.ast.tokens.map((token, index) => (
+                        {(translation?.ast?.tokens ?? []).map((token, index) => (
                           <div key={index} className="inline-flex items-center bg-gray-50 rounded-lg p-2 shadow-sm">
                             <span className="text-gray-900 font-medium">{token.word}</span>
                             <div className="flex gap-2 ml-2">
