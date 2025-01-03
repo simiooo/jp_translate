@@ -5,6 +5,9 @@ import axios from 'axios'
 import { translate_prompt } from './prompt'
 import { ConfigModal } from './components/ConfigModal'
 import { Tag } from './components/Tag'
+import { useForm } from 'react-hook-form'
+// import { zodResolver } from '@hookform/resolvers/zod'
+import { type TranslationFormData } from './schemas/translation'
 
 interface Message {
   role: string; // 可以是 "system", "user", 或 "assistant"
@@ -38,8 +41,6 @@ interface ChatCompletion {
 
 
 function App() {
-  const [inputText, setInputText] = useState('')
-  const [sourceLanguage, setSourceLanguage] = useState<'zh' | 'ja'>('ja')
   const [translation, setTranslation] = useState<TranslationResult | null>(null)
   const [loading, setLoading] = useState(false)
   const [isConfigModalOpen, setIsConfigModalOpen] = useState(false)
@@ -51,6 +52,13 @@ function App() {
     }
   })
 
+  const form = useForm<TranslationFormData>({
+    defaultValues: {
+      text: '',
+      sourceLanguage: 'ja',
+    }
+  })
+
   // 从 URL 读取初始文本
   useEffect(() => {
     const searchParams = new URLSearchParams(window.location.search)
@@ -58,18 +66,17 @@ function App() {
     const langFromUrl = searchParams.get('lang') as 'zh' | 'ja'
     
     if (textFromUrl) {
-      setInputText(decodeURIComponent(textFromUrl))
+      form.setValue('text', decodeURIComponent(textFromUrl))
     }
     if (langFromUrl && (langFromUrl === 'zh' || langFromUrl === 'ja')) {
-      setSourceLanguage(langFromUrl)
+      form.setValue('sourceLanguage', langFromUrl)
     }
-  }, [])
+  }, [form])
 
   // 更新 URL
-  const updateUrl = (text: string, lang: 'zh' | 'ja') => {
+  const updateUrl = (data: TranslationFormData) => {
     const newUrl = new URL(window.location.href)
-    newUrl.searchParams.set('text', encodeURIComponent(text))
-    newUrl.searchParams.set('lang', lang)
+    newUrl.searchParams.set('text', encodeURIComponent(data.text))
     window.history.pushState({}, '', newUrl)
   }
 
@@ -78,8 +85,7 @@ function App() {
     localStorage.setItem('translationConfig', JSON.stringify(newConfig))
   }
 
-  const handleTranslate = async () => {
-    if (!inputText.trim()) return
+  const onSubmit = async (data: TranslationFormData) => {
     if (!config.apiKey) {
       setIsConfigModalOpen(true)
       return
@@ -98,35 +104,31 @@ function App() {
           "model": "deepseek-chat",
           "messages": [
             {"role": "system", "content": translate_prompt},
-            {"role": "user", "content": inputText.trim()}
+            {"role": "user", "content": data.text.trim()}
           ],
           "stream": false
         },
       })
-      console.log(response)
-      const data: TranslationResult = JSON.parse(response.data.choices?.[0]?.message?.content ?? "{}") 
       
-      setTranslation(data)
-      updateUrl(inputText, sourceLanguage)
+      const translationData = JSON.parse(response.data.choices?.[0]?.message?.content ?? "{}") as TranslationResult | {error: string}
+      if("error" in translationData) {
+        throw Error(translationData?.error)
+      }
+      setTranslation(translationData)
+      updateUrl(data)
     } catch (error) {
+      
       console.error('翻译出错:', error)
     } finally {
       setLoading(false)
     }
   }
 
-  const handleSwitch = () => {
-    if (!translation) return
-    setInputText(translation?.translation ?? "-")
-    setSourceLanguage(sourceLanguage === 'zh' ? 'ja' : 'zh')
-    setTranslation(null)
-  }
-
   return (
-    <div className="h-screen bg-gray-100 p-4 flex flex-col">
-      <div className="max-w-6xl mx-auto flex-1 flex flex-col">
+    <div className="h-screen bg-gray-100 overflow-auto">
+      <div className="min-w-[1024px] max-w-7xl mx-auto p-4 h-full">
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-800">中日翻译</h1>
+          <h1 className="text-3xl font-bold text-gray-800">日中翻译</h1>
           <button
             onClick={() => setIsConfigModalOpen(true)}
             className="px-4 py-2 text-gray-600 hover:text-gray-800 flex items-center gap-2"
@@ -139,116 +141,86 @@ function App() {
           </button>
         </div>
         
-        {/* 语言选择 */}
-        <div className="flex justify-center gap-4 mb-6">
-          <button
-            className={`px-4 py-2 rounded ${
-              sourceLanguage === 'zh' 
-                ? 'bg-blue-500 text-white' 
-                : 'bg-gray-200 text-gray-700'
-            }`}
-            onClick={() => setSourceLanguage('zh')}
-          >
-            中文
-          </button>
-          <button
-            className={`px-4 py-2 rounded ${
-              sourceLanguage === 'ja' 
-                ? 'bg-blue-500 text-white' 
-                : 'bg-gray-200 text-gray-700'
-            }`}
-            onClick={() => setSourceLanguage('ja')}
-          >
-            日本語
-          </button>
-        </div>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="flex-1 flex flex-col">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-6 flex-1">
+            {/* 左侧输入区域 */}
+            <div className="md:col-span-5 space-y-5">
+              <textarea
+                {...form.register('text')}
+                className="w-full h-full p-4 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                placeholder="日本語を入力してください"
+              />
+              {form.formState.errors.text && (
+                <p className="text-red-500 text-sm">{form.formState.errors.text.message}</p>
+              )}
+            </div>
 
-        {/* 主要内容区域 - 使用网格布局 */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-6 flex-1">
-          {/* 左侧输入区域 */}
-          <div className="md:col-span-5 space-y-4">
-            <textarea
-              value={inputText}
-              onChange={(e) => setInputText(e.target.value)}
-              className="w-full h-full p-4 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-              placeholder={sourceLanguage === 'zh' ? "请输入中文" : "日本語を入力してください"}
-            />
-          </div>
-
-          {/* 右侧结果区域 */}
-          <div className="md:col-span-7 space-y-4">
-            <div className="relative h-full">
-              {loading ? (
-                <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-50 rounded-lg">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-                </div>
-              ) : null}
-              <div className="h-full flex flex-col bg-white rounded-lg border">
-                {translation ? (
-                  <>
-                    {/* 固定的翻译结果区域 */}
-                    <div className="p-4 border-b">
-                      <p className="text-gray-700">{translation.translation}</p>
-                    </div>
-                    
-                    {/* 可滚动的详细解释区域 */}
-                    <div className="flex-1 p-4 overflow-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 hover:scrollbar-thumb-gray-400">
-                      <div className="flex flex-wrap gap-3">
-                        {(translation?.ast?.tokens ?? []).map((token, index) => (
-                          <div key={index} className="inline-flex items-center bg-gray-50 rounded-lg p-2 shadow-sm hover:bg-gray-100 transition-colors duration-200">
-                            <span className="text-gray-900 font-medium">{token.word}</span>
-                            <div className="flex gap-2 ml-2">
-                              <Tag type="pos" label={token.pos} />
-                              {token.lemma && (
-                                <Tag type="lemma" label="原型" value={token.lemma} />
-                              )}
-                              {token.inflection && (
-                                <Tag type="inflection" label="变形" value={token.inflection} />
-                              )}
-                              {token.meaning && (
-                                <Tag type="meaning" label="含义" value={token.meaning} />
-                              )}
-                              {token.kana && (
-                                <Tag type="pos" label="假名" value={token.kana} />
-                              )}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </>
-                ) : (
-                  <div className="h-full flex items-center justify-center text-gray-400">
-                    翻译结果将在这里显示
+            {/* 右侧结果区域 */}
+            <div className="md:col-span-7 space-y-4">
+              <div className="relative h-full">
+                {loading ? (
+                  <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-50 rounded-lg">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
                   </div>
-                )}
+                ) : null}
+                <div className="h-full flex flex-col bg-white rounded-lg border">
+                  {translation ? (
+                    <>
+                      {/* 固定的翻译结果区域 */}
+                      <div className="p-4 border-b">
+                        <p className="text-gray-700">{translation.translation}</p>
+                      </div>
+                      
+                      {/* 可滚动的详细解释区域 */}
+                      <div className="flex-1 p-4 overflow-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 hover:scrollbar-thumb-gray-400">
+                        <div className="flex flex-wrap gap-3">
+                          {(translation?.ast?.tokens ?? []).map((token, index) => (
+                            <div key={index} className="inline-flex items-center bg-gray-50 rounded-lg p-2 shadow-sm hover:bg-gray-100 transition-colors duration-200">
+                              <span className="text-gray-900 font-medium">{token.word}</span>
+                              <div className="flex gap-2 ml-2">
+                                <Tag type="pos" label={token.pos} />
+                                {token.lemma && (
+                                  <Tag type="lemma" label="原型" value={token.lemma} />
+                                )}
+                                {token.inflection && (
+                                  <Tag type="inflection" label="变形" value={token.inflection} />
+                                )}
+                                {token.meaning && (
+                                  <Tag type="meaning" label="含义" value={token.meaning} />
+                                )}
+                                {token.kana && (
+                                  <Tag type="pos" label="假名" value={token.kana} />
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="h-full flex items-center justify-center text-gray-400">
+                      翻译结果将在这里显示
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        {/* 底部按钮区域 */}
-        <div className="flex justify-center gap-4 mt-6">
-          <button
-            onClick={handleTranslate}
-            disabled={loading || !inputText.trim()}
-            className="px-8 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center gap-2"
-          >
-            {loading && (
-              <span className="inline-block h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-            )}
-            {loading ? '翻译中...' : '翻译'}
-          </button>
-          
-          {translation && (
+          {/* 底部按钮区域 */}
+          <div className="flex justify-center gap-4 mt-6">
             <button
-              onClick={handleSwitch}
-              className="px-8 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+              type="submit"
+              disabled={loading || form.formState.isSubmitting}
+              className="px-8 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center gap-2"
             >
-              交换
+              {loading && (
+                <span className="inline-block h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+              )}
+              {loading ? '翻译中...' : '翻译'}
             </button>
-          )}
-        </div>
+          </div>
+        </form>
 
         <ConfigModal
           isOpen={isConfigModalOpen}
