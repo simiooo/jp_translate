@@ -125,10 +125,10 @@ function App() {
   }
 
   return (
-    <div className="h-screen bg-gray-100 overflow-auto">
-      <div className="min-w-[1024px] max-w-7xl mx-auto p-4 h-full">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-800">日中翻译</h1>
+    <div className="min-h-screen bg-gray-100 overflow-x-hidden">
+      <div className="container mx-auto px-4 py-6 h-full">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-4 md:mb-0">日中翻译</h1>
           <button
             onClick={() => setIsConfigModalOpen(true)}
             className="px-4 py-2 text-gray-600 hover:text-gray-800 flex items-center gap-2"
@@ -142,12 +142,11 @@ function App() {
         </div>
         
         <form onSubmit={form.handleSubmit(onSubmit)} className="flex-1 flex flex-col">
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-6 flex-1">
-            {/* 左侧输入区域 */}
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-6 flex-1">
             <div className="md:col-span-5 space-y-5">
               <textarea
                 {...form.register('text')}
-                className="w-full h-full p-4 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                className="w-full h-[300px] md:h-[500px] p-4 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
                 placeholder="日本語を入力してください"
               />
               {form.formState.errors.text && (
@@ -155,9 +154,8 @@ function App() {
               )}
             </div>
 
-            {/* 右侧结果区域 */}
             <div className="md:col-span-7 space-y-4">
-              <div className="relative h-full">
+              <div className="relative h-[300px] md:h-[500px]">
                 {loading ? (
                   <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-50 rounded-lg">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
@@ -166,12 +164,10 @@ function App() {
                 <div className="h-full flex flex-col bg-white rounded-lg border">
                   {translation ? (
                     <>
-                      {/* 固定的翻译结果区域 */}
-                      <div className="p-4 border-b">
+                      <div className="p-4 border-b max-h-[40%] overflow-auto">
                         <p className="text-gray-700">{translation.translation}</p>
                       </div>
                       
-                      {/* 可滚动的详细解释区域 */}
                       <div className="flex-1 p-4 overflow-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 hover:scrollbar-thumb-gray-400">
                         <div className="flex flex-wrap gap-3">
                           {(translation?.ast?.tokens ?? []).map((token, index) => (
@@ -207,8 +203,7 @@ function App() {
             </div>
           </div>
 
-          {/* 底部按钮区域 */}
-          <div className="flex justify-center gap-4 mt-6">
+          <div className="flex justify-center gap-4 mt-8 mb-6">
             <button
               type="submit"
               disabled={loading || form.formState.isSubmitting}
