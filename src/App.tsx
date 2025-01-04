@@ -8,6 +8,7 @@ import { Tag } from './components/Tag'
 import { useForm } from 'react-hook-form'
 // import { zodResolver } from '@hookform/resolvers/zod'
 import { type TranslationFormData } from './schemas/translation'
+import { Toast } from './components/Toast'
 
 interface Message {
   role: string; // 可以是 "system", "user", 或 "assistant"
@@ -117,8 +118,8 @@ function App() {
       setTranslation(translationData)
       updateUrl(data)
     } catch (error) {
-      
       console.error('翻译出错:', error)
+      Toast.error('翻译失败，请重试')
     } finally {
       setLoading(false)
     }
