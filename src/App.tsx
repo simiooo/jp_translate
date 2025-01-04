@@ -263,7 +263,7 @@ function App() {
               <div className="md:col-span-5 space-y-5">
                 <textarea
                   {...form.register('text')}
-                  className="w-full h-[300px] md:h-[500px] p-4 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                  className="w-full h-[200px] md:h-[500px] p-4 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
                   placeholder="日本語を入力してください"
                 />
                 {form.formState.errors.text && (
@@ -272,7 +272,7 @@ function App() {
               </div>
 
               <div className="md:col-span-7 space-y-4">
-                <div className="relative h-[300px] md:h-[500px]">
+                <div className="relative h-[200px] md:h-[500px]">
                   {loading ? (
                     <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-50 rounded-lg">
                       <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
@@ -320,7 +320,7 @@ function App() {
               </div>
             </div>
 
-            <div className="flex justify-center gap-4 mt-8 mb-6">
+            <div className="flex justify-center gap-4 mt-4 md:mt-8 mb-4 md:mb-6">
               <button
                 type="submit"
                 disabled={loading || form.formState.isSubmitting}
