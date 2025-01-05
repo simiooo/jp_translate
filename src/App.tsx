@@ -50,7 +50,8 @@ function App() {
     const savedConfig = localStorage.getItem('translationConfig')
     return savedConfig ? JSON.parse(savedConfig) : {
       apiUrl: 'https://api.deepseek.com/chat/completions',
-      apiKey: ''
+      apiKey: '',
+      model: 'deepseek-chat'
     }
   })
   const [history, setHistory] = useState<TranslationHistory[]>([])
@@ -110,6 +111,7 @@ function App() {
     }
     
     setLoading(true)
+    console.log(config)
     try {
       const response = await axios<ChatCompletion>({
         method: 'post',
@@ -119,7 +121,7 @@ function App() {
           "Authorization": `Bearer ${config.apiKey}`
         },
         data: {
-          "model": "deepseek-chat",
+          "model": config.model,
           "messages": [
             {"role": "system", "content": translate_prompt},
             {"role": "user", "content": data.text.trim()}

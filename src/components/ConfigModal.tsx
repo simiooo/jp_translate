@@ -1,21 +1,35 @@
-import { useState } from 'react'
+import { useForm } from 'react-hook-form'
+
+interface ConfigFormData {
+  apiUrl: string
+  apiKey: string
+  model: string
+}
 
 interface ConfigModalProps {
   isOpen: boolean
   onClose: () => void
-  onSave: (config: { apiUrl: string; apiKey: string }) => void
-  initialConfig: { apiUrl: string; apiKey: string }
+  onSave: (config: ConfigFormData) => void
+  initialConfig: ConfigFormData
 }
 
 export function ConfigModal({ isOpen, onClose, onSave, initialConfig }: ConfigModalProps) {
-  const [apiUrl, setApiUrl] = useState(initialConfig.apiUrl)
-  const [apiKey, setApiKey] = useState(initialConfig.apiKey)
+  const { register, handleSubmit, formState: { errors } } = useForm<ConfigFormData>({
+    defaultValues: {
+      apiUrl: initialConfig.apiUrl || 'https://api.deepseek.com/chat/completions',
+      apiKey: initialConfig.apiKey || '',
+      model: initialConfig.model || 'deepseek-chat'
+    }
+  })
 
   if (!isOpen) return null
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    onSave({ apiUrl, apiKey })
+  const onSubmit = (data: ConfigFormData) => {
+    onSave({
+      apiUrl: data.apiUrl.trim(),
+      apiKey: data.apiKey.trim(),
+      model: data.model.trim()
+    })
     onClose()
   }
 
@@ -23,33 +37,50 @@ export function ConfigModal({ isOpen, onClose, onSave, initialConfig }: ConfigMo
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg p-6 w-full max-w-md">
         <h2 className="text-xl font-bold mb-4">API 配置</h2>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               API URL
             </label>
             <input
-              type="text"
-              value={apiUrl}
-              onChange={(e) => setApiUrl(e.target.value)}
+              {...register("apiUrl", { required: "API URL 是必填项" })}
               className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               placeholder="请输入 API URL"
-              required
             />
+            {errors.apiUrl && (
+              <p className="text-red-500 text-sm mt-1">{errors.apiUrl.message}</p>
+            )}
           </div>
+          
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               API Key
             </label>
             <input
               type="password"
-              value={apiKey}
-              onChange={(e) => setApiKey(e.target.value)}
+              {...register("apiKey", { required: "API Key 是必填项" })}
               className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               placeholder="请输入 API Key"
-              required
             />
+            {errors.apiKey && (
+              <p className="text-red-500 text-sm mt-1">{errors.apiKey.message}</p>
+            )}
           </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              模型
+            </label>
+            <input
+              {...register("model", { required: "模型名称是必填项" })}
+              className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="请输入模型名称"
+            />
+            {errors.model && (
+              <p className="text-red-500 text-sm mt-1">{errors.model.message}</p>
+            )}
+          </div>
+
           <div className="flex justify-end gap-4 mt-6">
             <button
               type="button"
