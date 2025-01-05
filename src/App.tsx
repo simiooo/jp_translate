@@ -111,7 +111,6 @@ function App() {
     }
     
     setLoading(true)
-    console.log(config)
     try {
       const response = await axios<ChatCompletion>({
         method: 'post',

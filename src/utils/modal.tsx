@@ -4,6 +4,7 @@ import { ConfigModal } from '../components/ConfigModal'
 interface ConfigOptions {
   apiUrl: string
   apiKey: string
+  model: string
 }
 
 export function showConfigModal(
