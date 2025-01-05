@@ -1,50 +1,120 @@
-# React + TypeScript + Vite
+# 日中翻译助手 / Japanese-Chinese Translation Assistant
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+[English Version](#english-version)
 
-Currently, two official plugins are available:
+## 简介
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+日中翻译助手是一个基于Web的翻译工具，专门用于日语到中文的翻译。它不仅提供基本的翻译功能，还能对日语句子进行语法分析，帮助用户更好地理解日语的语言结构。
 
-## Expanding the ESLint configuration
+### 主要特性
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+- 🔄 日语到中文的精确翻译
+- 📊 详细的语法分析（包括词性、词形变化等）
+- 💾 本地翻译历史记录
+- 🔗 支持URL参数传递文本
+- 📱 响应式设计，支持移动端
+- ⚙️ 可配置的API设置
 
-- Configure the top-level `parserOptions` property like this:
+### 技术栈
 
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+- React + TypeScript
+- Tailwind CSS
+- Dexie.js (IndexedDB)
+- React Hook Form
+- Axios
+
+## 快速开始
+
+### 安装
+
+```bash
+git clone [repository-url]
+cd [project-directory]
+npm install
 ```
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+### 开发
 
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
+```bash
+npm run dev
+```
 
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
+### 构建
+
+```bash
+npm run build
+```
+
+### 配置
+
+在使用之前，需要配置：
+1. API URL
+2. API Key
+
+## 使用说明
+
+1. 在左侧文本框输入需要翻译的日语文本
+2. 点击"翻译"按钮
+3. 右侧将显示翻译结果和详细的语法分析
+4. 翻译历史会自动保存在本地
+
+---
+
+# English Version
+
+## Introduction
+
+Japanese-Chinese Translation Assistant is a web-based translation tool specifically designed for Japanese to Chinese translation. It not only provides basic translation functionality but also performs grammatical analysis of Japanese sentences to help users better understand Japanese language structures.
+
+### Key Features
+
+- 🔄 Accurate Japanese to Chinese translation
+- 📊 Detailed grammatical analysis (including parts of speech, word inflections, etc.)
+- 💾 Local translation history
+- 🔗 URL parameter support for text input
+- 📱 Responsive design for mobile devices
+- ⚙️ Configurable API settings
+
+### Tech Stack
+
+- React + TypeScript
+- Tailwind CSS
+- Dexie.js (IndexedDB)
+- React Hook Form
+- Axios
+
+## Getting Started
+
+### Installation
+
+```bash
+git clone [repository-url]
+cd [project-directory]
+npm install
+```
+
+### Development
+
+```bash
+npm run dev
+```
+
+### Build
+
+```bash
+npm run build
+```
+
+### Configuration
+
+Before using, you need to configure:
+1. API URL
+2. API Key
+
+## Usage
+
+1. Enter Japanese text in the left text box
+2. Click the "Translate" button
+3. Translation results and detailed grammatical analysis will be displayed on the right
+4. Translation history is automatically saved locally
 ```
