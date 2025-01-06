@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import './App.css'
 import type { TranslationResult } from './types/jp_ast'
 import axios from 'axios'
@@ -6,10 +6,12 @@ import { translate_prompt } from './prompt'
 import { ConfigModal } from './components/ConfigModal'
 import { Tag } from './components/Tag'
 import { useForm } from 'react-hook-form'
+import { jsonrepair } from 'jsonrepair'
 // import { zodResolver } from '@hookform/resolvers/zod'
 import { type TranslationFormData } from './schemas/translation'
 import { Toast } from './components/Toast'
 import { db, type TranslationHistory } from './db/database'
+import { useDebounce, useThrottle } from 'ahooks'
 
 interface Message {
   role: string; // 可以是 "system", "user", 或 "assistant"
@@ -43,7 +45,7 @@ interface ChatCompletion {
 
 
 function App() {
-  const [translation, setTranslation] = useState<TranslationResult | null>(null)
+  // const [translation, setTranslation] = useState<TranslationResult | null>(null)
   const [loading, setLoading] = useState(false)
   const [isConfigModalOpen, setIsConfigModalOpen] = useState(false)
   const [config, setConfig] = useState(() => {
@@ -57,6 +59,7 @@ function App() {
   const [history, setHistory] = useState<TranslationHistory[]>([])
   const [showHistory, setShowHistory] = useState(false)
   const [isHistoryCollapsed, setIsHistoryCollapsed] = useState(false)
+  const [bufferedTranslation, setBufferedTranslation] = useState<TranslationResult | null>(null)
 
   const form = useForm<TranslationFormData>({
     defaultValues: {
@@ -104,6 +107,11 @@ function App() {
     loadHistory()
   }, [])
 
+  const translation = useThrottle<TranslationResult | null>(bufferedTranslation, {
+    wait: 1000
+  })
+
+
   const onSubmit = async (data: TranslationFormData) => {
     if (!config.apiKey) {
       setIsConfigModalOpen(true)
@@ -111,43 +119,84 @@ function App() {
     }
     
     setLoading(true)
+    setBufferedTranslation(null)
+    let fullResponse = ''
+    
     try {
-      const response = await axios<ChatCompletion>({
-        method: 'post',
-        url: config.apiUrl,
+      const response = await fetch(config.apiUrl, {
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          "Authorization": `Bearer ${config.apiKey}`
+          'Authorization': `Bearer ${config.apiKey}`
         },
-        data: {
-          "model": config.model,
-          "messages": [
-            {"role": "system", "content": translate_prompt},
-            {"role": "user", "content": data.text.trim()}
+        body: (JSON.stringify({
+          model: config.model,
+          messages: [
+            { role: "system", content: translate_prompt },
+            { role: "user", content: data.text.trim() }
           ],
-          "stream": false
-        },
+          stream: true
+        }))
       })
-      
-      const translationData = JSON.parse(response.data.choices?.[0]?.message?.content ?? "{}") as TranslationResult | {error: string}
-      if("error" in translationData) {
-        throw Error(translationData?.error)
-      }
-      
-      // 保存到历史记录
-      if (translationData && !('error' in translationData) && translationData.translation) {
-        const historyRecord: TranslationHistory = {
-          sourceText: data.text.trim(),
-          translation: translationData.translation,
-          ast: translationData.ast,
-          timestamp: new Date()
-        }
+
+      const reader = response.body?.getReader()
+      if (!reader) throw new Error('Failed to get reader')
+
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+
+        const chunk = new TextDecoder().decode(value)
+        const lines = chunk.split('\n')
         
-        await db.translations.add(historyRecord)
-        setHistory(prev => [historyRecord, ...prev])
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            const data = line.slice(5)
+            if (data === '[DONE]' || data === '') continue
+            
+            try {
+              const json = JSON.parse(data)
+              const content = json.choices[0]?.delta?.content || ''
+              fullResponse += content
+              
+              try {
+                // 尝试解析累积的响应，更新到缓存变量
+                const translationData = JSON.parse(jsonrepair(fullResponse)) as TranslationResult
+                setBufferedTranslation(() => {
+                  return translationData
+                })
+              } catch(error) {
+                console.error(error)
+                // JSON 还不完整，继续累积
+              }
+            } catch (e) {
+              console.error('解析流数据失败:', e)
+            }
+          }
+        }
       }
-      
-      setTranslation(translationData)
+
+      // 完成后保存到历史记录
+      try {
+        const finalTranslationData = JSON.parse(jsonrepair(fullResponse)) as TranslationResult
+        if (finalTranslationData && finalTranslationData.translation) {
+          const historyRecord: TranslationHistory = {
+            sourceText: data.text.trim(),
+            translation: finalTranslationData.translation,
+            ast: finalTranslationData.ast,
+            timestamp: new Date()
+          }
+          
+          await db.translations.add(historyRecord)
+          setHistory(prev => [historyRecord, ...prev])
+          
+          // 最后一次更新确保显示完整结果
+          // setTranslation(finalTranslationData)
+        }
+      } catch (e) {
+        console.error('保存历史记录失败:', e)
+      }
+
       updateUrl(data)
     } catch (error) {
       console.error('翻译出错:', error)
@@ -274,16 +323,16 @@ function App() {
 
               <div className="md:col-span-7 space-y-4">
                 <div className="relative h-[200px] md:h-[500px]">
-                  {loading ? (
-                    <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-50 rounded-lg">
-                      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+                  {loading && (
+                    <div className="absolute top-4 right-4 z-10">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
                     </div>
-                  ) : null}
+                  )}
                   <div className="h-full flex flex-col bg-white rounded-lg border">
-                    {translation ? (
+                    {translation || loading ? (
                       <>
                         <div className="p-4 border-b max-h-[40%] overflow-auto">
-                          <p className="text-gray-700">{translation.translation}</p>
+                          <p className="text-gray-700">{translation?.translation}</p>
                         </div>
                         
                         <div className="flex-1 p-4 overflow-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 hover:scrollbar-thumb-gray-400">
