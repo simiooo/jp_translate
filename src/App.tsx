@@ -12,6 +12,7 @@ import { type TranslationFormData } from './schemas/translation'
 import { Toast } from './components/Toast'
 import { db, type TranslationHistory } from './db/database'
 import { useThrottle } from 'ahooks'
+import { Cursor } from './components/Cursor'
 
 interface Message {
   role: string; // 可以是 "system", "user", 或 "assistant"
@@ -108,7 +109,7 @@ function App() {
   }, [])
 
   const translation = useThrottle<TranslationResult | null>(bufferedTranslation, {
-    wait: 1000
+    wait: 300
   })
 
 
@@ -332,14 +333,19 @@ function App() {
                     {translation || loading ? (
                       <>
                         <div className="p-4 border-b max-h-[40%] overflow-auto">
-                          <p className="text-gray-700">{translation?.translation}</p>
+                          <p className="text-gray-700">
+                            {translation?.translation}
+                            {loading && <Cursor />}
+                          </p>
                         </div>
                         
                         <div className="flex-1 p-4 overflow-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 hover:scrollbar-thumb-gray-400">
-                          <div className="flex flex-wrap gap-3">
+                          <div className="flex flex-wrap gap-3 items-end">
                             {(translation?.ast?.tokens ?? []).map((token, index) => (
                               <div key={index} className="inline-flex items-center bg-gray-50 rounded-lg p-2 shadow-sm hover:bg-gray-100 transition-colors duration-200">
-                                <span className="text-gray-900 font-medium">{token.word}</span>
+                                <span className="text-gray-900 font-medium">
+                                  {token.word}
+                                </span>
                                 <div className="flex gap-2 ml-2">
                                   <Tag type="pos" label={token.pos} />
                                   {token.lemma && (
@@ -357,6 +363,7 @@ function App() {
                                 </div>
                               </div>
                             ))}
+                            {loading && <Cursor />}
                           </div>
                         </div>
                       </>
