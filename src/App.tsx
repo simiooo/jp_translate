@@ -13,6 +13,7 @@ import { Toast } from './components/Toast'
 import { db, type TranslationHistory } from './db/database'
 import { useThrottle } from 'ahooks'
 import { Cursor } from './components/Cursor'
+import { AstTokens } from './components/AstTokens'
 
 interface Message {
   role: string; // 可以是 "system", "user", 或 "assistant"
@@ -163,6 +164,7 @@ function App() {
               try {
                 // 尝试解析累积的响应，更新到缓存变量
                 const translationData = JSON.parse(jsonrepair(fullResponse)) as TranslationResult
+                console.log(translationData)
                 setBufferedTranslation(() => {
                   return translationData
                 })
@@ -314,7 +316,7 @@ function App() {
               <div className="md:col-span-5 space-y-5">
                 <textarea
                   {...form.register('text')}
-                  className="w-full h-[200px] md:h-[500px] p-4 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                  className="w-full h-[50vh] md:h-[70vh] p-4 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
                   placeholder="日本語を入力してください"
                 />
                 {form.formState.errors.text && (
@@ -323,7 +325,7 @@ function App() {
               </div>
 
               <div className="md:col-span-7 space-y-4">
-                <div className="relative h-[200px] md:h-[500px]">
+                <div className="relative h-[50vh] md:h-[70vh]">
                   {loading && (
                     <div className="absolute top-4 right-4 z-10">
                       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
@@ -340,31 +342,10 @@ function App() {
                         </div>
                         
                         <div className="flex-1 p-4 overflow-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 hover:scrollbar-thumb-gray-400">
-                          <div className="flex flex-wrap gap-3 items-end">
-                            {(translation?.ast?.tokens ?? []).map((token, index) => (
-                              <div key={index} className="inline-flex items-center bg-gray-50 rounded-lg p-2 shadow-sm hover:bg-gray-100 transition-colors duration-200">
-                                <span className="text-gray-900 font-medium">
-                                  {token.word}
-                                </span>
-                                <div className="flex gap-2 ml-2">
-                                  <Tag type="pos" label={token.pos} />
-                                  {token.lemma && (
-                                    <Tag type="lemma" label="原型" value={token.lemma} />
-                                  )}
-                                  {token.inflection && (
-                                    <Tag type="inflection" label="变形" value={token.inflection} />
-                                  )}
-                                  {token.meaning && (
-                                    <Tag type="meaning" label="含义" value={token.meaning} />
-                                  )}
-                                  {token.kana && (
-                                    <Tag type="pos" label="假名" value={token.kana} />
-                                  )}
-                                </div>
-                              </div>
-                            ))}
-                            {loading && <Cursor />}
-                          </div>
+                          <AstTokens 
+                            ast={translation?.ast} 
+                            loading={loading} 
+                          />
                         </div>
                       </>
                     ) : (
