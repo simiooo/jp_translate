@@ -1,4 +1,5 @@
 import { type AST, type Token } from '../types/jp_ast'
+import { Cursor } from './Cursor'
 import { Tag } from './Tag'
 
 interface AstTokensProps {
@@ -61,6 +62,7 @@ export const AstTokens: React.FC<AstTokensProps> = ({ ast, loading }) => {
           ))}
         </div>
       )}
+      {loading && <Cursor />}
     </div>
   )
 } 
