@@ -1,7 +1,7 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import './App.css'
 import type { TranslationResult } from './types/jp_ast'
-import axios from 'axios'
+// import axios from 'axios'
 import { translate_prompt } from './prompt'
 import { ConfigModal } from './components/ConfigModal'
 import { Tag } from './components/Tag'
@@ -11,7 +11,7 @@ import { jsonrepair } from 'jsonrepair'
 import { type TranslationFormData } from './schemas/translation'
 import { Toast } from './components/Toast'
 import { db, type TranslationHistory } from './db/database'
-import { useDebounce, useThrottle } from 'ahooks'
+import { useThrottle } from 'ahooks'
 
 interface Message {
   role: string; // 可以是 "system", "user", 或 "assistant"
