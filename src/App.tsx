@@ -164,7 +164,6 @@ function App() {
               try {
                 // 尝试解析累积的响应，更新到缓存变量
                 const translationData = JSON.parse(jsonrepair(fullResponse)) as TranslationResult
-                console.log(translationData)
                 setBufferedTranslation(() => {
                   return translationData
                 })
