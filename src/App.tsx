@@ -55,13 +55,25 @@ function App() {
     return savedConfig ? JSON.parse(savedConfig) : {
       apiUrl: 'https://api.deepseek.com/chat/completions',
       apiKey: '',
-      model: 'deepseek-chat'
+      model: 'deepseek-chat',
+      openaiApiUrl: 'https://api.openai.com/v1',
+      openaiApiKey: '',
+      voice: 'alloy'
     }
   })
   const [history, setHistory] = useState<TranslationHistory[]>([])
   const [showHistory, setShowHistory] = useState(false)
   const [isHistoryCollapsed, setIsHistoryCollapsed] = useState(false)
   const [bufferedTranslation, setBufferedTranslation] = useState<TranslationResult | null>(null)
+
+  // 添加 TTS loading 状态
+  const [ttsLoading, setTtsLoading] = useState<{
+    original: boolean;
+    translation: boolean;
+  }>({
+    original: false,
+    translation: false,
+  });
 
   const form = useForm<TranslationFormData>({
     defaultValues: {
@@ -91,7 +103,12 @@ function App() {
     window.history.pushState({}, '', newUrl)
   }
 
-  const handleSaveConfig = (newConfig: { apiUrl: string; apiKey: string }) => {
+  const handleSaveConfig = (newConfig: { 
+    apiUrl: string; 
+    apiKey: string; 
+    openaiApiUrl: string; 
+    openaiApiKey: string; 
+  }) => {
     setConfig(newConfig)
     localStorage.setItem('translationConfig', JSON.stringify(newConfig))
   }
@@ -208,6 +225,45 @@ function App() {
     }
   }
 
+  const handleTTS = async (text: string, type: 'original' | 'translation') => {
+    if (!text || !config.openaiApiKey || ttsLoading[type]) return;
+    
+    if (!config.openaiApiKey) {
+      Toast.error('请先配置 OpenAI API Key');
+      setIsConfigModalOpen(true);
+      return;
+    }
+    
+    try {
+      setTtsLoading(prev => ({ ...prev, [type]: true }));
+      
+      const response = await fetch(`${config.openaiApiUrl}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${config.openaiApiKey}`
+        },
+        body: JSON.stringify({
+          model: 'tts-1',
+          input: text,
+          voice: config.voice
+        })
+      });
+
+      if (!response.ok) throw new Error('TTS request failed');
+
+      const audioBlob = await response.blob();
+      const audioUrl = URL.createObjectURL(audioBlob);
+      const audio = new Audio(audioUrl);
+      await audio.play();
+    } catch (error) {
+      console.error('TTS error:', error);
+      Toast.error('语音合成失败，请重试');
+    } finally {
+      setTtsLoading(prev => ({ ...prev, [type]: false }));
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-100 overflow-x-hidden flex">
       {/* 侧边栏历史记录 */}
@@ -313,11 +369,40 @@ function App() {
           <form onSubmit={form.handleSubmit(onSubmit)} className="flex-1 flex flex-col">
             <div className="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-6 flex-1">
               <div className="md:col-span-5 space-y-5">
-                <textarea
-                  {...form.register('text')}
-                  className="w-full h-[50vh] md:h-[70vh] p-4 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-                  placeholder="日本語を入力してください"
-                />
+                <div className="relative">
+                  <textarea
+                    {...form.register('text')}
+                    className="w-full h-[50vh] md:h-[70vh] p-4 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                    placeholder="日本語を入力してください"
+                  />
+                  {/* 原文区域的 TTS 按钮 */}
+                  {form.getValues('text') && (
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleTTS(form.getValues('text'), 'original');
+                      }}
+                      disabled={ttsLoading.original}
+                      className={`absolute top-4 right-4 p-2 rounded-full transition-all duration-200 ${
+                        ttsLoading.original 
+                          ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                          : 'text-gray-600 hover:text-gray-800 hover:bg-gray-100'
+                      }`}
+                      title="播放原文语音"
+                    >
+                      {ttsLoading.original ? (
+                        <svg className="w-5 h-5 animate-spin" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                        </svg>
+                      ) : (
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072M17.95 6.05a8 8 0 010 11.9M6.5 8.788v6.424a.5.5 0 00.757.429l5.5-3.212a.5.5 0 000-.858l-5.5-3.212a.5.5 0 00-.757.43z" />
+                        </svg>
+                      )}
+                    </button>
+                  )}
+                </div>
                 {form.formState.errors.text && (
                   <p className="text-red-500 text-sm">{form.formState.errors.text.message}</p>
                 )}
@@ -334,10 +419,35 @@ function App() {
                     {translation || loading ? (
                       <>
                         <div className="p-4 border-b max-h-[40%] overflow-auto">
-                          <p className="text-gray-700">
-                            {translation?.translation}
-                            {loading && <Cursor />}
-                          </p>
+                          <div className="flex justify-between items-start">
+                            <p className="text-gray-700">
+                              {translation?.translation}
+                              {loading && <Cursor />}
+                            </p>
+                            {translation?.translation && !loading && (
+                              <button
+                                onClick={() => handleTTS(translation.translation ?? "", 'translation')}
+                                disabled={ttsLoading.translation}
+                                className={`ml-2 p-2 rounded-full transition-all duration-200 ${
+                                  ttsLoading.translation 
+                                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                    : 'text-gray-600 hover:text-gray-800 hover:bg-gray-100'
+                                }`}
+                                title="播放翻译语音"
+                              >
+                                {ttsLoading.translation ? (
+                                  <svg className="w-5 h-5 animate-spin" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                                  </svg>
+                                ) : (
+                                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072M17.95 6.05a8 8 0 010 11.9M6.5 8.788v6.424a.5.5 0 00.757.429l5.5-3.212a.5.5 0 000-.858l-5.5-3.212a.5.5 0 00-.757.43z" />
+                                  </svg>
+                                )}
+                              </button>
+                            )}
+                          </div>
                         </div>
                         
                         <div className="flex-1 p-4 overflow-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 hover:scrollbar-thumb-gray-400">

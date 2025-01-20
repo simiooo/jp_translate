@@ -1,11 +1,7 @@
 import { createRoot } from 'react-dom/client'
-import { ConfigModal } from '../components/ConfigModal'
+import { ConfigFormData, ConfigModal } from '../components/ConfigModal'
 
-interface ConfigOptions {
-  apiUrl: string
-  apiKey: string
-  model: string
-}
+type ConfigOptions = ConfigFormData
 
 export function showConfigModal(
   initialConfig: ConfigOptions,
