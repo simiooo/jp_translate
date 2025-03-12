@@ -199,12 +199,12 @@ function App() {
               const think_content =
                 json.choices[0]?.delta?.reasoning_content ?? json.choices[0]?.delta?.reasoning ??"";
               fullResponse += content?.trim?.();
-              if(/^```json.+/.test(fullResponse)) {
-                fullResponse = fullResponse.slice(7)
-              }
-              if(/.+```$/.test(fullResponse)) {
-                fullResponse = fullResponse.slice(0,-3)
-              }
+              // if(/^```json.+/.test(fullResponse)) {
+              //   fullResponse = fullResponse.slice(7)
+              // }
+              // if(/.+```$/.test(fullResponse)) {
+              //   fullResponse = fullResponse.slice(0,-3)
+              // }
               fullThinking += think_content;
               try {
                 

@@ -15,20 +15,39 @@ export const translate_prompt = `你是一个严格的中日语言翻译引擎�
        - \`word\`: 单词或短语（字符串）。
        - \`kana\`: 假名（当词中含有汉字时出现，字符串，如果没有则为 \`null\`）。
        - \`meaning\`: 中文含义（字符串，如果没有则为 \`null\`）。
-       - \`pos\`: 词性，必须是以下之一：\`"adverb"\`、\`"conjunction"\`、\`"verb"\`、\`"adjective"\`、\`"numeral"\`、\`"particle"\`、\`"fixed_phrase"\`、\`"other"\`。
+       - \`pos\`: 词性，必须是以下之一：\`"adverb"\`、\`"conjunction"\`、\`"verb"\`、\`"adjective"\`、\`"numeral"\`、\`"particle"\`、\`"fixed_phrase"\`、\`"other"\`、\`"noun"\`。
        - \`lemma\`: 词的原型（字符串，如果没有则为 \`null\`）。
        - \`inflection\`: 词的变形（字符串，如果没有则为 \`null\`）。
      - \`children\`: 子句的递归结构（数组），如果没有子句则为空数组。
 
 4. **错误处理**：
    - 如果输入不是有效的日语句子，或者无法完成翻译和解析，你必须返回以下 JSON 对象：
-     \`\`\`json
      {
        "error": "无法处理输入的句子"
      }
-     \`\`\`
    - 不允许返回任何非 JSON 内容。
 
 5. **示例输入**：
-   \`\`\`text
-   彼は速く走り、そして彼女はゆっくり歩いた。`
+   彼は速く走り、そして彼女はゆっくり歩いた。
+
+6. **示例输出**：
+   {
+     "sentence": "彼は速く走り、そして彼女はゆっくり歩いた。",
+     "translation": "他跑得很快，而她走得很慢。",
+     "ast": {
+       "type": "sentence",
+       "tokens": [
+         {"word": "彼","kana": "かれ","meaning": "他","pos": "noun","lemma": null,"inflection": null},
+         {"word": "は","kana": null,"meaning": null,"pos": "particle","lemma": null,"inflection": null},
+         {"word": "速く","kana": "はやく","meaning": "快速","pos": "adverb","lemma": "速い","inflection": "連用形"},
+         {"word": "走り","kana": "はしり","meaning": "跑","pos": "verb","lemma": "走る","inflection": "連用形"},
+         {"word": "そして","kana": null,"meaning": "而","pos": "conjunction","lemma": null,"inflection": null},
+         {"word": "彼女","kana": "かのじょ","meaning": "她","pos": "noun","lemma": null,"inflection": null},
+         {"word": "は","kana": null,"meaning": null,"pos": "particle","lemma": null,"inflection": null},
+         {"word": "ゆっくり","kana": null,"meaning": "慢慢","pos": "adverb","lemma": null,"inflection": null},
+         {"word": "歩いた","kana": "あるいた","meaning": "走","pos": "verb","lemma": "歩く","inflection": "過去形"}
+       ],
+       "children": []
+     }
+   }
+   `
