@@ -14,6 +14,7 @@ import { useRequest, useThrottle } from "ahooks";
 import { Cursor } from "./components/Cursor";
 import { AstTokens } from "./components/AstTokens";
 import { Reasoning } from "./components/Reasoning";
+import { createPortal } from "react-dom";
 
 interface Message {
   role: string; // 可以是 "system", "user", 或 "assistant"
@@ -634,18 +635,18 @@ function App() {
             onSave={handleSaveConfig}
             initialConfig={config}
           />
-          {loading && <div
+          {createPortal(loading && <div
             className="
           absolute
           left-1/2
           top-1/2
-          z-10
+          z-30
           -translate-x-1/2
           -translate-y-1/2
           "
           >
             <Reasoning ref={reasoningRef} thinking={thinking}></Reasoning>
-          </div>}
+          </div>, document.documentElement) }
         </div>
       </div>
     </div>
