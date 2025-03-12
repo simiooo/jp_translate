@@ -20,6 +20,7 @@ interface Message {
   role: string; // 可以是 "system", "user", 或 "assistant"
   content: string;
   reasoning_content?: string;
+  reasoning?: string;
 }
 
 interface Choice {
@@ -196,7 +197,7 @@ function App() {
               const json = JSON.parse(data);
               const content = json.choices[0]?.delta?.content ?? "";
               const think_content =
-                json.choices[0]?.delta?.reasoning_content ?? "";
+                json.choices[0]?.delta?.reasoning_content ?? json.choices[0]?.delta?.reasoning ??"";
               fullResponse += content?.trim?.();
               if(/^```json.+/.test(fullResponse)) {
                 fullResponse = fullResponse.slice(7)
