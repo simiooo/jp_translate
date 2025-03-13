@@ -170,7 +170,7 @@ function App() {
         },
         body: JSON.stringify({
           model: config.model,
-          max_tokens: 16384,
+          max_tokens: 4096,
           messages: [
             { role: "system", content: translate_prompt },
             { role: "user", content: data.text.trim() },
