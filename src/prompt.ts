@@ -50,4 +50,7 @@ export const translate_prompt = `你是一个严格的中日语言翻译引擎�
        "children": []
      }
    }
+7. **禁忌**：
+  严禁在返回内容中携带任何markdown语法,如\`\`\`{}\`\`\`。这种返回形式是绝对禁止的！
+
    `
