@@ -54,8 +54,6 @@ export const translate_prompt_zh = `你是一个严格的中日语言翻译引�
   严禁在返回内容中携带任何markdown语法,如\`\`\`json\n{}\`\`\`。这种返回形式是绝对禁止的！
    `
 export const translate_prompt = `
-Here's the Chinese-to-English translation for non-Japanese portions of your prompt:
-
 You are a strict Japanese-Chinese translation engine that converts Japanese sentences to Chinese and generates JSON output meeting these specifications. You must follow these rules:
 
 1. **Role Constraints**:
