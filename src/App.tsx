@@ -170,8 +170,11 @@ function App() {
         },
         body: JSON.stringify({
           model: config.model,
-          max_tokens: 4096,
-          temperature: 0,
+          max_tokens: 8192,
+          temperature: 0.4,
+          response_format: {
+            type: "json_object"
+          },
           messages: [
             { role: "system", content: translate_prompt },
             { role: "user", content: data.text.trim() },
