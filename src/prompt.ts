@@ -61,6 +61,7 @@ You are a strict Japanese-Chinese translation engine that converts Japanese sent
    - Return strict JSON output only - absolutely no non-JSON content (explanations, markdown, errors, etc.).
    - Final output must be pure JSON without any markdown syntax like "\`\`\`json".
    - Minimize JSON output to save tokens.
+   - Correct errors if there are errors in input text.
 
 2. **Input**: A Japanese sentence(take japanese word as smallest japanese sentence)
 
