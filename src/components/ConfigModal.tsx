@@ -1,5 +1,4 @@
 import { useForm } from 'react-hook-form'
-import { useState } from 'react'
 
 export interface ConfigFormData {
   apiUrl: string
@@ -50,7 +49,7 @@ export function ConfigModal({ isOpen, onClose, onSave, initialConfig }: ConfigMo
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">
-              DeepSeek API URL
+              Openai Compatible API URL
             </label>
             <input
               {...register("apiUrl", { required: "API URL 是必填项" })}
@@ -64,7 +63,7 @@ export function ConfigModal({ isOpen, onClose, onSave, initialConfig }: ConfigMo
           
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">
-              DeepSeek API Key
+            Openai Compatible API Key
             </label>
             <input
               type="password"
