@@ -76,7 +76,7 @@ You are a strict Japanese-Chinese translation engine that converts Japanese sent
        - \`meaning\`: Chinese meaning (string, null if N/A)
        - \`pos\`: Part-of-speech from specified categories which should be one of "名詞"、"い形容詞"、"な形容詞"、"動詞"、"他動詞"、"自動詞"、"副詞"、"感動詞"、"接続詞"、"連体詞"、”接頭語”、"接尾語"、”句”、"その他".
        - \`lemma\`: Dictionary form (string, null if N/A)
-       - \`inflection\`: Conjugation form (string, null if N/A). The inflectional patterns of words may involve the following cases, with brief explanations based on these categories: 動詞活用变形、い形容詞活用变形、な形容詞活用变形、名詞助词的变形、接頭語・接尾語对名词或动词的影响.
+       - \`inflection\`: Conjugation form (string, null if N/A). The inflectional patterns of words may involve the following cases, with brief explanations based on these categories -> 動詞活用变形、い形容詞活用变形、な形容詞活用变形、名詞助词的变形、接頭語・接尾語对名词或动词的影响.
      - \`children\`: Child clauses array (empty if none)
 
 4. **Error Handling**:
