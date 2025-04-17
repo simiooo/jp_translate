@@ -23,3 +23,6 @@ dist-ssr
 *.sln
 *.sw?
 build
+
+src/assets/android*
+src/assets/apple*

@@ -17,8 +17,8 @@ import { PaginatedResponse, TranslationRecord } from "~/types/history";
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "New React Router App" },
-    { name: "description", content: "Welcome to React Router!" },
+    { title: "Japanese Learning By Translate" },
+    { name: "apanese Learning By Translate", content: "Welcome to apanese Learning By Translate!" },
   ];
 }
 
@@ -79,7 +79,7 @@ function App() {
     // loadHistory();
   }, []);
 
-  const {data: history} = useRequest(async () => {
+  const {data: history, refresh: historyRefresh} = useRequest(async () => {
     try {
       const data = await alovaInstance.Get<{translations?: TranslationRecord[], pagination?: PaginatedResponse}>("/api/translation");
       return {...data, translations: data.translations?.map(translation => ({...translation, translated_text: translation?.translated_text?.length > 0 ? JSON.parse(translation?.translated_text) : translation?.translated_text}))}
@@ -146,6 +146,7 @@ function App() {
             setLoading(false);
             break;
           case "complete":
+            historyRefresh()
             setLoading(false);
             break;
         }
