@@ -71,6 +71,6 @@ jobs:
                     workflow_id: 'frontend.yml',
                     ref: 'main',
                     inputs: {
-                    frontend_image_tag: '${{ steps.meta.outputs.tags  }}'
+                        frontend_image_tag: '${{ steps.meta.outputs.tags  }}'
                     }
                 })
