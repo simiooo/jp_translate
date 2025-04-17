@@ -42,23 +42,11 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
 
-      - name: Extract metadata for Docker
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ghcr.io/${{ github.repository }}
-          tags: |
-            type=ref,event=branch
-            type=ref,event=pr
-            type=sha,format=short
-
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          push: true
-          tags: ${{ github.sha }}
-          labels: ${{ steps.meta.outputs.labels }}
+      - name: Build Docker image
+        run: docker build -t ghcr.io/${{ github.actor }}/jp_translate:${{ github.sha }} .
+  
+      - name: Push Docker image
+        run: docker push ghcr.io/${{ github.actor }}/jp_translate:${{ github.sha }}
 
       - name: Trigger downstream action
         uses: actions/github-script@v7
