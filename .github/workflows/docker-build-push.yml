@@ -59,3 +59,18 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+
+      - name: Trigger downstream action
+        uses: actions/github-script@v7
+        with:
+            github-token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+            script: |
+                await github.rest.actions.createWorkflowDispatch({
+                    owner: 'simiooo',
+                    repo: 'jp-translate-ops',
+                    workflow_id: 'frontend.yml',
+                    ref: 'main',
+                    inputs: {
+                    frontend_image_tag: '${{ steps.meta.outputs.tags  }}'
+                    }
+                })
