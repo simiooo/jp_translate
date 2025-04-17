@@ -45,6 +45,29 @@ npm run dev
 npm run build
 ```
 
+### Docker 部署
+
+```bash
+# 构建 Docker 镜像
+docker build -t jp-translate .
+
+# 运行容器
+docker run -p 80:80 jp-translate
+```
+
+### GitHub Actions
+
+本项目配置了 GitHub Actions 工作流，可以自动构建 Docker 镜像并推送到 GitHub Container Registry。
+
+工作流程会在以下情况触发：
+- 推送到 main 分支
+- 创建 Pull Request 到 main 分支
+- 手动触发
+
+要使用此功能，请确保：
+1. 仓库有权限访问 GitHub Packages
+2. 工作流程有适当的权限
+
 ### 配置
 
 在使用之前，需要配置：
@@ -104,6 +127,29 @@ npm run dev
 ```bash
 npm run build
 ```
+
+### Docker Deployment
+
+```bash
+# Build Docker image
+docker build -t jp-translate .
+
+# Run container
+docker run -p 80:80 jp-translate
+```
+
+### GitHub Actions
+
+This project is configured with a GitHub Actions workflow that automatically builds a Docker image and pushes it to the GitHub Container Registry.
+
+The workflow is triggered when:
+- Pushing to the main branch
+- Creating a Pull Request to the main branch
+- Manual trigger
+
+To use this feature, ensure:
+1. The repository has access to GitHub Packages
+2. The workflow has appropriate permissions
 
 ### Configuration
 

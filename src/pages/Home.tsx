@@ -1,79 +1,41 @@
-import { useState, useEffect, useRef } from "react";
-import "./App.css";
-import type { TranslationResult } from "./types/jp_ast";
-// import axios from 'axios'
-import { translate_prompt } from "./prompt";
-import { ConfigModal } from "./components/ConfigModal";
+import { useState, useEffect } from "react";
+import type { TranslationResult } from "../types/jp_ast";
 import { useForm } from "react-hook-form";
 import { jsonrepair } from "jsonrepair";
 // import { zodResolver } from '@hookform/resolvers/zod'
-import { type TranslationFormData } from "./schemas/translation";
-import { Toast } from "./components/Toast";
-import { db, type TranslationHistory } from "./db/database";
+import { type TranslationFormData } from "../schemas/translation";
+import { Toast } from "../components/Toast";
 import { useRequest, useThrottle } from "ahooks";
-import { Cursor } from "./components/Cursor";
-import { AstTokens } from "./components/AstTokens";
-import { Reasoning } from "./components/Reasoning";
+import { Cursor } from "../components/Cursor";
+import { AstTokens } from "../components/AstTokens";
+// import { Reasoning } from "../components/Reasoning";
 import { createPortal } from "react-dom";
+import type { Route } from "./+types/Home";
+import { alovaInstance, createSSEStream, EventData } from "~/utils/request";
+import { PaginatedResponse, TranslationRecord } from "~/types/history";
 
-interface Message {
-  role: string; // 可以是 "system", "user", 或 "assistant"
-  content: string;
-  reasoning_content?: string;
-  reasoning?: string;
+
+export function meta({}: Route.MetaArgs) {
+  return [
+    { title: "New React Router App" },
+    { name: "description", content: "Welcome to React Router!" },
+  ];
 }
 
-interface Choice {
-  index: number;
-  message: Message;
-  logprobs: null | unknown; // 根据实际情况可以进一步定义 logprobs 的类型
-  finish_reason: string; // 例如 "stop", "length", 或其他原因
-}
 
-interface Usage {
-  prompt_tokens: number;
-  completion_tokens: number;
-  total_tokens: number;
-  prompt_cache_hit_tokens: number;
-  prompt_cache_miss_tokens: number;
-}
 
-export interface ChatCompletion {
-  id: string;
-  object: string; // 例如 "chat.completion"
-  created: number; // 时间戳
-  model: string; // 例如 "deepseek-chat"
-  choices: Choice[];
-  usage: Usage;
-  system_fingerprint: string;
-}
 
 function App() {
   // const [translation, setTranslation] = useState<TranslationResult | null>(null)
   const [loading, setLoading] = useState(false);
-  const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
-  const [config, setConfig] = useState(() => {
-    const savedConfig = localStorage.getItem("translationConfig");
-    return savedConfig
-      ? JSON.parse(savedConfig)
-      : {
-          apiUrl: "https://api.deepseek.com/chat/completions",
-          apiKey: "",
-          model: "deepseek-chat",
-          openaiApiUrl: "https://api.openai.com/v1",
-          openaiApiKey: "",
-          voice: "alloy",
-        };
-  });
-  const [history, setHistory] = useState<TranslationHistory[]>([]);
   const [showHistory, setShowHistory] = useState(false);
   const [isHistoryCollapsed, setIsHistoryCollapsed] = useState(false);
   const [bufferedTranslation, setBufferedTranslation] =
     useState<TranslationResult | null>(null);
-  const [bufferedThinking, setBufferedThinking] = useState<string>();
+  // const [bufferedThinking, setBufferedThinking] = useState<string>();
 
-  const reasoningRef = useRef<HTMLDivElement>(null)
-  
+  // const reasoningRef = useRef<HTMLDivElement>(null);
+
   // 添加 TTS loading 状态
   const [ttsLoading, setTtsLoading] = useState<{
     original: boolean;
@@ -104,35 +66,28 @@ function App() {
     }
   }, [form]);
 
-  // 更新 URL
-  const updateUrl = (data: TranslationFormData) => {
-    const newUrl = new URL(window.location.href);
-    newUrl.searchParams.set("text", encodeURIComponent(data.text));
-    window.history.pushState({}, "", newUrl);
-  };
-
-  const handleSaveConfig = (newConfig: {
-    apiUrl: string;
-    apiKey: string;
-    openaiApiUrl: string;
-    openaiApiKey: string;
-  }) => {
-    setConfig(newConfig);
-    localStorage.setItem("translationConfig", JSON.stringify(newConfig));
-  };
-
   // 加载历史记录
   useEffect(() => {
-    const loadHistory = async () => {
-      const records = await db.translations
-        .orderBy("timestamp")
-        .reverse()
-        .limit(50)
-        .toArray();
-      setHistory(records);
-    };
-    loadHistory();
+    // const loadHistory = async () => {
+    //   const records = await db.translations
+    //     .orderBy("timestamp")
+    //     .reverse()
+    //     .limit(50)
+    //     .toArray();
+    //   setHistory(records);
+    // };
+    // loadHistory();
   }, []);
+
+  const {data: history} = useRequest(async () => {
+    try {
+      const data = await alovaInstance.Get<{translations?: TranslationRecord[], pagination?: PaginatedResponse}>("/api/translation");
+      return {...data, translations: data.translations?.map(translation => ({...translation, translated_text: translation?.translated_text?.length > 0 ? JSON.parse(translation?.translated_text) : translation?.translated_text}))}
+    } catch (error) {
+      console.error(error)
+    }    
+
+  });
 
   const translation = useThrottle<TranslationResult | null>(
     bufferedTranslation,
@@ -140,155 +95,87 @@ function App() {
       wait: 300,
     }
   );
-  const thinking = useThrottle<string | undefined>(bufferedThinking, {
-    wait: 500,
-  });
+  
+  // const thinking = useThrottle<string | undefined>(bufferedThinking, {
+  //   wait: 500,
+  // });
 
-  useRequest(async () => {
-    reasoningRef.current?.scrollTo(0, 0xffff)
-  }, {
-    refreshDeps: [thinking]
-  })
+  // useRequest(
+  //   async () => {
+  //     reasoningRef.current?.scrollTo(0, 0xffff);
+  //   },
+  //   {
+  //     refreshDeps: [thinking],
+  //   }
+  // );
 
   const onSubmit = async (data: TranslationFormData) => {
-    if (!config.apiKey) {
-      setIsConfigModalOpen(true);
-      return;
-    }
-
-    setLoading(true);
-    setBufferedTranslation(null);
-    setBufferedThinking(undefined);
     let fullResponse = "";
-    let fullThinking = "";
-    try {
-      const response = await fetch(config.apiUrl, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${config.apiKey}`,
-        },
-        body: JSON.stringify({
-          model: config.model,
-          max_tokens: 8192,
-          temperature: 0.4,
-          response_format: {
-            type: "json_object"
-          },
-          messages: [
-            { role: "system", content: translate_prompt },
-            { role: "user", content: data.text.trim() },
-          ],
-          stream: true,
-        }),
-      });
-
-      const reader = response.body?.getReader();
-      if (!reader) throw new Error("Failed to get reader");
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        const chunk = new TextDecoder().decode(value);
-        const lines = chunk.split("\n");
-
-        for (const line of lines) {
-          if (line.startsWith("data: ")) {
-            const data = line.slice(5);
-            if (data?.trim?.() === "[DONE]" || data === "") continue;
-
+    const sse = createSSEStream("/api/translation", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ source_text: data.text }),
+      onMessage(data: EventData<{text?: string; message?: string}>) {
+        switch (data.type) {
+          case "chunk":
+            fullResponse += data.data?.text?.trim?.();
             try {
-              const json = JSON.parse(data);
-              const content = json.choices[0]?.delta?.content ?? "";
-              const think_content =
-                json.choices[0]?.delta?.reasoning_content ?? json.choices[0]?.delta?.reasoning ??"";
-              fullResponse += content?.trim?.();
-              // if(/^```json.+/.test(fullResponse)) {
-              //   fullResponse = fullResponse.slice(7)
-              // }
-              // if(/.+```$/.test(fullResponse)) {
-              //   fullResponse = fullResponse.slice(0,-3)
-              // }
-              fullThinking += think_content;
-              try {
-                
-
-                setBufferedThinking(fullThinking);
-
-                // 尝试解析累积的响应，更新到缓存变量
-                if (content?.length > 0) {
-                  const translationData = JSON.parse(
-                    jsonrepair(fullResponse)
-                  ) as TranslationResult;
-                  setBufferedTranslation(() => {
-                    return translationData;
-                  });
-                }
-              } catch (error) {
-                console.error(error);
-                // JSON 还不完整，继续累积
+              if ((data.data?.text ?? '')?.length > 0) {
+                const translationData = JSON.parse(
+                  jsonrepair(fullResponse)
+                ) as TranslationResult;
+                setBufferedTranslation(() => {
+                  return translationData;
+                });
               }
-            } catch (e) {
-              console.error("解析流数据失败:", e);
+            } catch (error) {
+              console.error(error)
             }
-          }
+            
+            break;
+          case "start":
+            setBufferedTranslation(null);
+            setLoading(true);
+            break;
+          case "end":
+            setLoading(false);
+            break;
+          case "error":
+            setLoading(false);
+            break;
+          case "complete":
+            setLoading(false);
+            break;
         }
-      }
-
-      // 完成后保存到历史记录
-      try {
-        const finalTranslationData = JSON.parse(
-          jsonrepair(fullResponse)
-        ) as TranslationResult;
-        if (finalTranslationData && finalTranslationData.translation) {
-          const historyRecord: TranslationHistory = {
-            sourceText: data.text.trim(),
-            translation: finalTranslationData.translation,
-            ast: finalTranslationData.ast,
-            timestamp: new Date(),
-          };
-
-          await db.translations.add(historyRecord);
-          setHistory((prev) => [historyRecord, ...prev]);
-
-          // 最后一次更新确保显示完整结果
-          // setTranslation(finalTranslationData)
-        }
-      } catch (e) {
-        console.error("保存历史记录失败:", e);
-      }
-
-      updateUrl(data);
-    } catch (error) {
-      console.error("翻译出错:", error);
-      Toast.error("翻译失败，请重试");
-    } finally {
-      setLoading(false);
-    }
+      },
+      onClose() {
+        setLoading(false);
+      },
+      onError(error) {
+        console.error(error);
+        setLoading(false);
+      },
+    });
+    sse.connect();
   };
 
   const handleTTS = async (text: string, type: "original" | "translation") => {
-    if (!text || !config.openaiApiKey || ttsLoading[type]) return;
-
-    if (!config.openaiApiKey) {
-      Toast.error("请先配置 OpenAI API Key");
-      setIsConfigModalOpen(true);
-      return;
-    }
+    if (!text || ttsLoading[type]) return;
 
     try {
       setTtsLoading((prev) => ({ ...prev, [type]: true }));
 
-      const response = await fetch(`${config.openaiApiUrl}`, {
+      const response = await fetch(`/api/translate`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${config.openaiApiKey}`,
+          Authorization: `Bearer`,
         },
         body: JSON.stringify({
           model: "tts-1",
           input: text,
-          voice: config.voice,
         }),
       });
 
@@ -318,7 +205,7 @@ function App() {
         } z-20`}
       >
         <div className="h-full flex flex-col">
-          <div className="p-4 border-b flex justify-between items-center">
+          <div className="p-4  flex justify-between items-center">
             {!isHistoryCollapsed && (
               <h2 className="text-lg font-semibold">翻译历史</h2>
             )}
@@ -366,12 +253,12 @@ function App() {
             )}
           </div>
           <div className="flex-1 overflow-y-auto">
-            {history.map((record, index) => (
+            {(history?.translations ?? [])?.map((record, index) => (
               <div
                 key={record.id || index}
-                className="p-4 border-b hover:bg-gray-50 cursor-pointer"
+                className="p-4  hover:bg-gray-50 cursor-pointer"
                 onClick={() => {
-                  form.setValue("text", record.sourceText);
+                  form.setValue("text", record.source_text);
                   setShowHistory(false);
                 }}
               >
@@ -382,13 +269,13 @@ function App() {
                 ) : (
                   <>
                     <div className="text-xs text-gray-500 mb-2">
-                      {new Date(record.timestamp).toLocaleString()}
+                      {new Date(record.created_at).toLocaleString()}
                     </div>
                     <div className="text-sm text-gray-700 line-clamp-2">
-                      {record.sourceText}
+                      {record.source_text}
                     </div>
                     <div className="text-sm text-gray-900 line-clamp-2 mt-1">
-                      {record.translation}
+                      {record.translated_text?.translation}
                     </div>
                   </>
                 )}
@@ -433,31 +320,6 @@ function App() {
                 </svg>
                 历史记录
               </button>
-              <button
-                onClick={() => setIsConfigModalOpen(true)}
-                className="px-4 py-2 text-gray-600 hover:text-gray-800 flex items-center gap-2"
-              >
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-                  />
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                  />
-                </svg>
-                配置
-              </button>
             </div>
           </div>
 
@@ -470,7 +332,7 @@ function App() {
                 <div className="relative">
                   <textarea
                     {...form.register("text")}
-                    className="w-full h-[50vh] md:h-[70vh] p-4 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                    className="bg-white w-full h-[50vh] md:h-[70vh] p-4 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
                     placeholder="日本語を入力してください"
                   />
                   {/* 原文区域的 TTS 按钮 */}
@@ -537,13 +399,13 @@ function App() {
                 <div className="relative h-[50vh] md:h-[70vh]">
                   {loading && (
                     <div className="absolute top-4 right-4 z-10">
-                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+                      <div className="animate-spin rounded-full h-8 w-8 -2 border-blue-500"></div>
                     </div>
                   )}
-                  <div className="h-full flex flex-col bg-white rounded-lg border">
+                  <div className="h-full flex flex-col bg-white rounded-lg">
                     {translation || loading ? (
                       <>
-                        <div className="p-4 border-b max-h-[40%] overflow-auto">
+                        <div className="p-4  max-h-[40%] overflow-auto">
                           <div className="flex justify-between items-start">
                             <p className="text-gray-700">
                               {translation?.translation}
@@ -634,14 +496,10 @@ function App() {
             </div>
           </form>
 
-          <ConfigModal
-            isOpen={isConfigModalOpen}
-            onClose={() => setIsConfigModalOpen(false)}
-            onSave={handleSaveConfig}
-            initialConfig={config}
-          />
-          {createPortal(loading && <div
-            className="
+          {createPortal(
+            loading && (
+              <div
+                className="
           absolute
           left-1/2
           top-1/2
@@ -649,9 +507,12 @@ function App() {
           -translate-x-1/2
           -translate-y-1/2
           "
-          >
-            <Reasoning ref={reasoningRef} thinking={thinking}></Reasoning>
-          </div>, document.documentElement) }
+              >
+                {/* <Reasoning ref={reasoningRef} thinking={thinking}></Reasoning> */}
+              </div>
+            ),
+            document.documentElement
+          )}
         </div>
       </div>
     </div>

@@ -4,25 +4,33 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc -b && vite build",
-    "lint": "eslint .",
-    "preview": "vite preview"
+    "build": "react-router build",
+    "dev": "react-router dev",
+    "start": "react-router-serve ./build/server/index.js",
+    "typecheck": "react-router typegen && tsc"
   },
   "dependencies": {
+    "@react-router/dev": "^7.5.0",
+    "@react-router/node": "^7.5.0",
+    "@react-router/serve": "^7.5.0",
+    "@tailwindcss/vite": "^4.1.4",
     "ahooks": "^3.8.4",
+    "alova": "^3.2.10",
     "autoprefixer": "^10.4.20",
     "axios": "^1.7.9",
     "dexie": "^4.0.10",
     "i18next": "^24.2.0",
+    "isbot": "^5",
     "jsonrepair": "^3.11.2",
     "postcss": "^8.4.49",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-hook-form": "^7.54.2",
     "react-i18next": "^15.4.0",
+    "react-router": "^7.5.0",
+    "routes": "link:@react-router/dev/routes",
     "tailwind-scrollbar": "^3.1.0",
-    "tailwindcss": "^3.4.17",
+    "tailwindcss": "^4.1.4",
     "zod": "^3.24.1"
   },
   "devDependencies": {
@@ -36,6 +44,7 @@
     "globals": "^15.14.0",
     "typescript": "~5.6.2",
     "typescript-eslint": "^8.18.2",
-    "vite": "^6.0.5"
+    "vite": "^6.0.5",
+    "vite-tsconfig-paths": "^5.1.4"
   }
 }
