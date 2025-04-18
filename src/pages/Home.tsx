@@ -11,10 +11,11 @@ import { AstTokens } from "../components/AstTokens";
 // import { Reasoning } from "../components/Reasoning";
 import { createPortal } from "react-dom";
 import type { Route } from "./+types/Home";
-import { alovaInstance, createSSEStream, EventData } from "~/utils/request";
+import { alovaBlobInstance, alovaInstance, createSSEStream, EventData } from "~/utils/request";
 import { PaginatedResponse, TranslationRecord } from "~/types/history";
 import { useNavigate } from "react-router";
 import Spinner from "~/components/Spinner";
+
 // import { unknown } from "zod";
 
 
@@ -24,7 +25,6 @@ export function meta({}: Route.MetaArgs) {
     { name: "apanese Learning By Translate", content: "Welcome to apanese Learning By Translate!" },
   ];
 }
-
 
 function App() {
   const navigate = useNavigate();
@@ -165,22 +165,11 @@ function App() {
 
     try {
 
-
-      const response = await fetch(`/api/translate`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer`,
-        },
-        body: JSON.stringify({
-          lang,
-          input: text,
-        }),
-      });
-
-      if (!response.ok) throw new Error("TTS request failed");
-
-      const audioBlob = await response.blob();
+      const audioBlob = await alovaBlobInstance.Post<Blob>('/api/tts', {
+        text,
+        lang
+      })
+      
       const audioUrl = URL.createObjectURL(audioBlob);
       const audio = new Audio(audioUrl);
       await audio.play();

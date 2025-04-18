@@ -8,6 +8,13 @@ export const alovaInstance = createAlova({
     method.config.headers["Authorization"] = localStorage.getItem('Authorization')
   }
 });
+export const alovaBlobInstance = createAlova({
+  requestAdapter: adapterFetch(),
+  responded: (response) => response.blob(),
+  beforeRequest: (method) => {
+    method.config.headers["Authorization"] = localStorage.getItem('Authorization')
+  }
+});
 
 // Define event data structure
 export interface EventData<T> {
