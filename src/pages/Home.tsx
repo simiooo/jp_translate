@@ -312,14 +312,14 @@ function App() {
 
           <form
             onSubmit={form.handleSubmit(onSubmit)}
-            className="flex-1 flex flex-col"
+            className="h-[calc(100vh - 144px)] flex flex-col"
           >
             <div className="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-6 flex-1">
               <div className="md:col-span-5 space-y-5">
                 <div className="relative">
                   <textarea
                     {...form.register("text")}
-                    className="bg-white w-full h-[50vh] md:h-[70vh] p-4 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                    className="bg-white w-full h-[25vh]  md:h-[70vh] p-4 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
                     placeholder="日本語を入力してください"
                   />
                   {/* 原文区域的 TTS 按钮 */}
