@@ -79,7 +79,7 @@ function App() {
       if("message" in data) {
         throw Error(data.message)
       }
-      return {...data, translations: data.translations?.map(translation => ({...translation, translated_text: translation?.translated_text?.length > 0 ? JSON.parse(translation?.translated_text) : translation?.translated_text}))}
+      return {...data, translations: data.translations?.map(translation => ({...translation, translated_text: translation?.translated_text?.length > 0 ? JSON.parse(jsonrepair(translation?.translated_text)) : translation?.translated_text}))}
     } catch (error) {
       console.error(error)
       navigate('/login')
