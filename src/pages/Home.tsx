@@ -184,7 +184,9 @@ function App() {
     <div className="min-h-screen bg-gray-100 overflow-x-hidden flex">
       {/* 侧边栏历史记录 */}
       <div
-        className={`fixed md:relative ${
+        className={`
+          rounded-r-lg
+          fixed md:relative ${
           isHistoryCollapsed ? "w-16" : "w-80"
         } h-screen bg-white shadow-lg 
         transition-all duration-300 transform ${
@@ -198,7 +200,8 @@ function App() {
             )}
             <button
               onClick={() => setIsHistoryCollapsed(!isHistoryCollapsed)}
-              className="hidden md:block text-gray-500 hover:text-gray-700"
+              className="hidden md:block text-gray-500 hover:text-gray-900 
+              "
             >
               <svg
                 className="w-6 h-6"
@@ -221,7 +224,9 @@ function App() {
             {!isHistoryCollapsed && (
               <button
                 onClick={() => setShowHistory(false)}
-                className="md:hidden text-gray-500 hover:text-gray-700"
+                className="md:hidden text-gray-500 
+                hover:text-gray-700
+                "
               >
                 <svg
                   className="w-6 h-6"
@@ -251,7 +256,7 @@ function App() {
               >
                 {isHistoryCollapsed ? (
                   <div className="text-center text-gray-500 text-sm">
-                    {index + 1}
+                    {record.source_text.slice(0,2)}
                   </div>
                 ) : (
                   <>
@@ -275,7 +280,7 @@ function App() {
       {/* 遮罩层 - 移动端显示 */}
       {showHistory && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-10 md:hidden"
+          className="fixed inset-0 blur-2xl bg-black opacity-12 z-10 md:hidden"
           onClick={() => setShowHistory(false)}
         ></div>
       )}
@@ -330,10 +335,10 @@ function App() {
                         handleTTS(form.getValues("text"), "ja");
                       }}
                       disabled={ttsLoading}
-                      className={`absolute top-4 right-4 p-2 rounded-full transition-all duration-200 ${
+                      className={`hover:text-gray-800 bg-white shadow-xs absolute top-4 -right-4 p-2 rounded-full transition-all duration-200 ${
                         ttsLoading
                           ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                          : "text-gray-600 hover:text-gray-800 hover:bg-gray-100"
+                          : "text-gray-600 active:shadow-2xs  hover:bg-gray-100"
                       }`}
                       title="播放原文语音"
                     >
