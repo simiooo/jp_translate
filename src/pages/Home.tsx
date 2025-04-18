@@ -38,14 +38,6 @@ function App() {
 
   // const reasoningRef = useRef<HTMLDivElement>(null);
 
-  // 添加 TTS loading 状态
-  const [ttsLoading, setTtsLoading] = useState<{
-    original: boolean;
-    translation: boolean;
-  }>({
-    original: false,
-    translation: false,
-  });
 
   const form = useForm<TranslationFormData>({
     defaultValues: {
@@ -168,11 +160,11 @@ function App() {
     sse.connect();
   };
 
-  const handleTTS = async (text: string, type: "original" | "translation") => {
-    if (!text || ttsLoading[type]) return;
+  const {runAsync: handleTTS, loading: ttsLoading} = useRequest(async (text: string, lang: string) => {
+    if (!text || ttsLoading) return;
 
     try {
-      setTtsLoading((prev) => ({ ...prev, [type]: true }));
+
 
       const response = await fetch(`/api/translate`, {
         method: "POST",
@@ -181,7 +173,7 @@ function App() {
           Authorization: `Bearer`,
         },
         body: JSON.stringify({
-          model: "tts-1",
+          lang,
           input: text,
         }),
       });
@@ -195,10 +187,9 @@ function App() {
     } catch (error) {
       console.error("TTS error:", error);
       Toast.error("语音合成失败，请重试");
-    } finally {
-      setTtsLoading((prev) => ({ ...prev, [type]: false }));
     }
-  };
+  } )
+
 
   return (
     <div className="min-h-screen bg-gray-100 overflow-x-hidden flex">
@@ -347,17 +338,17 @@ function App() {
                     <button
                       onClick={(e) => {
                         e.preventDefault();
-                        handleTTS(form.getValues("text"), "original");
+                        handleTTS(form.getValues("text"), "ja");
                       }}
-                      disabled={ttsLoading.original}
+                      disabled={ttsLoading}
                       className={`absolute top-4 right-4 p-2 rounded-full transition-all duration-200 ${
-                        ttsLoading.original
+                        ttsLoading
                           ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                           : "text-gray-600 hover:text-gray-800 hover:bg-gray-100"
                       }`}
                       title="播放原文语音"
                     >
-                      {ttsLoading.original ? (
+                      {ttsLoading ? (
                         <svg
                           className="w-5 h-5 animate-spin"
                           viewBox="0 0 24 24"
@@ -424,18 +415,18 @@ function App() {
                                 onClick={() =>
                                   handleTTS(
                                     translation.translation ?? "",
-                                    "translation"
+                                    "cn-zh"
                                   )
                                 }
-                                disabled={ttsLoading.translation}
+                                disabled={ttsLoading}
                                 className={`ml-2 p-2 rounded-full transition-all duration-200 ${
-                                  ttsLoading.translation
+                                  ttsLoading
                                     ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                                     : "text-gray-600 hover:text-gray-800 hover:bg-gray-100"
                                 }`}
                                 title="播放翻译语音"
                               >
-                                {ttsLoading.translation ? (
+                                {ttsLoading ? (
                                   <svg
                                     className="w-5 h-5 animate-spin"
                                     viewBox="0 0 24 24"
