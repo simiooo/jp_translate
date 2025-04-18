@@ -10,11 +10,12 @@ import { Cursor } from "../components/Cursor";
 import { AstTokens } from "../components/AstTokens";
 // import { Reasoning } from "../components/Reasoning";
 import { createPortal } from "react-dom";
+import { CircleButton } from "../components/CircleButton";
 import type { Route } from "./+types/Home";
 import { alovaBlobInstance, alovaInstance, createSSEStream, EventData } from "~/utils/request";
 import { PaginatedResponse, TranslationRecord } from "~/types/history";
 import { useNavigate } from "react-router";
-import Spinner from "~/components/Spinner";
+import { HistorySidebar } from "../components/HistorySidebar";
 
 // import { unknown } from "zod";
 
@@ -177,105 +178,25 @@ function App() {
       console.error("TTS error:", error);
       Toast.error("语音合成失败，请重试");
     }
-  } )
+  } , {
+    manual: true
+  })
 
 
   return (
     <div className="min-h-screen bg-gray-100 overflow-x-hidden flex">
       {/* 侧边栏历史记录 */}
-      <div
-        className={`
-          rounded-r-lg
-          fixed md:relative ${
-          isHistoryCollapsed ? "w-16" : "w-80"
-        } h-screen bg-white shadow-lg 
-        transition-all duration-300 transform ${
-          showHistory ? "translate-x-0" : "-translate-x-full md:translate-x-0"
-        } z-20`}
-      >
-        <div className="h-full flex flex-col">
-          <div className="p-4  flex justify-between items-center">
-            {!isHistoryCollapsed && (
-              <h2 className="text-lg font-semibold">翻译历史</h2>
-            )}
-            <button
-              onClick={() => setIsHistoryCollapsed(!isHistoryCollapsed)}
-              className="hidden md:block text-gray-500 hover:text-gray-900 
-              "
-            >
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d={
-                    isHistoryCollapsed
-                      ? "M13 5l7 7-7 7M5 5l7 7-7 7"
-                      : "M11 19l-7-7 7-7M19 19l-7-7 7-7"
-                  }
-                />
-              </svg>
-            </button>
-            {!isHistoryCollapsed && (
-              <button
-                onClick={() => setShowHistory(false)}
-                className="md:hidden text-gray-500 
-                hover:text-gray-700
-                "
-              >
-                <svg
-                  className="w-6 h-6"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              </button>
-            )}
-          </div>
-          <div className="flex-1 overflow-y-auto">
-            {historyLoading ? <Spinner></Spinner> : (history?.translations ?? [])?.map((record, index) => (
-              <div
-                key={record.id || index}
-                className="p-4  hover:bg-gray-50 cursor-pointer"
-                onClick={() => {
-                  form.setValue("text", record.source_text);
-                  setShowHistory(false);
-                }}
-              >
-                {isHistoryCollapsed ? (
-                  <div className="text-center text-gray-500 text-sm">
-                    {record.source_text.slice(0,2)}
-                  </div>
-                ) : (
-                  <>
-                    <div className="text-xs text-gray-500 mb-2">
-                      {new Date(record.created_at).toLocaleString()}
-                    </div>
-                    <div className="text-sm text-gray-700 line-clamp-2">
-                      {record.source_text}
-                    </div>
-                    <div className="text-sm text-gray-900 line-clamp-2 mt-1">
-                      {record.translated_text?.translation}
-                    </div>
-                  </>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
+      <HistorySidebar
+        isHistoryCollapsed={isHistoryCollapsed}
+        setIsHistoryCollapsed={setIsHistoryCollapsed}
+        showHistory={showHistory}
+        setShowHistory={setShowHistory}
+        historyLoading={historyLoading}
+        translations={history?.translations ?? []}
+        onSelectHistoryItem={(text) => {
+          form.setValue("text", text);
+        }}
+      />
 
       {/* 遮罩层 - 移动端显示 */}
       {showHistory && (
@@ -323,62 +244,40 @@ function App() {
               <div className="md:col-span-5 space-y-5">
                 <div className="relative">
                   <textarea
+                  
                     {...form.register("text")}
                     className="bg-white w-full h-[25vh]  md:h-[70vh] p-4 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
                     placeholder="日本語を入力してください"
                   />
                   {/* 原文区域的 TTS 按钮 */}
-                  {form.getValues("text") && (
-                    <button
+                  
+                    <CircleButton
                       onClick={(e) => {
                         e.preventDefault();
-                        handleTTS(form.getValues("text"), "ja");
+                        const text = form.getValues("text")
+                        if(!text) return
+                        handleTTS(text, "ja");
                       }}
                       disabled={ttsLoading}
-                      className={`hover:text-gray-800 bg-white shadow-xs absolute top-4 -right-4 p-2 rounded-full transition-all duration-200 ${
-                        ttsLoading
-                          ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                          : "text-gray-600 active:shadow-2xs  hover:bg-gray-100"
-                      }`}
+                      loading={ttsLoading}
                       title="播放原文语音"
+                      className="absolute top-4 -right-4.5"
                     >
-                      {ttsLoading ? (
-                        <svg
-                          className="w-5 h-5 animate-spin"
-                          viewBox="0 0 24 24"
-                        >
-                          <circle
-                            className="opacity-25"
-                            cx="12"
-                            cy="12"
-                            r="10"
-                            stroke="currentColor"
-                            strokeWidth="4"
-                            fill="none"
-                          />
-                          <path
-                            className="opacity-75"
-                            fill="currentColor"
-                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                          />
-                        </svg>
-                      ) : (
-                        <svg
-                          className="w-5 h-5"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M15.536 8.464a5 5 0 010 7.072M17.95 6.05a8 8 0 010 11.9M6.5 8.788v6.424a.5.5 0 00.757.429l5.5-3.212a.5.5 0 000-.858l-5.5-3.212a.5.5 0 00-.757.43z"
-                          />
-                        </svg>
-                      )}
-                    </button>
-                  )}
+                      <svg
+                        className="w-5 h-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M15.536 8.464a5 5 0 010 7.072M17.95 6.05a8 8 0 010 11.9M6.5 8.788v6.424a.5.5 0 00.757.429l5.5-3.212a.5.5 0 000-.858l-5.5-3.212a.5.5 0 00-.757.43z"
+                        />
+                      </svg>
+                    </CircleButton>
+                  
                 </div>
                 {form.formState.errors.text && (
                   <p className="text-red-500 text-sm">
@@ -405,7 +304,7 @@ function App() {
                             </p>
 
                             {translation?.translation && !loading && (
-                              <button
+                              <CircleButton
                                 onClick={() =>
                                   handleTTS(
                                     translation.translation ?? "",
@@ -413,49 +312,25 @@ function App() {
                                   )
                                 }
                                 disabled={ttsLoading}
-                                className={`ml-2 p-2 rounded-full transition-all duration-200 ${
-                                  ttsLoading
-                                    ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                                    : "text-gray-600 hover:text-gray-800 hover:bg-gray-100"
-                                }`}
+                                loading={ttsLoading}
                                 title="播放翻译语音"
+                                className="ml-2"
+                                type="borderless"
                               >
-                                {ttsLoading ? (
-                                  <svg
-                                    className="w-5 h-5 animate-spin"
-                                    viewBox="0 0 24 24"
-                                  >
-                                    <circle
-                                      className="opacity-25"
-                                      cx="12"
-                                      cy="12"
-                                      r="10"
-                                      stroke="currentColor"
-                                      strokeWidth="4"
-                                      fill="none"
-                                    />
-                                    <path
-                                      className="opacity-75"
-                                      fill="currentColor"
-                                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                                    />
-                                  </svg>
-                                ) : (
-                                  <svg
-                                    className="w-5 h-5"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                  >
-                                    <path
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                      strokeWidth={2}
-                                      d="M15.536 8.464a5 5 0 010 7.072M17.95 6.05a8 8 0 010 11.9M6.5 8.788v6.424a.5.5 0 00.757.429l5.5-3.212a.5.5 0 000-.858l-5.5-3.212a.5.5 0 00-.757.43z"
-                                    />
-                                  </svg>
-                                )}
-                              </button>
+                                <svg
+                                  className="w-5 h-5"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M15.536 8.464a5 5 0 010 7.072M17.95 6.05a8 8 0 010 11.9M6.5 8.788v6.424a.5.5 0 00.757.429l5.5-3.212a.5.5 0 000-.858l-5.5-3.212a.5.5 0 00-.757.43z"
+                                  />
+                                </svg>
+                              </CircleButton>
                             )}
                           </div>
                         </div>
