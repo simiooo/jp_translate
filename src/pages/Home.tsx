@@ -13,6 +13,9 @@ import { createPortal } from "react-dom";
 import type { Route } from "./+types/Home";
 import { alovaInstance, createSSEStream, EventData } from "~/utils/request";
 import { PaginatedResponse, TranslationRecord } from "~/types/history";
+import { useNavigate } from "react-router";
+import Spinner from "~/components/Spinner";
+// import { unknown } from "zod";
 
 
 export function meta({}: Route.MetaArgs) {
@@ -23,10 +26,9 @@ export function meta({}: Route.MetaArgs) {
 }
 
 
-
-
 function App() {
-  // const [translation, setTranslation] = useState<TranslationResult | null>(null)
+  const navigate = useNavigate();
+
   const [loading, setLoading] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [isHistoryCollapsed, setIsHistoryCollapsed] = useState(false);
@@ -79,12 +81,16 @@ function App() {
     // loadHistory();
   }, []);
 
-  const {data: history, refresh: historyRefresh} = useRequest(async () => {
+  const {data: history, refresh: historyRefresh, loading: historyLoading} = useRequest(async () => {
     try {
-      const data = await alovaInstance.Get<{translations?: TranslationRecord[], pagination?: PaginatedResponse}>("/api/translation");
+      const data = await alovaInstance.Get<{message: string} |{translations?: TranslationRecord[], pagination?: PaginatedResponse}>("/api/translation");
+      if("message" in data) {
+        throw Error(data.message)
+      }
       return {...data, translations: data.translations?.map(translation => ({...translation, translated_text: translation?.translated_text?.length > 0 ? JSON.parse(translation?.translated_text) : translation?.translated_text}))}
     } catch (error) {
       console.error(error)
+      navigate('/login')
     }    
 
   });
@@ -254,7 +260,7 @@ function App() {
             )}
           </div>
           <div className="flex-1 overflow-y-auto">
-            {(history?.translations ?? [])?.map((record, index) => (
+            {historyLoading ? <Spinner></Spinner> : (history?.translations ?? [])?.map((record, index) => (
               <div
                 key={record.id || index}
                 className="p-4  hover:bg-gray-50 cursor-pointer"

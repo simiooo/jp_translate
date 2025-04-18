@@ -79,6 +79,7 @@ export default function LoginPage({ }: LoginPageProps) {
             <Input
               label="密码"
               name="password"
+              type="password"
               register={register}
               error={errors.password}
               required="请输入密码"
