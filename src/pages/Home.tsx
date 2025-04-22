@@ -48,31 +48,7 @@ function App() {
   });
 
   // 从 URL 读取初始文本
-  useEffect(() => {
-    const searchParams = new URLSearchParams(window.location.search);
-    const textFromUrl = searchParams.get("text");
-    const langFromUrl = searchParams.get("lang") as "zh" | "ja";
 
-    if (textFromUrl) {
-      form.setValue("text", decodeURIComponent(textFromUrl));
-    }
-    if (langFromUrl && (langFromUrl === "zh" || langFromUrl === "ja")) {
-      form.setValue("sourceLanguage", langFromUrl);
-    }
-  }, [form]);
-
-  // 加载历史记录
-  useEffect(() => {
-    // const loadHistory = async () => {
-    //   const records = await db.translations
-    //     .orderBy("timestamp")
-    //     .reverse()
-    //     .limit(50)
-    //     .toArray();
-    //   setHistory(records);
-    // };
-    // loadHistory();
-  }, []);
 
   const {data: history, refresh: historyRefresh, loading: historyLoading} = useRequest(async () => {
     try {
@@ -95,21 +71,11 @@ function App() {
     }
   );
   
-  // const thinking = useThrottle<string | undefined>(bufferedThinking, {
-  //   wait: 500,
-  // });
-
-  // useRequest(
-  //   async () => {
-  //     reasoningRef.current?.scrollTo(0, 0xffff);
-  //   },
-  //   {
-  //     refreshDeps: [thinking],
-  //   }
-  // );
 
   const onSubmit = async (data: TranslationFormData) => {
-    let fullResponse = "";
+    try {
+      let fullResponse = "";
+    setLoading(true);
     const sse = createSSEStream("/api/translation", {
       method: "POST",
       headers: {
@@ -136,7 +102,7 @@ function App() {
             break;
           case "start":
             setBufferedTranslation(null);
-            setLoading(true);
+            
             break;
           case "end":
             setLoading(false);
@@ -159,6 +125,12 @@ function App() {
       },
     });
     sse.connect();
+    } catch (error) {
+      setLoading(false);
+      console.error(error);
+      
+    }
+    
   };
 
   const {runAsync: handleTTS, loading: ttsLoading} = useRequest(async (text: string, lang: string) => {
