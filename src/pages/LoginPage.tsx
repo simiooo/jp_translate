@@ -6,6 +6,7 @@ import type { Route } from "./+types/LoginPage";
 import { Button } from '~/components/Button';
 import { useNavigate } from 'react-router';
 import { alovaInstance } from '~/utils/request';
+import { useRequest } from 'ahooks';
 
 
 
@@ -38,7 +39,6 @@ export default function LoginPage({ }: LoginPageProps) {
   const onSubmit = async (data: LoginFormData) => {
     
     try {
-      
       const res=  await alovaInstance.Post<{token?: string, user?: User}>('/api/auth/login', {
         email: data.email,
         password: data.password
@@ -55,6 +55,21 @@ export default function LoginPage({ }: LoginPageProps) {
       
     }
   }
+
+   useRequest(async () => {
+    try {
+      const data = await alovaInstance.Get<{[key: string]: string | number} | null>("/api/translation");
+      if(!data) throw Error('Not logined')
+      if ("message" in data) {
+        throw Error(String(data.message))
+      }
+      navigate('/')
+    } catch (error) {
+      console.error(error)
+      localStorage.removeItem("Authorization")
+    }
+  },
+  );
 
   const onSwitchToRegister = () => {
     navigate('/register')

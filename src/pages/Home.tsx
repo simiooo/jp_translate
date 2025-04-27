@@ -20,7 +20,7 @@ import { HistorySidebar } from "../components/HistorySidebar";
 // import { unknown } from "zod";
 
 
-export function meta({}: Route.MetaArgs) {
+export function meta({ }: Route.MetaArgs) {
   return [
     { title: "Japanese Learning By Translate" },
     { name: "apanese Learning By Translate", content: "Welcome to apanese Learning By Translate!" },
@@ -47,22 +47,19 @@ function App() {
     },
   });
 
-  // 从 URL 读取初始文本
-
-
-  const {data: history, refresh: historyRefresh, loading: historyLoading} = useRequest(async () => {
+  const { data: history, refresh: historyRefresh, loading: historyLoading } = useRequest(async () => {
     try {
-      const data = await alovaInstance.Get<{message: string} |{translations?: TranslationRecord[], pagination?: PaginatedResponse}>("/api/translation");
-      if("message" in data) {
+      const data = await alovaInstance.Get<{ message: string } | { translations?: TranslationRecord[], pagination?: PaginatedResponse }>("/api/translation");
+      if ("message" in data) {
         throw Error(data.message)
       }
-      return {...data, translations: data.translations?.map(translation => ({...translation, translated_text: translation?.translated_text?.length > 0 ? JSON.parse(jsonrepair(translation?.translated_text)) : translation?.translated_text}))}
+      return { ...data, translations: data.translations?.map(translation => ({ ...translation, translated_text: translation?.translated_text?.length > 0 ? JSON.parse(jsonrepair(translation?.translated_text)) : translation?.translated_text })) }
     } catch (error) {
       console.error(error)
       navigate('/login')
-    }    
-
-  });
+    }
+  },
+  );
 
   const translation = useThrottle<TranslationResult | null>(
     bufferedTranslation,
@@ -70,70 +67,70 @@ function App() {
       wait: 300,
     }
   );
-  
+
 
   const onSubmit = async (data: TranslationFormData) => {
     try {
       let fullResponse = "";
-    setLoading(true);
-    const sse = createSSEStream("/api/translation", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ source_text: data.text }),
-      onMessage(data: EventData<{text?: string; message?: string}>) {
-        switch (data.type) {
-          case "chunk":
-            fullResponse += data.data?.text?.trim?.();
-            try {
-              if ((data.data?.text ?? '')?.length > 0) {
-                const translationData = JSON.parse(
-                  jsonrepair(fullResponse)
-                ) as TranslationResult;
-                setBufferedTranslation(() => {
-                  return translationData;
-                });
+      setLoading(true);
+      const sse = createSSEStream("/api/translation", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ source_text: data.text }),
+        onMessage(data: EventData<{ text?: string; message?: string }>) {
+          switch (data.type) {
+            case "chunk":
+              fullResponse += data.data?.text?.trim?.();
+              try {
+                if ((data.data?.text ?? '')?.length > 0) {
+                  const translationData = JSON.parse(
+                    jsonrepair(fullResponse)
+                  ) as TranslationResult;
+                  setBufferedTranslation(() => {
+                    return translationData;
+                  });
+                }
+              } catch (error) {
+                console.error(error)
               }
-            } catch (error) {
-              console.error(error)
-            }
-            
-            break;
-          case "start":
-            setBufferedTranslation(null);
-            
-            break;
-          case "end":
-            setLoading(false);
-            break;
-          case "error":
-            setLoading(false);
-            break;
-          case "complete":
-            historyRefresh()
-            setLoading(false);
-            break;
-        }
-      },
-      onClose() {
-        setLoading(false);
-      },
-      onError(error) {
-        console.error(error);
-        setLoading(false);
-      },
-    });
-    sse.connect();
+
+              break;
+            case "start":
+              setBufferedTranslation(null);
+
+              break;
+            case "end":
+              setLoading(false);
+              break;
+            case "error":
+              setLoading(false);
+              break;
+            case "complete":
+              historyRefresh()
+              setLoading(false);
+              break;
+          }
+        },
+        onClose() {
+          setLoading(false);
+        },
+        onError(error) {
+          console.error(error);
+          setLoading(false);
+        },
+      });
+      sse.connect();
     } catch (error) {
       setLoading(false);
       console.error(error);
-      
+
     }
-    
+
   };
 
-  const {runAsync: handleTTS, loading: ttsLoading} = useRequest(async (text: string, lang: string) => {
+  const { runAsync: handleTTS, loading: ttsLoading } = useRequest(async (text: string, lang: string) => {
     if (!text || ttsLoading) return;
 
     try {
@@ -142,7 +139,7 @@ function App() {
         text,
         lang
       })
-      
+
       const audioUrl = URL.createObjectURL(audioBlob);
       const audio = new Audio(audioUrl);
       await audio.play();
@@ -150,7 +147,7 @@ function App() {
       console.error("TTS error:", error);
       Toast.error("语音合成失败，请重试");
     }
-  } , {
+  }, {
     manual: true
   })
 
@@ -216,40 +213,40 @@ function App() {
               <div className="md:col-span-5 space-y-5">
                 <div className="relative">
                   <textarea
-                  
+
                     {...form.register("text")}
                     className="bg-white w-full h-[25vh]  md:h-[70vh] p-4 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
                     placeholder="日本語を入力してください"
                   />
                   {/* 原文区域的 TTS 按钮 */}
-                  
-                    <CircleButton
-                      onClick={(e) => {
-                        e.preventDefault();
-                        const text = form.getValues("text")
-                        if(!text) return
-                        handleTTS(text, "ja");
-                      }}
-                      disabled={ttsLoading}
-                      loading={ttsLoading}
-                      title="播放原文语音"
-                      className="absolute top-4 -right-4.5"
+
+                  <CircleButton
+                    onClick={(e) => {
+                      e.preventDefault();
+                      const text = form.getValues("text")
+                      if (!text) return
+                      handleTTS(text, "ja");
+                    }}
+                    disabled={ttsLoading}
+                    loading={ttsLoading}
+                    title="播放原文语音"
+                    className="absolute top-4 -right-4.5"
+                  >
+                    <svg
+                      className="w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
                     >
-                      <svg
-                        className="w-5 h-5"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M15.536 8.464a5 5 0 010 7.072M17.95 6.05a8 8 0 010 11.9M6.5 8.788v6.424a.5.5 0 00.757.429l5.5-3.212a.5.5 0 000-.858l-5.5-3.212a.5.5 0 00-.757.43z"
-                        />
-                      </svg>
-                    </CircleButton>
-                  
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M15.536 8.464a5 5 0 010 7.072M17.95 6.05a8 8 0 010 11.9M6.5 8.788v6.424a.5.5 0 00.757.429l5.5-3.212a.5.5 0 000-.858l-5.5-3.212a.5.5 0 00-.757.43z"
+                      />
+                    </svg>
+                  </CircleButton>
+
                 </div>
                 {form.formState.errors.text && (
                   <p className="text-red-500 text-sm">

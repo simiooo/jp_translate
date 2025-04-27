@@ -4,6 +4,7 @@ import adapterFetch from "alova/fetch";
 export const alovaInstance = createAlova({
   requestAdapter: adapterFetch(),
   responded: (response) => response.json(),
+  cacheFor: null,
   beforeRequest: (method) => {
     method.config.headers["Authorization"] = localStorage.getItem('Authorization')
   }
