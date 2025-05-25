@@ -1,29 +1,37 @@
-import { useState, useEffect } from "react";
+import { useRef, useState } from "react";
 import type { TranslationResult } from "../types/jp_ast";
 import { useForm } from "react-hook-form";
 import { jsonrepair } from "jsonrepair";
 // import { zodResolver } from '@hookform/resolvers/zod'
 import { type TranslationFormData } from "../schemas/translation";
 import { Toast } from "../components/Toast";
-import { useRequest, useThrottle } from "ahooks";
+import { useAntdTable, useKeyPress, useRequest, useThrottle } from "ahooks";
 import { Cursor } from "../components/Cursor";
 import { AstTokens } from "../components/AstTokens";
 // import { Reasoning } from "../components/Reasoning";
 import { createPortal } from "react-dom";
 import { CircleButton } from "../components/CircleButton";
 import type { Route } from "./+types/Home";
-import { alovaBlobInstance, alovaInstance, createSSEStream, EventData } from "~/utils/request";
+import {
+  alovaBlobInstance,
+  alovaInstance,
+  createSSEStream,
+  EventData,
+} from "~/utils/request";
 import { PaginatedResponse, TranslationRecord } from "~/types/history";
 import { useNavigate } from "react-router";
 import { HistorySidebar } from "../components/HistorySidebar";
+import { Button } from "~/components/Button";
 
 // import { unknown } from "zod";
 
-
-export function meta({ }: Route.MetaArgs) {
+export function meta({}: Route.MetaArgs) {
   return [
     { title: "Japanese Learning By Translate" },
-    { name: "apanese Learning By Translate", content: "Welcome to apanese Learning By Translate!" },
+    {
+      name: "apanese Learning By Translate",
+      content: "Welcome to apanese Learning By Translate!",
+    },
   ];
 }
 
@@ -37,9 +45,7 @@ function App() {
     useState<TranslationResult | null>(null);
   // const [bufferedThinking, setBufferedThinking] = useState<string>();
 
-  // const reasoningRef = useRef<HTMLDivElement>(null);
-
-
+  const submitRef = useRef<HTMLButtonElement>(null);
   const form = useForm<TranslationFormData>({
     defaultValues: {
       text: "",
@@ -47,18 +53,60 @@ function App() {
     },
   });
 
-  const { data: history, refresh: historyRefresh, loading: historyLoading } = useRequest(async () => {
-    try {
-      const data = await alovaInstance.Get<{ message: string } | { translations?: TranslationRecord[], pagination?: PaginatedResponse }>("/api/translation");
-      if ("message" in data) {
-        throw Error(data.message)
+  const {
+    tableProps: history,
+    refresh: historyRefresh,
+    runAsync: historyLoad,
+  } = useAntdTable<
+    { total: number; list: TranslationRecord[] },
+    [{ current: number; pageSize: number }]
+  >(
+    async ({
+      current,
+      pageSize,
+    }): Promise<{ total: number; list: TranslationRecord[] }> => {
+      try {
+        const data = await alovaInstance.Get<
+          | { message: string }
+          | {
+              translations?: TranslationRecord[];
+              pagination?: PaginatedResponse;
+            }
+        >("/api/translation", {
+          params: { page: current, limit: pageSize },
+        });
+        if ("message" in data) {
+          throw Error(data.message);
+        }
+        return {
+          total: data.pagination?.total ?? 0,
+          list: ((history?.dataSource as TranslationRecord[]) ?? []).concat(
+            data.translations?.map((translation) => ({
+              ...translation,
+              translated_text:
+                translation?.translated_text?.length > 0
+                  ? JSON.parse(jsonrepair(translation?.translated_text))
+                  : translation?.translated_text,
+            })) ?? []
+          ),
+        };
+      } catch (error) {
+        console.error(error);
+        navigate("/login");
+        return {
+          total: 0,
+          list: [],
+        };
       }
-      return { ...data, translations: data.translations?.map(translation => ({ ...translation, translated_text: translation?.translated_text?.length > 0 ? JSON.parse(jsonrepair(translation?.translated_text)) : translation?.translated_text })) }
-    } catch (error) {
-      console.error(error)
-      navigate('/login')
+    },
+    {
+      defaultParams: [
+        {
+          current: 1,
+          pageSize: 10,
+        },
+      ],
     }
-  },
   );
 
   const translation = useThrottle<TranslationResult | null>(
@@ -67,7 +115,9 @@ function App() {
       wait: 300,
     }
   );
-
+  useKeyPress("alt.enter", () => {
+    submitRef.current?.click();
+  });
 
   const onSubmit = async (data: TranslationFormData) => {
     try {
@@ -84,7 +134,7 @@ function App() {
             case "chunk":
               fullResponse += data.data?.text?.trim?.();
               try {
-                if ((data.data?.text ?? '')?.length > 0) {
+                if ((data.data?.text ?? "")?.length > 0) {
                   const translationData = JSON.parse(
                     jsonrepair(fullResponse)
                   ) as TranslationResult;
@@ -93,7 +143,7 @@ function App() {
                   });
                 }
               } catch (error) {
-                console.error(error)
+                console.error(error);
               }
 
               break;
@@ -108,7 +158,7 @@ function App() {
               setLoading(false);
               break;
             case "complete":
-              historyRefresh()
+              historyRefresh();
               setLoading(false);
               break;
           }
@@ -125,46 +175,56 @@ function App() {
     } catch (error) {
       setLoading(false);
       console.error(error);
-
     }
-
   };
 
-  const { runAsync: handleTTS, loading: ttsLoading } = useRequest(async (text: string, lang: string) => {
-    if (!text || ttsLoading) return;
+  const { runAsync: handleTTS, loading: ttsLoading } = useRequest(
+    async (text: string, lang: string) => {
+      if (!text || ttsLoading) return;
 
-    try {
+      try {
+        const audioBlob = await alovaBlobInstance.Post<Blob>("/api/tts", {
+          text,
+          lang,
+        });
 
-      const audioBlob = await alovaBlobInstance.Post<Blob>('/api/tts', {
-        text,
-        lang
-      })
-
-      const audioUrl = URL.createObjectURL(audioBlob);
-      const audio = new Audio(audioUrl);
-      await audio.play();
-    } catch (error) {
-      console.error("TTS error:", error);
-      Toast.error("语音合成失败，请重试");
+        const audioUrl = URL.createObjectURL(audioBlob);
+        const audio = new Audio(audioUrl);
+        await audio.play();
+      } catch (error) {
+        console.error("TTS error:", error);
+        Toast.error("语音合成失败，请重试");
+      }
+    },
+    {
+      manual: true,
     }
-  }, {
-    manual: true
-  })
-
+  );
 
   return (
-    <div className="min-h-screen bg-gray-100 overflow-x-hidden flex">
+    <form
+    onSubmit={form.handleSubmit(onSubmit)}
+    >
+      <div className="min-h-screen bg-gray-100 overflow-x-hidden flex">
       {/* 侧边栏历史记录 */}
       <HistorySidebar
         isHistoryCollapsed={isHistoryCollapsed}
         setIsHistoryCollapsed={setIsHistoryCollapsed}
         showHistory={showHistory}
         setShowHistory={setShowHistory}
-        historyLoading={historyLoading}
-        translations={history?.translations ?? []}
+        historyLoading={history.loading}
+        translations={history?.dataSource ?? []}
         onSelectHistoryItem={(text) => {
           form.setValue("text", text);
         }}
+        page={history?.pagination?.current ?? 1}
+        total={history?.pagination?.total ?? 0}
+        onPageChange={(page) => {
+          historyLoad({ current: page, pageSize: 10 });
+        }}
+        hasMore={history.dataSource.length < (history.pagination?.total ?? 0)}
+        isLoadingMore={history.loading}
+        isError={false}
       />
 
       {/* 遮罩层 - 移动端显示 */}
@@ -179,9 +239,24 @@ function App() {
       <div className="flex-1 min-w-0">
         <div className="container mx-auto px-4 py-6 h-full">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-4 md:mb-0">
-              日中翻译
-            </h1>
+            <div
+            className="flex items-baseline justify-between w-1/1 gap-4"
+            >
+              <h1
+               className="text-2xl md:text-3xl font-bold inline-flex items-center text-gray-800 mb-4 md:mb-0"
+              >日中翻译</h1>
+              
+                <div className="">
+                  <Button
+                  ref={submitRef}
+                    type="submit"
+                    disabled={loading || form.formState.isSubmitting}
+                  loading={loading}
+                  >{loading ? "翻译中..." : "翻译"}</Button>
+                </div>
+                
+             
+            </div>
             <div className="flex gap-4">
               <button
                 onClick={() => setShowHistory(!showHistory)}
@@ -205,15 +280,14 @@ function App() {
             </div>
           </div>
 
-          <form
-            onSubmit={form.handleSubmit(onSubmit)}
+          <div
+            
             className="h-[calc(100vh - 144px)] flex flex-col"
           >
             <div className="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-6 flex-1">
               <div className="md:col-span-5 space-y-5">
                 <div className="relative">
                   <textarea
-
                     {...form.register("text")}
                     className="bg-white w-full h-[25vh]  md:h-[70vh] p-4 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
                     placeholder="日本語を入力してください"
@@ -223,8 +297,8 @@ function App() {
                   <CircleButton
                     onClick={(e) => {
                       e.preventDefault();
-                      const text = form.getValues("text")
-                      if (!text) return
+                      const text = form.getValues("text");
+                      if (!text) return;
                       handleTTS(text, "ja");
                     }}
                     disabled={ttsLoading}
@@ -246,7 +320,6 @@ function App() {
                       />
                     </svg>
                   </CircleButton>
-
                 </div>
                 {form.formState.errors.text && (
                   <p className="text-red-500 text-sm">
@@ -267,9 +340,11 @@ function App() {
                       <>
                         <div className="p-4  max-h-[40%] overflow-auto">
                           <div className="flex justify-between items-start">
-                            <p className="text-gray-700">
-                              {translation?.translation}
-                              {loading && <Cursor />}
+                            <p className="inline-flex gap-2 text-gray-700">
+                              <span>{translation?.translation}</span>
+                              <div className="inline-flex items-center gap-2">
+                                {loading && <Cursor />}
+                              </div>
                             </p>
 
                             {translation?.translation && !loading && (
@@ -317,20 +392,7 @@ function App() {
                 </div>
               </div>
             </div>
-
-            <div className="flex justify-center gap-4 mt-4 md:mt-8 mb-4 md:mb-6">
-              <button
-                type="submit"
-                disabled={loading || form.formState.isSubmitting}
-                className="px-8 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center gap-2"
-              >
-                {loading && (
-                  <span className="inline-block h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                )}
-                {loading ? "翻译中..." : "翻译"}
-              </button>
-            </div>
-          </form>
+          </div>
 
           {createPortal(
             loading && (
@@ -352,6 +414,8 @@ function App() {
         </div>
       </div>
     </div>
+    </form>
+    
   );
 }
 

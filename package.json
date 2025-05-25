@@ -31,6 +31,7 @@
     "routes": "link:@react-router/dev/routes",
     "tailwind-scrollbar": "^3.1.0",
     "tailwindcss": "^4.1.4",
+    "virtua": "^0.41.2",
     "zod": "^3.24.1"
   },
   "devDependencies": {

@@ -1,5 +1,5 @@
 export const Cursor = () => {
   return (
-    <span className="inline-block w-[2px] h-[16px] bg-gray-400 ml-[2px] animate-[blink_1s_step-end_infinite]"></span>
+    <span className="inline-block rounded-full w-2 h-2 bg-gray-900 ml-[2px] animate-ping"></span>
   )
 } 

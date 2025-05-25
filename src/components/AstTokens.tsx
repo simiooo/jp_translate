@@ -10,7 +10,7 @@ interface AstTokensProps {
 export const AstToken: React.FC<{ token: Token }> = ({ token }) => {
   return (
     <div className="inline-flex flex-col gap-2">
-      <div className="inline-flex items-center bg-gray-50 rounded-lg p-2 shadow-sm hover:bg-gray-100 transition-colors duration-200">
+      <div className="inline-flex items-center bg-gray-50 rounded-lg p-2 hover:bg-gray-100 transition-colors duration-200">
         <span className="text-gray-900 font-medium">
           {token.word}
         </span>
@@ -50,7 +50,7 @@ export const AstTokens: React.FC<AstTokensProps> = ({ ast, loading }) => {
       
       {/* 递归显示子节点 */}
       {ast.children && ast.children.length > 0 && (
-        <div className="ml-4 pl-4">
+        <div className="flex ml-4 pl-4">
           {ast.children.map((child, index) => (
             <>
               <AstTokens key={index} ast={child} />
