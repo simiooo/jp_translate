@@ -38,9 +38,9 @@ export function Input<T extends FieldValues>({
         placeholder={placeholder}
       />
       {error && (
-        <p className="mt-2 text-sm text-red-600">
+        <div className="mt-2 text-sm text-red-600">
           {typeof required === 'string' ? required : error.message}
-        </p>
+        </div>
       )}
     </div>
   )

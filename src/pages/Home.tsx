@@ -22,6 +22,7 @@ import { PaginatedResponse, TranslationRecord } from "~/types/history";
 import { useNavigate } from "react-router";
 import { HistorySidebar } from "../components/HistorySidebar";
 import { Button } from "~/components/Button";
+import { Tooltip } from "~/components/Tooltip";
 
 // import { unknown } from "zod";
 
@@ -59,12 +60,12 @@ function App() {
     runAsync: historyLoad,
   } = useAntdTable<
     { total: number; list: TranslationRecord[] },
-    [{ current: number; pageSize: number }]
+    [{ current: number; pageSize: number }, { init?: boolean } | undefined]
   >(
-    async ({
-      current,
-      pageSize,
-    }): Promise<{ total: number; list: TranslationRecord[] }> => {
+    async (
+      { current, pageSize },
+      params?: { init?: boolean }
+    ): Promise<{ total: number; list: TranslationRecord[] }> => {
       try {
         const data = await alovaInstance.Get<
           | { message: string }
@@ -80,7 +81,11 @@ function App() {
         }
         return {
           total: data.pagination?.total ?? 0,
-          list: ((history?.dataSource as TranslationRecord[]) ?? []).concat(
+          list: (
+            (params?.init
+              ? []
+              : (history?.dataSource as TranslationRecord[])) ?? []
+          ).concat(
             data.translations?.map((translation) => ({
               ...translation,
               translated_text:
@@ -105,6 +110,7 @@ function App() {
           current: 1,
           pageSize: 10,
         },
+        undefined,
       ],
     }
   );
@@ -123,6 +129,7 @@ function App() {
     try {
       let fullResponse = "";
       setLoading(true);
+      setBufferedTranslation(null);
       const sse = createSSEStream("/api/translation", {
         method: "POST",
         headers: {
@@ -159,6 +166,7 @@ function App() {
               break;
             case "complete":
               historyRefresh();
+              historyLoad({ current: 1, pageSize: 10 }, { init: true });
               setLoading(false);
               break;
           }
@@ -202,202 +210,203 @@ function App() {
   );
 
   return (
-    <form
-    onSubmit={form.handleSubmit(onSubmit)}
-    >
+    <form onSubmit={form.handleSubmit(onSubmit)}>
       <div className="min-h-screen bg-gray-100 overflow-x-hidden flex">
-      {/* 侧边栏历史记录 */}
-      <HistorySidebar
-        isHistoryCollapsed={isHistoryCollapsed}
-        setIsHistoryCollapsed={setIsHistoryCollapsed}
-        showHistory={showHistory}
-        setShowHistory={setShowHistory}
-        historyLoading={history.loading}
-        translations={history?.dataSource ?? []}
-        onSelectHistoryItem={(text) => {
-          form.setValue("text", text);
-        }}
-        page={history?.pagination?.current ?? 1}
-        total={history?.pagination?.total ?? 0}
-        onPageChange={(page) => {
-          historyLoad({ current: page, pageSize: 10 });
-        }}
-        hasMore={history.dataSource.length < (history.pagination?.total ?? 0)}
-        isLoadingMore={history.loading}
-        isError={false}
-      />
+        {/* 侧边栏历史记录 */}
+        <HistorySidebar
+          isHistoryCollapsed={isHistoryCollapsed}
+          setIsHistoryCollapsed={setIsHistoryCollapsed}
+          showHistory={showHistory}
+          setShowHistory={setShowHistory}
+          historyLoading={history.loading}
+          translations={history?.dataSource ?? []}
+          onSelectHistoryItem={(text) => {
+            form.setValue("text", text);
+          }}
+          page={history?.pagination?.current ?? 1}
+          total={history?.pagination?.total ?? 0}
+          onPageChange={(page) => {
+            historyLoad({ current: page, pageSize: 10 }, undefined);
+          }}
+          hasMore={history.dataSource.length < (history.pagination?.total ?? 0)}
+          isLoadingMore={history.loading}
+          isError={false}
+        />
 
-      {/* 遮罩层 - 移动端显示 */}
-      {showHistory && (
-        <div
-          className="fixed inset-0 blur-2xl bg-black opacity-12 z-10 md:hidden"
-          onClick={() => setShowHistory(false)}
-        ></div>
-      )}
-
-      {/* 主要内容区域 */}
-      <div className="flex-1 min-w-0">
-        <div className="container mx-auto px-4 py-6 h-full">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
-            <div
-            className="flex items-baseline justify-between w-1/1 gap-4"
-            >
-              <h1
-               className="text-2xl md:text-3xl font-bold inline-flex items-center text-gray-800 mb-4 md:mb-0"
-              >日中翻译</h1>
-              
-                <div className="">
-                  <Button
-                  ref={submitRef}
-                    type="submit"
-                    disabled={loading || form.formState.isSubmitting}
-                  loading={loading}
-                  >{loading ? "翻译中..." : "翻译"}</Button>
-                </div>
-                
-             
-            </div>
-            <div className="flex gap-4">
-              <button
-                onClick={() => setShowHistory(!showHistory)}
-                className="md:hidden px-4 py-2 text-gray-600 hover:text-gray-800 flex items-center gap-2"
-              >
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-                历史记录
-              </button>
-            </div>
-          </div>
-
+        {/* 遮罩层 - 移动端显示 */}
+        {showHistory && (
           <div
-            
-            className="h-[calc(100vh - 144px)] flex flex-col"
-          >
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-6 flex-1">
-              <div className="md:col-span-5 space-y-5">
-                <div className="relative">
-                  <textarea
-                    {...form.register("text")}
-                    className="bg-white w-full h-[25vh]  md:h-[70vh] p-4 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-                    placeholder="日本語を入力してください"
-                  />
-                  {/* 原文区域的 TTS 按钮 */}
+            className="fixed inset-0 blur-2xl bg-black opacity-12 z-10 md:hidden"
+            onClick={() => setShowHistory(false)}
+          ></div>
+        )}
 
-                  <CircleButton
-                    onClick={(e) => {
-                      e.preventDefault();
-                      const text = form.getValues("text");
-                      if (!text) return;
-                      handleTTS(text, "ja");
-                    }}
-                    disabled={ttsLoading}
-                    loading={ttsLoading}
-                    title="播放原文语音"
-                    className="absolute top-4 -right-4.5"
+        {/* 主要内容区域 */}
+        <div className="flex-1 min-w-0">
+          <div className="container mx-auto px-4 py-6 h-full">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
+              <div className="flex items-baseline justify-between w-1/1 gap-4">
+                <h1 className="text-2xl md:text-3xl font-bold inline-flex items-center text-gray-800 mb-4 md:mb-0">
+                  日中翻译
+                </h1>
+
+                <div className="">
+                  <Tooltip
+                  content="按 Alt + Enter 提交"
+                  placement="bottom"
                   >
-                    <svg
-                      className="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
+                    <Button
+                      ref={submitRef}
+                      type="submit"
+                      disabled={loading || form.formState.isSubmitting}
+                      loading={loading}
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M15.536 8.464a5 5 0 010 7.072M17.95 6.05a8 8 0 010 11.9M6.5 8.788v6.424a.5.5 0 00.757.429l5.5-3.212a.5.5 0 000-.858l-5.5-3.212a.5.5 0 00-.757.43z"
-                      />
-                    </svg>
-                  </CircleButton>
+                      {loading ? "翻译中..." : "翻译"}
+                    </Button>
+                  </Tooltip>
                 </div>
-                {form.formState.errors.text && (
-                  <p className="text-red-500 text-sm">
-                    {form.formState.errors.text.message}
-                  </p>
-                )}
               </div>
+              <div className="flex gap-4">
+                <button
+                  onClick={() => setShowHistory(!showHistory)}
+                  className="md:hidden px-4 py-2 text-gray-600 hover:text-gray-800 flex items-center gap-2"
+                >
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                  历史记录
+                </button>
+              </div>
+            </div>
 
-              <div className="md:col-span-7 space-y-4">
-                <div className="relative h-[50vh] md:h-[70vh]">
-                  {loading && (
-                    <div className="absolute top-4 right-4 z-10">
-                      <div className="animate-spin rounded-full h-8 w-8 -2 border-blue-500"></div>
+            <div className="h-[calc(100vh - 144px)] flex flex-col">
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-6 flex-1">
+                <div className="md:col-span-5 space-y-5">
+                  <div className="relative">
+                    <textarea
+                      {...form.register("text")}
+                      className="bg-white w-full h-[25vh]  md:h-[70vh] p-4 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                      placeholder="日本語を入力してください"
+                    />
+                    {/* 原文区域的 TTS 按钮 */}
+
+                    <CircleButton
+                      onClick={(e) => {
+                        e.preventDefault();
+                        const text = form.getValues("text");
+                        if (!text) return;
+                        handleTTS(text, "ja");
+                      }}
+                      disabled={ttsLoading}
+                      loading={ttsLoading}
+                      title="播放原文语音"
+                      className="absolute top-4 -right-4.5"
+                    >
+                      <svg
+                        className="w-5 h-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M15.536 8.464a5 5 0 010 7.072M17.95 6.05a8 8 0 010 11.9M6.5 8.788v6.424a.5.5 0 00.757.429l5.5-3.212a.5.5 0 000-.858l-5.5-3.212a.5.5 0 00-.757.43z"
+                        />
+                      </svg>
+                    </CircleButton>
+                  </div>
+                  {form.formState.errors.text && (
+                    <div className="text-red-500 text-sm">
+                      {form.formState.errors.text.message}
                     </div>
                   )}
-                  <div className="h-full flex flex-col bg-white rounded-lg">
-                    {translation || loading ? (
-                      <>
-                        <div className="p-4  max-h-[40%] overflow-auto">
-                          <div className="flex justify-between items-start">
-                            <p className="inline-flex gap-2 text-gray-700">
-                              <span>{translation?.translation}</span>
-                              <div className="inline-flex items-center gap-2">
-                                {loading && <Cursor />}
-                              </div>
-                            </p>
+                </div>
 
-                            {translation?.translation && !loading && (
-                              <CircleButton
-                                onClick={() =>
-                                  handleTTS(
-                                    translation.translation ?? "",
-                                    "cn-zh"
-                                  )
-                                }
-                                disabled={ttsLoading}
-                                loading={ttsLoading}
-                                title="播放翻译语音"
-                                className="ml-2"
-                                type="borderless"
-                              >
-                                <svg
-                                  className="w-5 h-5"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  viewBox="0 0 24 24"
-                                >
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M15.536 8.464a5 5 0 010 7.072M17.95 6.05a8 8 0 010 11.9M6.5 8.788v6.424a.5.5 0 00.757.429l5.5-3.212a.5.5 0 000-.858l-5.5-3.212a.5.5 0 00-.757.43z"
-                                  />
-                                </svg>
-                              </CircleButton>
-                            )}
-                          </div>
-                        </div>
-
-                        <div className="flex-1 p-4 overflow-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 hover:scrollbar-thumb-gray-400">
-                          <AstTokens ast={translation?.ast} loading={loading} />
-                        </div>
-                      </>
-                    ) : (
-                      <div className="h-full flex items-center justify-center text-gray-400">
-                        翻译结果将在这里显示
+                <div className="md:col-span-7 space-y-4">
+                  <div className="relative h-[50vh] md:h-[70vh]">
+                    {loading && (
+                      <div className="absolute top-4 right-4 z-10">
+                        <div className="animate-spin rounded-full h-8 w-8 -2 border-blue-500"></div>
                       </div>
                     )}
+                    <div className="h-full flex flex-col bg-white rounded-lg">
+                      {translation || loading ? (
+                        <>
+                          <div className="p-4  max-h-[40%] overflow-auto">
+                            <div className="flex justify-between items-start">
+                              <div className="inline-flex gap-2 text-gray-700">
+                                <span>{translation?.translation}</span>
+                                <div className="inline-flex items-center gap-2">
+                                  {loading && <Cursor />}
+                                </div>
+                              </div>
+
+                              {translation?.translation && !loading && (
+                                <CircleButton
+                                  onClick={() =>
+                                    handleTTS(
+                                      translation.translation ?? "",
+                                      "cn-zh"
+                                    )
+                                  }
+                                  disabled={ttsLoading}
+                                  loading={ttsLoading}
+                                  title="播放翻译语音"
+                                  className="ml-2"
+                                  type="borderless"
+                                >
+                                  <svg
+                                    className="w-5 h-5"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth={2}
+                                      d="M15.536 8.464a5 5 0 010 7.072M17.95 6.05a8 8 0 010 11.9M6.5 8.788v6.424a.5.5 0 00.757.429l5.5-3.212a.5.5 0 000-.858l-5.5-3.212a.5.5 0 00-.757.43z"
+                                    />
+                                  </svg>
+                                </CircleButton>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="flex-1 p-4 overflow-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 hover:scrollbar-thumb-gray-400">
+                            <AstTokens
+                              ast={translation?.ast}
+                              loading={loading}
+                            />
+                          </div>
+                        </>
+                      ) : (
+                        <div className="h-full flex items-center justify-center text-gray-400">
+                          翻译结果将在这里显示
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          {createPortal(
-            loading && (
-              <div
-                className="
+            {createPortal(
+              loading && (
+                <div
+                  className="
           absolute
           left-1/2
           top-1/2
@@ -405,17 +414,16 @@ function App() {
           -translate-x-1/2
           -translate-y-1/2
           "
-              >
-                {/* <Reasoning ref={reasoningRef} thinking={thinking}></Reasoning> */}
-              </div>
-            ),
-            document.documentElement
-          )}
+                >
+                  {/* <Reasoning ref={reasoningRef} thinking={thinking}></Reasoning> */}
+                </div>
+              ),
+              document.documentElement
+            )}
+          </div>
         </div>
       </div>
-    </div>
     </form>
-    
   );
 }
 

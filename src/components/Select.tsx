@@ -26,7 +26,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
             </option>
           ))}
         </select>
-        {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
+        {error && <div className="mt-2 text-sm text-red-600">{error}</div>}
       </div>
     )
   }
