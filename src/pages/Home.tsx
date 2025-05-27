@@ -300,7 +300,7 @@ function App() {
                     <textarea
                       {...form.register("text")}
                       className="bg-white w-full h-[25vh]  md:h-[70vh] p-4 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-                      placeholder="日本語を入力してください\n例：こんにちは、元気ですか？\nAlt + Q 选择输入框"
+                      placeholder={"日本語を入力してください\n例：こんにちは、元気ですか？\nAlt + Q 选择输入框"}
                     />
                     {/* 原文区域的 TTS 按钮 */}
                     <CircleButton
