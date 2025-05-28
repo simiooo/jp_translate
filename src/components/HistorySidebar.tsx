@@ -2,6 +2,8 @@ import React from "react";
 import { TranslationRecord } from "~/types/history";
 import Spinner from "~/components/Spinner";
 import { VList, VListHandle } from "virtua";
+import { FaAngleLeft,FaAngleRight  } from "react-icons/fa6";
+
 
 // Define the structure of the parsed translated_text
 interface ParsedTranslation {
@@ -126,36 +128,25 @@ export const HistorySidebar: React.FC<HistorySidebarProps> = ({
         isHistoryCollapsed ? "w-16" : "w-80"
       } h-screen bg-white shadow-lg 
       transition-all duration-300 transform ${
-        showHistory ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+        showHistory ? "translate-x-0" : "-translate-x-12 md:translate-x-0"
       } z-20`}
     >
       <div className="h-full flex flex-col">
         <div className="p-4 flex justify-between items-center">
-          {!isHistoryCollapsed && (
+          {!isHistoryCollapsed ? (
             <h2 className="text-lg font-semibold">翻译历史</h2>
-          )}
+          ): <div></div>}
           <button
           type="button"
             onClick={() => setIsHistoryCollapsed(!isHistoryCollapsed)}
-            className="hidden md:block text-gray-500 hover:text-gray-900"
+            className=" text-gray-500 rounded-full bg-gray-50 w-8 h-8 inline-flex justify-center items-center hover:bg-gray-100 hover:text-gray-900"
           >
-            <svg
-              className="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d={
-                  isHistoryCollapsed
-                    ? "M13 5l7 7-7 7M5 5l7 7-7 7"
-                    : "M11 19l-7-7 7-7M19 19l-7-7 7-7"
-                }
-              />
-            </svg>
+            {isHistoryCollapsed ? (
+              <FaAngleRight />
+            ) : (
+              <FaAngleLeft />
+            )}
+            
           </button>
           {!isHistoryCollapsed && (
             <button

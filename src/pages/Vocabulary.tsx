@@ -5,78 +5,12 @@ import { useAntdTable } from "ahooks";
 import { PaginatedResponse } from "~/types/history";
 import { alovaInstance } from "~/utils/request";
 import { useNavigate } from "react-router";
+import { FaBookOpen } from "react-icons/fa6";
 import Spinner from "~/components/Spinner";
 
 const Vocabulary: React.FC = () => {
   // Sample data for demonstration
   const navigate = useNavigate();
-
-  const [tokens] = useState<Token[]>([
-    {
-      word: "こんにちは",
-      pos: "fixed_phrase",
-      meaning: "你好",
-      kana: "こんにちは",
-      lemma: null,
-      inflection: null,
-    },
-    {
-      word: "食べる",
-      pos: "verb",
-      meaning: "吃",
-      kana: "たべる",
-      lemma: "食べる",
-      inflection: null,
-    },
-    {
-      word: "美しい",
-      pos: "adjective",
-      meaning: "美丽的",
-      kana: "うつくしい",
-      lemma: "美しい",
-      inflection: null,
-    },
-    {
-      word: "学校",
-      pos: "other",
-      meaning: "学校",
-      kana: "がっこう",
-      lemma: null,
-      inflection: null,
-    },
-    {
-      word: "とても",
-      pos: "adverb",
-      meaning: "非常",
-      kana: "とても",
-      lemma: null,
-      inflection: null,
-    },
-    {
-      word: "そして",
-      pos: "conjunction",
-      meaning: "然后",
-      kana: "そして",
-      lemma: null,
-      inflection: null,
-    },
-    {
-      word: "三",
-      pos: "numeral",
-      meaning: "三",
-      kana: "さん",
-      lemma: null,
-      inflection: null,
-    },
-    {
-      word: "は",
-      pos: "particle",
-      meaning: "主题助词",
-      kana: "は",
-      lemma: null,
-      inflection: null,
-    },
-  ]);
 
   const {
     tableProps: wordsTableProps,
@@ -180,7 +114,7 @@ const Vocabulary: React.FC = () => {
 
             {/* Word cards grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
-              {tokens.map((token, index) => (
+              {(wordsTableProps?.dataSource ?? []).map((token, index) => (
                 <WordCard
                   key={`${token.word}-${index}`}
                   token={token}
@@ -193,17 +127,12 @@ const Vocabulary: React.FC = () => {
             </div>
 
             {/* Empty state */}
-            {tokens.length === 0 && (
+            {(wordsTableProps?.dataSource ?? []).length === 0 && (
               <div className="text-center py-12">
                 <div className="w-24 h-24 mx-auto mb-4 text-gray-300">
-                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={1}
-                      d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
-                    />
-                  </svg>
+                  <FaBookOpen
+                  style={{fontSize: "6rem", color: "#9CA3AF"}}
+                  ></FaBookOpen>
                 </div>
                 <h3 className="text-lg font-medium text-gray-900 mb-2">
                   暂无单词
