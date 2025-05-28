@@ -125,7 +125,7 @@ export const HistorySidebar: React.FC<HistorySidebarProps> = ({
         rounded-r-2xl
         overflow-hidden
         fixed md:relative ${
-        isHistoryCollapsed ? "w-16" : "w-80"
+        isHistoryCollapsed ? "w-16" : "w-64"
       } h-screen bg-white shadow-lg 
       transition-all duration-300 transform ${
         showHistory ? "translate-x-0" : "-translate-x-12 md:translate-x-0"
