@@ -24,7 +24,73 @@ interface HistorySidebarProps {
   isLoadingMore: boolean;
   isError: boolean;
 }
-
+// Color configuration with complete Tailwind class names
+const COLOR_VARIANTS = [
+  {
+    bg: "bg-amber-200",
+    text: "text-amber-700"
+  },
+  {
+    bg: "bg-blue-200",
+    text: "text-blue-700"
+  },
+  {
+    bg: "bg-cyan-200",
+    text: "text-cyan-700"
+  },
+  {
+    bg: "bg-emerald-200",
+    text: "text-emerald-700"
+  },
+  {
+    bg: "bg-fuchsia-200",
+    text: "text-fuchsia-700"
+  },
+  {
+    bg: "bg-gray-200",
+    text: "text-gray-700"
+  },
+  {
+    bg: "bg-green-200",
+    text: "text-green-700"
+  },
+  {
+    bg: "bg-indigo-200",
+    text: "text-indigo-700"
+  },
+  {
+    bg: "bg-lime-200",
+    text: "text-lime-700"
+  },
+  {
+    bg: "bg-orange-200",
+    text: "text-orange-700"
+  },
+  {
+    bg: "bg-pink-200",
+    text: "text-pink-700"
+  },
+  {
+    bg: "bg-purple-200",
+    text: "text-purple-700"
+  },
+  {
+    bg: "bg-red-200",
+    text: "text-red-700"
+  },
+  {
+    bg: "bg-teal-200",
+    text: "text-teal-700"
+  },
+  {
+    bg: "bg-violet-200",
+    text: "text-violet-700"
+  },
+  {
+    bg: "bg-yellow-200",
+    text: "text-yellow-700"
+  }
+];
 export const HistorySidebar: React.FC<HistorySidebarProps> = ({
   isHistoryCollapsed,
   setIsHistoryCollapsed,
@@ -54,7 +120,8 @@ export const HistorySidebar: React.FC<HistorySidebarProps> = ({
   return (
     <div
       className={`
-        rounded-r-lg
+        rounded-r-2xl
+        overflow-hidden
         fixed md:relative ${
         isHistoryCollapsed ? "w-16" : "w-80"
       } h-screen bg-white shadow-lg 
@@ -68,6 +135,7 @@ export const HistorySidebar: React.FC<HistorySidebarProps> = ({
             <h2 className="text-lg font-semibold">翻译历史</h2>
           )}
           <button
+          type="button"
             onClick={() => setIsHistoryCollapsed(!isHistoryCollapsed)}
             className="hidden md:block text-gray-500 hover:text-gray-900"
           >
@@ -133,8 +201,14 @@ export const HistorySidebar: React.FC<HistorySidebarProps> = ({
                       }}
                     >
                       {isHistoryCollapsed ? (
-                        <div className="text-center text-gray-500 text-sm">
-                          {record.source_text.slice(0, 2)}
+                        <div className="text-center ">
+                          <div
+                          className={`inline-block w-8 h-8 ${COLOR_VARIANTS[index % COLOR_VARIANTS.length].bg}
+                          rounded-full flex items-center justify-center text-lg font-semibold
+                          ${COLOR_VARIANTS[index % COLOR_VARIANTS.length].text}
+                          `}
+                          >{record.source_text.slice(0, 1)}</div>
+                          
                         </div>
                       ) : (
                         <>

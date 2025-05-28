@@ -18,7 +18,7 @@ function ToastComponent({ message, type = 'info', duration = 3000, onClose }: To
     return () => clearTimeout(timer)
   }, [duration, onClose])
 
-  const baseStyles = "fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg transform transition-all duration-300 ease-in-out z-50"
+  const baseStyles = "fixed top-4 right-4 px-6 py-3 rounded-2xl shadow-lg transform transition-all duration-300 ease-in-out z-50"
   const typeStyles = {
     success: "bg-green-500 text-white",
     error: "bg-red-500 text-white",

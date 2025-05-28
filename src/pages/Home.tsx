@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import type { TranslationResult } from "../types/jp_ast";
+import type { Token, TranslationResult } from "../types/jp_ast";
 import { useForm } from "react-hook-form";
 import { jsonrepair } from "jsonrepair";
 // import { zodResolver } from '@hookform/resolvers/zod'
@@ -23,6 +23,7 @@ import { useNavigate } from "react-router";
 import { HistorySidebar } from "../components/HistorySidebar";
 import { Button } from "~/components/Button";
 import { Tooltip } from "~/components/Tooltip";
+import { Modal, useModal } from "~/components/Modal";
 
 // import { unknown } from "zod";
 
@@ -38,7 +39,7 @@ export function meta({}: Route.MetaArgs) {
 
 function App() {
   const navigate = useNavigate();
-
+  const {isOpen,openModal,closeModal,params: addPendingToken} = useModal<Token>();
   const [loading, setLoading] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [isHistoryCollapsed, setIsHistoryCollapsed] = useState(false);
@@ -190,6 +191,22 @@ function App() {
     }
   };
 
+  const {runAsync: handlWordCreate, loading: wordCreateLoading} = useRequest(async(word: Token) => {
+    if (!translation) return;
+    try {
+      const res = await alovaInstance.Post<{[key: string]: string | number | undefined, code?: number}>("/api/words", word);
+      if(res.code) {
+        throw Error(res.message?.toString() || "保存单词失败");
+      }
+      Toast.success("单词已保存");
+    } catch (error) {
+      console.error("保存单词失败:", error);
+      Toast.error("保存单词失败，请重试");
+    }
+  }, {
+    manual: true
+  })
+
   const { runAsync: handleTTS, loading: ttsLoading } = useRequest(
     async (text: string, lang: string) => {
       if (!text || ttsLoading) return;
@@ -260,6 +277,7 @@ function App() {
                   placement="bottom"
                   >
                     <Button
+                      key="submit"
                       ref={submitRef}
                       type="submit"
                       disabled={loading || form.formState.isSubmitting}
@@ -392,6 +410,14 @@ function App() {
                             <AstTokens
                               ast={translation?.ast}
                               loading={loading}
+                              onAddToken={(token) => {
+                                if(!token) return;
+                                // 显示词性、原型、变形、意义和仮名
+                                // Toast.info(
+                                //   `词性: ${token.pos}, 原型: ${token.lemma}, 变形: ${token.inflection}, 意义: ${token.meaning}, 仮名: ${token.kana}`)
+                                //   handlWordCreate(token)
+                                  openModal(token)
+                              }}
                             />
                           </div>
                         </>
@@ -426,6 +452,30 @@ function App() {
           </div>
         </div>
       </div>
+      <Modal
+        isOpen={isOpen}
+        onClose={closeModal}
+        title="Word"
+        size="lg">
+          <div>Add Word to Vocabulary?</div>
+          <div className="p-2"></div>
+          <div className="flex justify-end gap-2">
+            <Button
+            loading={wordCreateLoading}
+            onClick={async () => {
+              if (!addPendingToken) return;
+              await handlWordCreate(addPendingToken);
+              closeModal();
+            }}
+            >Yes</Button>
+            <Button
+            variant="secondary"
+            
+            onClick={() => closeModal()}
+            >No</Button>
+          </div>
+          
+        </Modal>
     </form>
   );
 }

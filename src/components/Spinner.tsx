@@ -5,21 +5,18 @@ interface SpinnerProps {
 }
 export default function Spinner(props: SpinnerProps) {
   return (
-    <div
-    className='h-1/1 w-1/1'
-    >
-        <div
-        className='h-[calc(100%)] w-100% flex justify-center items-center'
-        >
-          {props.children}
+    <div className='relative w-full h-full'>
+      {/* Children content */}
+      <div className='w-full h-full'>
+        {props.children}
+      </div>
+      
+      {/* Loading overlay with frosted glass effect */}
+      {props?.loading && (
+        <div className='absolute inset-0 backdrop-blur-sm bg-white/30 flex justify-center items-center z-10'>
+          <div className='rounded-full w-8 h-8 bg-cyan-600 animate-bounce shadow-lg'></div>
         </div>
-         {props?.loading && <div
-         className={`h-0 visible -translate-4 flex justify-center items-center`}
-         >
-          <div
-        className='rounded-full w-6 h-6 shadow-2xl bg-cyan-600 animate-bounce'
-        ></div>
-         </div> }
+      )}
     </div>
   )
 }

@@ -41,13 +41,14 @@ export const Tooltip = ({ content, children, placement = 'top' }: TooltipProps) 
 
   return (
     <div 
-      className="relative inline-block" 
+      className="relative visible inline-block" 
+      onClick={(e) => e.stopPropagation()}
       onMouseEnter={() => setIsVisible(true)} 
       onMouseLeave={() => setIsVisible(false)}
     >
       {children}
       {isVisible && (
-        <div className={`absolute z-10 bg-black text-white rounded-xl p-2 text-sm max-w-xs shadow-lg ${getPositionClasses()}`}>
+        <div className={`absolute z-100 bg-black  text-white rounded-xl p-2 text-sm max-w-sm shadow-lg ${getPositionClasses()} min-w-20`}>
           {content}
           <div 
             className={`absolute w-2 h-2 bg-black transform rotate-45 ${getArrowPositionClasses()}`}

@@ -10,4 +10,5 @@ type Params = {
   "/": {};
   "/login": {};
   "/register": {};
+  "/vocabulary": {};
 };
