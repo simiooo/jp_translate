@@ -28,4 +28,16 @@
   --text-8xl--line-height: 1;
   --text-9xl: 12rem;
   --text-9xl--line-height: 1;
+
+  --animate-shot: shot .35s ease-in-out;
+
+  @keyframes shot {
+    0%,100%{
+      background: var(--color-gray-900);
+    }
+    50%{
+      background: var(--color-gray-500);
+
+    }
+  }
 }

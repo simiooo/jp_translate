@@ -1,6 +1,6 @@
 import { Outlet, useNavigate, useLocation } from "react-router";
 import { Button } from "~/components/Button";
-import { FaHome, FaArrowRight, FaBookmark } from "react-icons/fa";
+import { FaHome, FaArrowRight, FaBookmark,FaCameraRetro  } from "react-icons/fa";
 import { Tooltip } from "~/components/Tooltip";
 
 // 公开路由，不需要认证
@@ -128,6 +128,17 @@ export default function RootLayout() {
           >
             {" "}
             <FaBookmark />{" "}
+          </Button>
+        </div>
+        <div>
+          <Button
+            onClick={() => {
+              navigate("/recognize");
+            }}
+            size="sm"
+            variant={location.pathname === "/recognize" ? "normal" : "text"}
+          >
+            <FaCameraRetro />
           </Button>
         </div>
         <div className="flex-1 flex items-center justify-end flex-col space-y-2">

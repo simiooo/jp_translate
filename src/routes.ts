@@ -6,5 +6,6 @@ export default [
     route("login", "./pages/LoginPage.tsx"),
     route("register", "./pages/RegisterPage.tsx"),
     route("vocabulary", "./pages/Vocabulary.tsx"),
+    route("recognize", "./pages/Recognize.tsx")
   ]),
 ];

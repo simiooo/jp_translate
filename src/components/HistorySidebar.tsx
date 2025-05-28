@@ -96,7 +96,6 @@ const COLOR_VARIANTS = [
 export const HistorySidebar: React.FC<HistorySidebarProps> = ({
   isHistoryCollapsed,
   setIsHistoryCollapsed,
-  showHistory,
   setShowHistory,
   historyLoading,
   translations,
@@ -124,12 +123,10 @@ export const HistorySidebar: React.FC<HistorySidebarProps> = ({
       className={`
         rounded-r-2xl
         overflow-hidden
-        fixed md:relative ${
-        isHistoryCollapsed ? "w-16" : "w-64"
+        md:relative ${
+        isHistoryCollapsed ? "w-12" : "w-64"
       } h-screen bg-white shadow-lg 
-      transition-all duration-300 transform ${
-        showHistory ? "translate-x-0" : "-translate-x-12 md:translate-x-0"
-      } z-20`}
+      transition-all duration-300 transform translate z-20`}
     >
       <div className="h-full flex flex-col">
         <div className="p-4 flex justify-between items-center">
@@ -165,7 +162,7 @@ export const HistorySidebar: React.FC<HistorySidebarProps> = ({
                   return (
                     <div
                       key={record.id || index}
-                      className="p-4 hover:bg-gray-50 cursor-pointer"
+                      className="py-4 px-2  hover:bg-gray-50 cursor-pointer"
                       onClick={() => {
                         onSelectHistoryItem(record.source_text);
                         setShowHistory(false);
