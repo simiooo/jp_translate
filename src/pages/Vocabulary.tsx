@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import WordCard from "../components/WordCard";
 import { Token } from "../types/jp_ast";
 import { useAntdTable } from "ahooks";
@@ -7,16 +7,18 @@ import { alovaInstance } from "~/utils/request";
 import { useNavigate } from "react-router";
 import { FaBookOpen } from "react-icons/fa6";
 import Spinner from "~/components/Spinner";
+import { VList, VListHandle } from "virtua";
+import { useThrottleFn } from "ahooks";
 
 const Vocabulary: React.FC = () => {
   // Sample data for demonstration
   const navigate = useNavigate();
+  const listContainerRef = useRef<VListHandle>(null);
 
   const {
     tableProps: wordsTableProps,
-
     loading: wordsLoading,
-    // runAsync: wordsRunAsync,
+    runAsync: wordsRunAsync,
   } = useAntdTable<
     { total: number; list: Token[] },
     [{ current: number; pageSize: number }, { init?: boolean } | undefined]
@@ -94,6 +96,22 @@ const Vocabulary: React.FC = () => {
 //     setSelectedTokens(new Set(tokens.map((token) => token.word)));
 //   };
 
+  // 处理滚动加载 (带节流)
+  const { run: throttledCheckScroll } = useThrottleFn(() => {
+    if (!listContainerRef.current) return;
+    const isAtBottom =
+      listContainerRef.current.scrollOffset +
+      listContainerRef.current.viewportSize + 10 >
+      listContainerRef.current.scrollSize;
+    
+    const hasMore = wordsTableProps?.dataSource?.length < (wordsTableProps?.pagination?.total ?? 0);
+    
+    if (isAtBottom && hasMore && !wordsLoading) {
+      const nextPage = (wordsTableProps?.pagination?.current ?? 1) + 1;
+      wordsRunAsync({ current: nextPage, pageSize: 10 }, undefined);
+    }
+  }, { wait: 200 });
+
   return (
     <Spinner loading={wordsLoading}>
       <div className="h-screen overflow-y-auto bg-gray-100 py-8 px-4 sm:px-6 lg:px-8">
@@ -112,19 +130,29 @@ const Vocabulary: React.FC = () => {
               </div>
             </div>
 
-            {/* Word cards grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
-              {(wordsTableProps?.dataSource ?? []).map((token, index) => (
-                <WordCard
-                  key={`${token.word}-${index}`}
-                  token={token}
-                  isSelected={selectedTokens.has(token.word)}
-                  onSelect={() => handleTokenSelect(token.word)}
-                  onEdit={() => handleTokenEdit(token)}
-                  onDelete={() => handleTokenDelete(token)}
-                />
-              ))}
-            </div>
+            {/* Virtualized word cards grid */}
+            <VList
+              ref={listContainerRef}
+              count={wordsTableProps?.dataSource?.length ?? 0}
+              overscan={10}
+              itemSize={180}
+              onScroll={throttledCheckScroll}
+            >
+              {(index) => {
+                const token = wordsTableProps?.dataSource?.[index];
+                if (!token) return <div>暂无单词</div>;
+                return (
+                  <WordCard
+                    key={`${token.word}-${index}`}
+                    token={token}
+                    isSelected={selectedTokens.has(token.word)}
+                    onSelect={() => handleTokenSelect(token.word)}
+                    onEdit={() => handleTokenEdit(token)}
+                    onDelete={() => handleTokenDelete(token)}
+                  />
+                );
+              }}
+            </VList>
 
             {/* Empty state */}
             {(wordsTableProps?.dataSource ?? []).length === 0 && (
