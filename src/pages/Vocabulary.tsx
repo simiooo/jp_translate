@@ -88,36 +88,42 @@ const Vocabulary: React.FC = () => {
     // TODO: Implement delete functionality
   };
 
-//   const clearSelection = () => {
-//     setSelectedTokens(new Set());
-//   };
+  //   const clearSelection = () => {
+  //     setSelectedTokens(new Set());
+  //   };
 
-//   const selectAll = () => {
-//     setSelectedTokens(new Set(tokens.map((token) => token.word)));
-//   };
+  //   const selectAll = () => {
+  //     setSelectedTokens(new Set(tokens.map((token) => token.word)));
+  //   };
 
   // 处理滚动加载 (带节流)
-  const { run: throttledCheckScroll } = useThrottleFn(() => {
-    if (!listContainerRef.current) return;
-    const isAtBottom =
-      listContainerRef.current.scrollOffset +
-      listContainerRef.current.viewportSize + 10 >
-      listContainerRef.current.scrollSize;
-    
-    const hasMore = wordsTableProps?.dataSource?.length < (wordsTableProps?.pagination?.total ?? 0);
-    
-    if (isAtBottom && hasMore && !wordsLoading) {
-      const nextPage = (wordsTableProps?.pagination?.current ?? 1) + 1;
-      wordsRunAsync({ current: nextPage, pageSize: 10 }, undefined);
-    }
-  }, { wait: 200 });
+  const { run: throttledCheckScroll } = useThrottleFn(
+    () => {
+      if (!listContainerRef.current) return;
+      const isAtBottom =
+        listContainerRef.current.scrollOffset +
+          listContainerRef.current.viewportSize +
+          10 >
+        listContainerRef.current.scrollSize;
+
+      const hasMore =
+        wordsTableProps?.dataSource?.length <
+        (wordsTableProps?.pagination?.total ?? 0);
+
+      if (isAtBottom && hasMore && !wordsLoading) {
+        const nextPage = (wordsTableProps?.pagination?.current ?? 1) + 1;
+        wordsRunAsync({ current: nextPage, pageSize: 10 }, undefined);
+      }
+    },
+    { wait: 200 }
+  );
 
   return (
     <Spinner loading={wordsLoading}>
       <div className="h-screen overflow-y-auto bg-gray-100 py-8 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto max-h-[calc(100vh-4rem)]">
+        <div className="max-w-7xl mx-auto h-[calc(100vh-4rem)]">
           {/* Main container with shadow and rounded corners */}
-          <div className="bg-white rounded-2xl shadow-sm p-8 sm:p-8">
+          <div className="bg-white rounded-2xl shadow-sm p-8 sm:p-8 h-full flex flex-col">
             {/* Header */}
             <div className="mb-10">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -130,36 +136,41 @@ const Vocabulary: React.FC = () => {
               </div>
             </div>
 
+            <div className="flex-grow">
+              <VList
+                ref={listContainerRef}
+                count={wordsTableProps?.dataSource?.length ?? 0}
+                overscan={10}
+                itemSize={180}
+                className=""
+                onScroll={throttledCheckScroll}
+              >
+                {(index) => {
+                  const token = wordsTableProps?.dataSource?.[index];
+                  if (!token) return <div>暂无单词</div>;
+                  return (
+                    <div className="m-2">
+                      <WordCard
+                        key={`${token.word}-${index}`}
+                        token={token}
+                        isSelected={selectedTokens.has(token.word)}
+                        onSelect={() => handleTokenSelect(token.word)}
+                        onEdit={() => handleTokenEdit(token)}
+                        onDelete={() => handleTokenDelete(token)}
+                      />
+                    </div>
+                  );
+                }}
+              </VList>
+            </div>
             {/* Virtualized word cards grid */}
-            <VList
-              ref={listContainerRef}
-              count={wordsTableProps?.dataSource?.length ?? 0}
-              overscan={10}
-              itemSize={180}
-              onScroll={throttledCheckScroll}
-            >
-              {(index) => {
-                const token = wordsTableProps?.dataSource?.[index];
-                if (!token) return <div>暂无单词</div>;
-                return (
-                  <WordCard
-                    key={`${token.word}-${index}`}
-                    token={token}
-                    isSelected={selectedTokens.has(token.word)}
-                    onSelect={() => handleTokenSelect(token.word)}
-                    onEdit={() => handleTokenEdit(token)}
-                    onDelete={() => handleTokenDelete(token)}
-                  />
-                );
-              }}
-            </VList>
 
             {/* Empty state */}
             {(wordsTableProps?.dataSource ?? []).length === 0 && (
               <div className="text-center py-12">
                 <div className="w-24 h-24 mx-auto mb-4 text-gray-300">
                   <FaBookOpen
-                  style={{fontSize: "6rem", color: "#9CA3AF"}}
+                    style={{ fontSize: "6rem", color: "#9CA3AF" }}
                   ></FaBookOpen>
                 </div>
                 <h3 className="text-lg font-medium text-gray-900 mb-2">
