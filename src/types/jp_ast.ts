@@ -16,7 +16,9 @@ export interface AST {
 }
 
 export type TranslationResult = {
+
   sentence?: string; // 原始句子
   translation?: string; // 翻译后的句子
   ast?: AST; // 抽象语法树（AST）结构
+  error?: string;
 }

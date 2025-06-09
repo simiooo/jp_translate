@@ -98,7 +98,10 @@ function App() {
         };
       } catch (error) {
         console.error(error);
-        navigate("/login");
+        if(error instanceof Error && error.message !== "translation limit reached")  {
+          navigate("/login");
+        }
+        Toast.error(error instanceof Error ? error.message : String(error))
         return {
           total: 0,
           list: [],
@@ -167,6 +170,7 @@ function App() {
               setLoading(false);
               break;
             case "error":
+              Toast.error(String(data?.data?.message))
               setLoading(false);
               break;
             case "complete":
@@ -367,6 +371,9 @@ function App() {
                         <>
                           <div className="p-4  max-h-[40%] overflow-auto">
                             <div className="flex justify-between items-start">
+                              {translation?.error && <div
+                              className="bg-amber-50 border-amber-800 border-2 rounded-2xl p-1 pl-2 pr-2 text-amber-800"
+                              >{translation?.error}</div> }
                               <div className="inline-flex gap-2 text-gray-700">
                                 <span>{translation?.translation}</span>
                                 <div className="inline-flex items-center gap-2">

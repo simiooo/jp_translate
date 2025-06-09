@@ -18,7 +18,7 @@ function ToastComponent({ message, type = 'info', duration = 3000, onClose }: To
     return () => clearTimeout(timer)
   }, [duration, onClose])
 
-  const baseStyles = "fixed top-4 right-4 px-6 py-3 rounded-2xl shadow-lg transform transition-all duration-300 ease-in-out z-50"
+  const baseStyles = "fixed top-4 right-4 px-6 py-3 rounded-2xl shadow-lg z-50 animate-showup"
   const typeStyles = {
     success: "bg-green-500 text-white",
     error: "bg-red-500 text-white",
@@ -26,7 +26,7 @@ function ToastComponent({ message, type = 'info', duration = 3000, onClose }: To
   }
 
   return (
-    <div className={`${baseStyles} ${typeStyles[type]} animate-fade-in`}>
+    <div className={`${baseStyles} ${typeStyles[type]} animate-showup`}>
       <div className="flex items-center gap-2">
         {type === 'success' && (
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
