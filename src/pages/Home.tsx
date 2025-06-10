@@ -19,7 +19,7 @@ import {
   EventData,
 } from "~/utils/request";
 import { PaginatedResponse, TranslationRecord } from "~/types/history";
-import { useNavigate } from "react-router";
+// import { useNavigate } from "react-router";
 import { HistorySidebar } from "../components/HistorySidebar";
 import { Button } from "~/components/Button";
 import { Tooltip } from "~/components/Tooltip";
@@ -38,7 +38,7 @@ export function meta({}: Route.MetaArgs) {
 }
 
 function App() {
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
   const {isOpen,openModal,closeModal,params: addPendingToken} = useModal<Token>();
   const [loading, setLoading] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
@@ -98,9 +98,9 @@ function App() {
         };
       } catch (error) {
         console.error(error);
-        if(error instanceof Error && error.message !== "translation limit reached")  {
-          navigate("/login");
-        }
+        // if(error instanceof Error && error.message !== "translation limit reached")  {
+        //   navigate("/login");
+        // }
         Toast.error(error instanceof Error ? error.message : String(error))
         return {
           total: 0,
