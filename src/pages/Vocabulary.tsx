@@ -57,6 +57,7 @@ const Vocabulary: React.FC = () => {
       }
     },
     {
+      throttleWait: 1000,
       defaultParams: [
         {
           current: 1,
