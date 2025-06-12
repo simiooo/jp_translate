@@ -44,9 +44,9 @@ export const Switch: React.FC<SwitchProps> = ({ initialChecked = false, onChange
       role="switch"
       aria-checked={isChecked}
     >
-      <span
+      <div
         className={`
-          inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 ease-in-out
+          inline-flex justify-center items-center h-4 w-4 transform rounded-full bg-white transition-transform duration-200 ease-in-out
           ${isChecked ? 'translate-x-6' : 'translate-x-1'}
           flex items-center justify-center
         `}
@@ -56,7 +56,7 @@ export const Switch: React.FC<SwitchProps> = ({ initialChecked = false, onChange
         ) : (
           <FaSun className="h-3 w-3 text-yellow-500" />
         )}
-      </span>
+      </div>
     </button>
   );
 };

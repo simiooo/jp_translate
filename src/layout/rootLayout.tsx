@@ -106,8 +106,8 @@ export default function RootLayout() {
 
   // 认证成功，渲染主要内容
   return (
-    <div className="min-h-screen bg-gray-50 flex">
-      <div className="bg-white w-12 border-r border-gray-200 flex flex-col items-center p-2 space-y-2">
+    <div className="min-h-screen bg-gray-50 flex dark:bg-gray-900">
+      <div className="bg-white w-12 border-r border-gray-200 flex flex-col items-center p-2 space-y-2 dark:bg-gray-800 dark:border-gray-700">
         <div>
           <Button
             size="sm"
@@ -166,7 +166,7 @@ export default function RootLayout() {
       </div>
 
       {/* 主要内容区域 */}
-      <main className="flex-1">
+      <main className="flex-1 dark:bg-gray-900">
         <Outlet />
       </main>
     </div>
