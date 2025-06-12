@@ -28,11 +28,11 @@ const component =  React.forwardRef<HTMLButtonElement, ButtonProps>(function ({
   }
   
   const variantClasses = {
-    primary: 'text-white bg-blue-600 hover:bg-blue-700 focus:ring-blue-500 focus:ring-offset-2',
-    secondary: 'text-gray-700 bg-gray-100 hover:bg-gray-200 focus:ring-gray-300',
-    link: 'text-blue-600 bg-transparent hover:text-blue-800 hover:underline focus:ring-blue-500 p-0',
-    normal: 'text-gray-700 bg-gray-100 border border-gray-300 hover:bg-gray-200 focus:ring-gray-400',
-    text: 'hover:bg-gray-200 focus:ring-gray-300'
+    primary: 'text-white bg-blue-600 hover:bg-blue-700 focus:ring-blue-500 focus:ring-offset-2 dark:bg-blue-700 dark:hover:bg-blue-600',
+    secondary: 'text-gray-700 bg-gray-100 hover:bg-gray-200 focus:ring-gray-300 dark:text-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700',
+    link: 'text-blue-600 bg-transparent hover:text-blue-800 hover:underline focus:ring-blue-500 p-0 dark:text-blue-400 dark:hover:text-blue-300',
+    normal: 'text-gray-700 bg-gray-100 border border-gray-300 hover:bg-gray-200 focus:ring-gray-400 dark:text-gray-200 dark:bg-gray-800 dark:border-gray-600 dark:hover:bg-gray-700',
+    text: 'hover:bg-gray-200 focus:ring-gray-300 dark:hover:bg-gray-700'
   }
   
   const currentSizeClasses = variant === 'link' ? '' : variant === 'text' ? textSizeClasses[size] : sizeClasses[size]

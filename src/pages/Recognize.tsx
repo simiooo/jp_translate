@@ -85,8 +85,8 @@ export default function Recognize() {
   }, [photos]);
 
   return (
-    <div className="flex flex-col h-screen ">
-      <CameraPreview className="grow bg-gray-900">
+    <div className="flex flex-col h-screen dark:bg-gray-900">
+      <CameraPreview className="grow bg-gray-900 dark:bg-gray-900">
         {error ? (
           <div
             className="
@@ -105,7 +105,7 @@ export default function Recognize() {
         )}
       </CameraPreview>
 
-      <div className=" basis-[6rem] bg-white flex justify-center items-center gap-4">
+      <div className=" basis-[6rem] bg-white dark:bg-gray-800 flex justify-center items-center gap-4">
         <div className="mr-8">
           <div
             ref={shotRef}
@@ -113,7 +113,7 @@ export default function Recognize() {
                 if(!renderPhoto)return
                 openModal()
             }}
-            className={`w-8 h-14 overflow-hidden rounded-lg bg-gray-900`}
+            className={`w-8 h-14 overflow-hidden rounded-lg bg-gray-900 dark:bg-gray-700`}
           >
             <img className="w-full h-full object-cover" src={renderPhoto} alt="asd" />
           </div>

@@ -25,7 +25,7 @@ export function Input<T extends FieldValues>({
 }: InputProps<T>) {
   return (
     <div className={className}>
-      <label className="block text-sm font-semibold text-gray-700 mb-2">
+      <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
         {label}
       </label>
       <input
@@ -34,7 +34,7 @@ export function Input<T extends FieldValues>({
           required,
           validate: validate,
         }))}
-        className="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+        className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 text-sm rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
         placeholder={placeholder}
       />
       {error && (

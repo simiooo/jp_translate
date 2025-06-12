@@ -48,8 +48,8 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
               ${props.checked
                 ? 'bg-blue-500 border-blue-500'
                 : error
-                ? 'bg-white border-red-400 hover:border-red-500'
-                : 'bg-white border-gray-300 hover:border-gray-400'
+                ? 'bg-white dark:bg-gray-800 border-red-400 hover:border-red-500'
+                : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500'
               }
               ${props.disabled
                 ? 'opacity-50 cursor-not-allowed'
@@ -81,7 +81,7 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
             className={`
               ml-2
               ${labelSizeClasses[size]}
-              ${error ? 'text-red-600' : 'text-gray-700'}
+              ${error ? 'text-red-600' : 'text-gray-700 dark:text-gray-300'}
               ${props.disabled ? 'opacity-50' : ''}
             `}
           >

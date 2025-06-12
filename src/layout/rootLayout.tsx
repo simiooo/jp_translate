@@ -2,6 +2,7 @@ import { Outlet, useNavigate, useLocation } from "react-router";
 import { Button } from "~/components/Button";
 import { FaHome, FaArrowRight, FaBookmark,FaCameraRetro  } from "react-icons/fa";
 import { Tooltip } from "~/components/Tooltip";
+import { Switch } from "~/components/Switch";
 
 // 公开路由，不需要认证
 const PUBLIC_ROUTES = ["/login", "/register"];
@@ -142,6 +143,9 @@ export default function RootLayout() {
           </Button>
         </div>
         <div className="flex-1 flex items-center justify-end flex-col space-y-2">
+          <div>
+            <Switch />
+          </div>
           <div>
             <Tooltip
             content="Sign Out"

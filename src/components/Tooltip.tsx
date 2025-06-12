@@ -48,10 +48,10 @@ export const Tooltip = ({ content, children, placement = 'top' }: TooltipProps) 
     >
       {children}
       {isVisible && (
-        <div className={`absolute z-100 bg-black  text-white rounded-xl p-2 text-sm max-w-sm shadow-lg ${getPositionClasses()} min-w-20`}>
+        <div className={`absolute z-100 bg-black dark:bg-gray-700 text-white rounded-xl p-2 text-sm max-w-sm shadow-lg ${getPositionClasses()} min-w-20`}>
           {content}
           <div 
-            className={`absolute w-2 h-2 bg-black transform rotate-45 ${getArrowPositionClasses()}`}
+            className={`absolute w-2 h-2 bg-black dark:bg-gray-700 transform rotate-45 ${getArrowPositionClasses()}`}
             style={{ 
               [placement === 'top' || placement === 'bottom' ? 'left' : 'top']: '50%',
               [placement === 'left' || placement === 'right' ? 'margin' : '']: '0'

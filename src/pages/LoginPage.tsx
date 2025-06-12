@@ -76,10 +76,10 @@ export default function LoginPage({ }: LoginPageProps) {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-md">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8 bg-white dark:bg-gray-800 p-8 rounded-xl shadow-md">
         <div className="text-center">
-          <h2 className="mt-6 text-3xl font-extrabold text-gray-900">用户登录</h2>
+          <h2 className="mt-6 text-3xl font-extrabold text-gray-900 dark:text-gray-100">用户登录</h2>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit(onSubmit)}>
           <div className=" space-y-4">
@@ -112,11 +112,11 @@ export default function LoginPage({ }: LoginPageProps) {
           </div>
         </form>
 
-        <div className="text-center text-sm text-gray-600">
+        <div className="text-center text-sm text-gray-600 dark:text-gray-400">
           <span>没有账号？</span>
           <button
             onClick={onSwitchToRegister}
-            className="font-medium text-blue-600 hover:text-blue-500 focus:outline-none"
+            className="font-medium text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300 focus:outline-none"
           >
             立即注册
           </button>

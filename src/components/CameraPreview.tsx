@@ -19,7 +19,7 @@ export default function CameraPreview({
     >
       <div className="relative w-full h-full">
         {children}
-        <div className="absolute inset-0 rounded-lg pointer-events-none" />
+        <div className="absolute inset-0 rounded-lg pointer-events-none dark:bg-gray-900/20" />
       </div>
     </div>
   );

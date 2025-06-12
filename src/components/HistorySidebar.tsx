@@ -133,18 +133,18 @@ export const HistorySidebar: React.FC<HistorySidebarProps> = ({
         overflow-hidden
         md:relative ${
         isHistoryCollapsed ? "w-12" : "w-64"
-      } h-screen bg-white shadow-lg 
+      } h-screen bg-white dark:bg-gray-900 shadow-lg dark:shadow-none
       transition-all duration-300 transform translate z-20`}
     >
       <div className="h-full flex flex-col">
         <div className="p-4 flex justify-between items-center">
           {!isHistoryCollapsed ? (
-            <h2 className="text-lg font-semibold">翻译历史</h2>
+            <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">翻译历史</h2>
           ): <div></div>}
           <button
           type="button"
             onClick={() => setIsHistoryCollapsed(!isHistoryCollapsed)}
-            className=" text-gray-500 rounded-full bg-gray-50 w-8 h-8 inline-flex justify-center items-center hover:bg-gray-100 hover:text-gray-900"
+            className=" text-gray-500 dark:text-gray-400 rounded-full bg-gray-50 dark:bg-gray-800 w-8 h-8 inline-flex justify-center items-center hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100"
           >
             {isHistoryCollapsed ? (
               <FaAngleRight />
@@ -159,7 +159,7 @@ export const HistorySidebar: React.FC<HistorySidebarProps> = ({
             <input
               type="text"
               placeholder="搜索历史记录..."
-              className="w-full p-2 text-sm text-gray-700 bg-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 border-none"
+              className="w-full p-2 text-sm text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 border-none"
               value={searchQuery}
               onChange={handleSearchChange}
             />
@@ -181,7 +181,7 @@ export const HistorySidebar: React.FC<HistorySidebarProps> = ({
                   return (
                     <div
                       key={record.id || index}
-                      className="py-4 px-2  hover:bg-gray-50 cursor-pointer"
+                      className="py-4 px-2  hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer"
                       onClick={() => {
                         onSelectHistoryItem(record.source_text);
                         setShowHistory(false);
@@ -199,13 +199,13 @@ export const HistorySidebar: React.FC<HistorySidebarProps> = ({
                         </div>
                       ) : (
                         <>
-                          <div className="text-xs text-gray-500 mb-2">
+                          <div className="text-xs text-gray-500 dark:text-gray-400 mb-2">
                             {new Date(record.created_at).toLocaleString()}
                           </div>
-                          <div className="text-sm text-gray-700 line-clamp-2">
+                          <div className="text-sm text-gray-700 dark:text-gray-300 line-clamp-2">
                             {record.source_text}
                           </div>
-                          <div className="text-sm text-gray-900 line-clamp-2 mt-1">
+                          <div className="text-sm text-gray-900 dark:text-gray-100 line-clamp-2 mt-1">
                             {typeof record.translated_text === 'object' 
                               ? (record.translated_text as unknown as ParsedTranslation)?.translation 
                               : record.translated_text}
@@ -217,7 +217,7 @@ export const HistorySidebar: React.FC<HistorySidebarProps> = ({
                 }}
               </VList>
               {!hasMore && translations.length > 0 && (
-                <div className="p-4 text-center text-sm text-gray-500">
+                <div className="p-4 text-center text-sm text-gray-500 dark:text-gray-400">
                   没有更多数据了
                 </div>
               )}

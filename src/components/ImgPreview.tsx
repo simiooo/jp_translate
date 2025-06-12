@@ -39,7 +39,7 @@ const ImgPreview: React.FC<ImgPreviewProps> = ({ src, alt, className, onClose })
   if (hasError) {
     return createPortal(
       <motion.div
-        className="fixed inset-0 z-5000 flex items-center justify-center bg-white"
+        className="fixed inset-0 z-5000 flex items-center justify-center bg-white dark:bg-gray-900"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
@@ -56,7 +56,7 @@ const ImgPreview: React.FC<ImgPreviewProps> = ({ src, alt, className, onClose })
     <AnimatePresence>
       {!isLoading && (
         <motion.div
-          className="fixed inset-0 z-5000 flex items-center justify-center bg-white"
+          className="fixed inset-0 z-5000 flex items-center justify-center bg-white dark:bg-gray-900"
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.95 }}

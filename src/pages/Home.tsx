@@ -260,7 +260,7 @@ function App() {
 
   return (
     <form onSubmit={form.handleSubmit(onSubmit)}>
-      <div className="min-h-screen bg-gray-100 overflow-x-hidden flex">
+      <div className="min-h-screen bg-gray-100 dark:bg-gray-900 overflow-x-hidden flex">
         {/* 侧边栏历史记录 */}
         <HistorySidebar
           isHistoryCollapsed={isHistoryCollapsed}
@@ -298,7 +298,7 @@ function App() {
           <div className="container mx-auto px-4 py-6 h-full">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
               <div className="flex items-baseline justify-between w-1/1 gap-4">
-                <h1 className="text-2xl md:text-3xl font-bold inline-flex items-center text-gray-800 mb-4 md:mb-0">
+                <h1 className="text-2xl md:text-3xl font-bold inline-flex items-center text-gray-800 dark:text-gray-200 mb-4 md:mb-0">
                   日中翻译
                 </h1>
 
@@ -319,7 +319,7 @@ function App() {
               <div className="flex gap-4">
                 <button
                   onClick={() => setShowHistory(!showHistory)}
-                  className="md:hidden px-4 py-2 text-gray-600 hover:text-gray-800 flex items-center gap-2"
+                  className="md:hidden px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 flex items-center gap-2"
                 >
                   <svg
                     className="w-5 h-5"
@@ -345,7 +345,7 @@ function App() {
                   <div className="relative">
                     <textarea
                       {...form.register("text")}
-                      className="bg-white w-full h-[25vh]  md:h-[70vh] p-4 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                      className="bg-white dark:bg-gray-800 w-full h-[25vh]  md:h-[70vh] p-4 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-gray-900 dark:text-gray-100"
                       placeholder={
                         "日本語を入力してください\n例：こんにちは、元気ですか？\nAlt + Q 选择输入框"
                       }
@@ -392,7 +392,7 @@ function App() {
                         <div className="animate-spin rounded-full h-8 w-8 -2 border-blue-500"></div>
                       </div>
                     )}
-                    <div className="h-full flex flex-col bg-white rounded-lg">
+                    <div className="h-full flex flex-col bg-white dark:bg-gray-800 rounded-lg">
                       {translation || loading ? (
                         <>
                           <div className="p-4  max-h-[40%] overflow-auto">
@@ -402,7 +402,7 @@ function App() {
                                   {translation?.error}
                                 </div>
                               )}
-                              <div className="inline-flex gap-2 text-gray-700">
+                              <div className="inline-flex gap-2 text-gray-700 dark:text-gray-300">
                                 <span>{translation?.translation}</span>
                                 <div className="inline-flex items-center gap-2">
                                   {loading && <Cursor />}
@@ -441,7 +441,7 @@ function App() {
                             </div>
                           </div>
 
-                          <div className="flex-1 p-4 overflow-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 hover:scrollbar-thumb-gray-400">
+                          <div className="flex-1 p-4 overflow-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-gray-100 dark:scrollbar-track-gray-800 hover:scrollbar-thumb-gray-400 dark:hover:scrollbar-thumb-gray-500">
                             <AstTokens
                               ast={translation?.ast}
                               loading={loading}
@@ -457,7 +457,7 @@ function App() {
                           </div>
                         </>
                       ) : (
-                        <div className="h-full flex items-center justify-center text-gray-400">
+                        <div className="h-full flex items-center justify-center text-gray-400 dark:text-gray-500">
                           翻译结果将在这里显示
                         </div>
                       )}

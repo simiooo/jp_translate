@@ -83,9 +83,9 @@ export const Modal: React.FC<ModalProps> = ({
         ref={modalRef}
         className={`
           relative w-full ${sizeClasses[size]}
-          bg-white/95 backdrop-blur-xl
+          bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl
           rounded-2xl shadow-2xl
-          border border-white/20
+          border border-white/20 dark:border-gray-700/20
           transform transition-all duration-300 ease-out
           animate-fade-in
           ${className}
@@ -95,15 +95,15 @@ export const Modal: React.FC<ModalProps> = ({
         {(title || showCloseButton) && (
           <div className="flex items-center justify-between p-6 pb-4">
             {title && (
-              <h2 className="text-xl font-semibold text-gray-900">{title}</h2>
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">{title}</h2>
             )}
             {showCloseButton && (
               <button
                 onClick={onClose}
                 className="
                   p-2 rounded-full 
-                  text-gray-400 hover:text-gray-600 
-                  hover:bg-gray-100/50 
+                  text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400
+                  hover:bg-gray-100/50 dark:hover:bg-gray-800/50
                   transition-all duration-200
                   focus:outline-none focus:ring-2 focus:ring-blue-500/50
                 "

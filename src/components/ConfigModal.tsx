@@ -46,16 +46,16 @@ export function ConfigModal({ isOpen, onClose, onSave, initialConfig }: ConfigMo
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-      <div className="bg-white rounded-xl shadow-2xl p-8 w-full max-w-md mx-4">
-        <h2 className="text-2xl font-bold text-gray-800 mb-6">API 配置</h2>
+      <div className="bg-white dark:bg-gray-900 rounded-xl shadow-2xl p-8 w-full max-w-md mx-4">
+        <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-6">API 配置</h2>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
+            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
               Openai Compatible API URL
             </label>
             <input
               {...register("apiUrl", { required: "API URL 是必填项" })}
-              className="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+              className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 text-sm rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
               placeholder="请输入 API URL"
             />
             {errors.apiUrl && (
@@ -64,13 +64,13 @@ export function ConfigModal({ isOpen, onClose, onSave, initialConfig }: ConfigMo
           </div>
           
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
+            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
             Openai Compatible API Key
             </label>
             <input
               type="password"
               {...register("apiKey", { required: "API Key 是必填项" })}
-              className="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+              className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 text-sm rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
               placeholder="请输入 API Key"
             />
             {errors.apiKey && (
@@ -79,12 +79,12 @@ export function ConfigModal({ isOpen, onClose, onSave, initialConfig }: ConfigMo
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
+            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
               模型
             </label>
             <input
               {...register("model", { required: "模型名称是必填项" })}
-              className="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+              className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 text-sm rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
               placeholder="请输入模型名称"
             />
             {errors.model && (
@@ -92,17 +92,17 @@ export function ConfigModal({ isOpen, onClose, onSave, initialConfig }: ConfigMo
             )}
           </div>
 
-          <div className="border-t border-gray-200 pt-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">OpenAI TTS 配置</h3>
+          <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">OpenAI TTS 配置</h3>
             
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                   OpenAI API URL
                 </label>
                 <input
                   {...register("openaiApiUrl", { required: "OpenAI API URL 是必填项" })}
-                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                  className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 text-sm rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
                   placeholder="请输入 OpenAI API URL"
                 />
                 {errors.openaiApiUrl && (
@@ -111,13 +111,13 @@ export function ConfigModal({ isOpen, onClose, onSave, initialConfig }: ConfigMo
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                   OpenAI TTS API Key
                 </label>
                 <input
                   type="password"
                   {...register("openaiApiKey", { required: "OpenAI API Key 是必填项" })}
-                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                  className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 text-sm rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
                   placeholder="请输入 OpenAI API Key"
                 />
                 {errors.openaiApiKey && (
@@ -126,7 +126,7 @@ export function ConfigModal({ isOpen, onClose, onSave, initialConfig }: ConfigMo
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                   TTS 音声
                 </label>
                 <Select

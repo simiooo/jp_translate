@@ -53,8 +53,8 @@ export const CircularSelect = ({
           focus:ring-blue-300
           focus:ring-offset-2
           ${isSelected 
-            ? 'bg-blue-500 border-blue-500 text-white hover:bg-blue-600' 
-            : 'bg-white border-gray-300 text-gray-700 hover:border-gray-400 hover:bg-gray-50'
+            ? 'bg-blue-500 border-blue-500 text-white hover:bg-blue-600 dark:bg-blue-600 dark:border-blue-600 dark:hover:bg-blue-500' 
+            : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:border-gray-400 dark:hover:border-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700'
           }
         `}
       >
@@ -99,7 +99,7 @@ export const CircularSelect = ({
           />
           
           {/* Options Menu */}
-          <div className="absolute top-full left-0 mt-2 z-20 bg-white border border-gray-200 rounded-lg shadow-lg min-w-48 py-1">
+          <div className="absolute top-full left-0 mt-2 z-20 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg min-w-48 py-1">
             {options.map((option) => (
               <button
                 key={option.value}
@@ -117,8 +117,8 @@ export const CircularSelect = ({
                   items-center
                   justify-between
                   ${selectedValue === option.value 
-                    ? 'bg-blue-50 text-blue-700' 
-                    : 'text-gray-700 hover:bg-gray-50'
+                    ? 'bg-blue-50 dark:bg-blue-900 text-blue-700 dark:text-blue-200' 
+                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
                   }
                 `}
               >

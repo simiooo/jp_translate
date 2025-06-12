@@ -21,19 +21,19 @@ export const CircleButton: React.FC<CircleButtonProps> = ({
 }) => {
   const getButtonStyles = () => {
     const baseStyles = "p-2 rounded-full transition-all duration-200";
-    const loadingStyles = loading ? "text-gray-400 cursor-not-allowed" : "";
+    const loadingStyles = loading ? "text-gray-400 cursor-not-allowed dark:text-gray-500" : "";
     
     if (type === "borderless") {
       return `${baseStyles} ${loadingStyles} ${
         loading 
           ? "bg-transparent" 
-          : "text-gray-600 hover:text-gray-800 hover:bg-gray-100 active:bg-gray-200"
+          : "text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700 active:bg-gray-200 dark:active:bg-gray-600"
       }`;
     } else {
-      return `${baseStyles} hover:text-gray-800 border-1 border-gray-200 bg-white shadow-xs ${
+      return `${baseStyles} hover:text-gray-800 dark:hover:text-gray-100 border-1 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-xs ${
         loading
-          ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-          : "text-gray-600 active:shadow-2xs active:bg-gray-200 active:border-gray-300 hover:bg-gray-100"
+          ? "bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed"
+          : "text-gray-600 dark:text-gray-300 active:shadow-2xs active:bg-gray-200 dark:active:bg-gray-600 active:border-gray-300 dark:active:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700"
       }`;
     }
   };

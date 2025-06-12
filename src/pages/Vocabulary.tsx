@@ -123,24 +123,24 @@ const Vocabulary: React.FC = () => {
 
   return (
     <Spinner loading={wordsLoading}>
-      <div className="h-screen overflow-y-auto bg-gray-100 py-8 px-4 sm:px-6 lg:px-8">
+      <div className="h-screen overflow-y-auto bg-gray-100 dark:bg-gray-900 py-8 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto h-[calc(100vh-4rem)]">
           {/* Main container with shadow and rounded corners */}
-          <div className="bg-white rounded-2xl shadow-sm p-8 sm:p-8 h-full flex flex-col">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-8 sm:p-8 h-full flex flex-col">
             {/* Header */}
             <div className="mb-4">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
                 <div>
-                  <h1 className="text-3xl font-bold text-gray-900 mb-0">
+                  <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-0">
                     单词表
                   </h1>
-                  <p className="text-gray-600">管理和学习您的日语词汇</p>
+                  <p className="text-gray-600 dark:text-gray-400">管理和学习您的日语词汇</p>
                 </div>
               </div>
               <input
                 type="text"
                 placeholder="搜索单词..."
-                className="w-full p-2 text-sm text-gray-700 bg-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 border-none"
+                className="w-full p-2 text-sm text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 border-none"
                 value={searchQuery}
                 onChange={(e) => {
                   setSearchQuery(e.target.value);
@@ -181,15 +181,15 @@ const Vocabulary: React.FC = () => {
             {/* Empty state */}
             {(wordsTableProps?.dataSource ?? []).length === 0 && (
               <div className="text-center py-12">
-                <div className="w-24 h-24 mx-auto mb-4 text-gray-300">
+                <div className="w-24 h-24 mx-auto mb-4 text-gray-300 dark:text-gray-600">
                   <FaBookOpen
                     style={{ fontSize: "6rem", color: "#9CA3AF" }}
                   ></FaBookOpen>
                 </div>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
                   暂无单词
                 </h3>
-                <p className="text-gray-500 mb-6">
+                <p className="text-gray-500 dark:text-gray-400 mb-6">
                   开始添加一些单词来构建您的词汇表
                 </p>
               </div>

@@ -20,9 +20,9 @@ export const AstToken: React.FC<{
     <div className="inline-flex flex-col gap-2">
       <div
         onClick={() => onClick?.(token)}
-        className="inline-flex items-center bg-gray-50 rounded-lg p-2 hover:bg-gray-100 transition-colors duration-200"
+        className="inline-flex items-center bg-gray-50 dark:bg-gray-700 rounded-lg p-2 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"
       >
-        <span className="text-gray-900 font-medium">{token.word}</span>
+        <span className="text-gray-900 dark:text-gray-100 font-medium">{token.word}</span>
         <div className="flex gap-2 ml-2">
           <Tag type="pos" label={token.pos} />
           {token.lemma && <Tag type="lemma" label="原型" value={token.lemma} />}
@@ -86,7 +86,7 @@ export const AstTokens: React.FC<AstTokensProps> = ({
               <AstTokens key={index} ast={child} />
               {/* 在非最后一个子节点后添加分隔符 */}
               {index < (ast.children ?? []).length - 1 && (
-                <div className="my-8 border-b border-gray-200" />
+                <div className="my-8 border-b border-gray-200 dark:border-gray-700" />
               )}
             </>
           ))}

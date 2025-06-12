@@ -17,10 +17,10 @@ export const Reasoning = forwardRef(
       2xl:p-5
       lg:p-5
       shadow-lg
-      bg-white border border-gray-200 rounded-2xl w-full
+      bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl w-full
       "
       >
-        <h3 className="text-sm font-semibold text-black-800 mb-2">
+        <h3 className="text-sm font-semibold text-black-800 dark:text-gray-200 mb-2">
             思考……
           </h3>
         <div
@@ -37,7 +37,7 @@ export const Reasoning = forwardRef(
        "
         >
           
-          <div className="text-sm text-black-700 whitespace-pre-wrap">
+          <div className="text-sm text-black-700 dark:text-gray-300 whitespace-pre-wrap">
             {thinking}
           </div>
         </div>

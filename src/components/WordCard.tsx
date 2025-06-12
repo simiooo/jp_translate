@@ -18,8 +18,8 @@ const WordCard: React.FC<WordCardProps> = ({
 }) => {
   const baseClasses = "rounded-xl border-1 p-4 cursor-pointer transition-all duration-200 ";
   const selectedClasses = isSelected 
-    ? "border-blue-300 bg-blue-50 shadow-2xs text-blue-700 hover:bg-blue-100" 
-    : "border-gray-300 bg-gray-50 shadow-sm text-gray-900 hover:bg-gray-100  active:shadow-xs";
+    ? "border-blue-300 dark:border-blue-600 bg-blue-50 dark:bg-blue-900 shadow-2xs text-blue-700 dark:text-blue-200 hover:bg-blue-100 dark:hover:bg-blue-800" 
+    : "border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 shadow-sm text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700 active:shadow-xs";
 
 
 
@@ -31,11 +31,11 @@ const WordCard: React.FC<WordCardProps> = ({
       {/* Header with title and actions */}
       <div className="flex justify-between items-start mb-5">
         <div className="flex-1">
-          <h3 className={`text-2xl font-semibold ${isSelected ? 'text-blue-900' : 'text-gray-700'}`}>
+          <h3 className={`text-2xl font-semibold ${isSelected ? 'text-blue-900 dark:text-blue-100' : 'text-gray-700 dark:text-gray-300'}`}>
             {token.word}
           </h3>
           {token.kana && (
-            <p className={`text-xs ${isSelected ? 'text-blue-800' : 'text-gray-600'}`}>
+            <p className={`text-xs ${isSelected ? 'text-blue-800 dark:text-blue-200' : 'text-gray-600 dark:text-gray-400'}`}>
               {token.kana}
             </p>
           )}
@@ -55,7 +55,7 @@ const WordCard: React.FC<WordCardProps> = ({
         
         {token.meaning && (
           <div>
-            <p className={`text-xs font-medium ${isSelected ? 'text-blue-800' : 'text-gray-700'}`}>
+            <p className={`text-xs font-medium ${isSelected ? 'text-blue-800 dark:text-blue-200' : 'text-gray-700 dark:text-gray-300'}`}>
               含义： {token.meaning}
             </p>
           </div>
@@ -63,7 +63,7 @@ const WordCard: React.FC<WordCardProps> = ({
         
         {token.lemma && (
           <div>
-            <p className={`text-xs font-medium ${isSelected ? 'text-blue-800' : 'text-gray-700'}`}>
+            <p className={`text-xs font-medium ${isSelected ? 'text-blue-800 dark:text-blue-200' : 'text-gray-700 dark:text-gray-300'}`}>
               原型： {token.lemma}
             </p>
           </div>
@@ -71,7 +71,7 @@ const WordCard: React.FC<WordCardProps> = ({
         
         {token.inflection && (
           <div>
-            <p className={`text-sm font-medium ${isSelected ? 'text-blue-800' : 'text-gray-700'}`}>
+            <p className={`text-sm font-medium ${isSelected ? 'text-blue-800 dark:text-blue-200' : 'text-gray-700 dark:text-gray-300'}`}>
               变形：{token.inflection}
             </p>
           </div>
