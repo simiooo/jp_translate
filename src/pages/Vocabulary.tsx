@@ -14,6 +14,7 @@ const Vocabulary: React.FC = () => {
   // Sample data for demonstration
   const navigate = useNavigate();
   const listContainerRef = useRef<VListHandle>(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const {
     tableProps: wordsTableProps,
@@ -21,10 +22,10 @@ const Vocabulary: React.FC = () => {
     runAsync: wordsRunAsync,
   } = useAntdTable<
     { total: number; list: Token[] },
-    [{ current: number; pageSize: number }, { init?: boolean } | undefined]
+    [{ current: number; pageSize: number; keyword?: string }, { init?: boolean } | undefined]
   >(
     async (
-      { current, pageSize },
+      { current, pageSize, keyword },
       params?: { init?: boolean }
     ): Promise<{ total: number; list: Token[] }> => {
       try {
@@ -35,7 +36,7 @@ const Vocabulary: React.FC = () => {
               pagination?: PaginatedResponse;
             }
         >("/api/words", {
-          params: { page: current, limit: pageSize },
+          params: { page: current, limit: pageSize, keyword: keyword },
         });
         if ("message" in data) {
           throw Error(data.message);
@@ -60,6 +61,7 @@ const Vocabulary: React.FC = () => {
         {
           current: 1,
           pageSize: 10,
+          keyword: "",
         },
         undefined,
       ],
@@ -125,8 +127,8 @@ const Vocabulary: React.FC = () => {
           {/* Main container with shadow and rounded corners */}
           <div className="bg-white rounded-2xl shadow-sm p-8 sm:p-8 h-full flex flex-col">
             {/* Header */}
-            <div className="mb-10">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="mb-4">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
                 <div>
                   <h1 className="text-3xl font-bold text-gray-900 mb-0">
                     单词表
@@ -134,6 +136,16 @@ const Vocabulary: React.FC = () => {
                   <p className="text-gray-600">管理和学习您的日语词汇</p>
                 </div>
               </div>
+              <input
+                type="text"
+                placeholder="搜索单词..."
+                className="w-full p-2 text-sm text-gray-700 bg-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 border-none"
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  wordsRunAsync({ current: 1, pageSize: 10, keyword: e.target.value }, { init: true });
+                }}
+              />
             </div>
 
             <div className="flex-grow">

@@ -25,6 +25,7 @@ interface HistorySidebarProps {
   hasMore: boolean;
   isLoadingMore: boolean;
   isError: boolean;
+  onSearchChange: (query: string) => void; // New prop for search functionality
 }
 // Color configuration with complete Tailwind class names
 const COLOR_VARIANTS = [
@@ -105,8 +106,15 @@ export const HistorySidebar: React.FC<HistorySidebarProps> = ({
   hasMore,
   isLoadingMore,
   isError,
+  onSearchChange,
 }) => {
   const listContainerRef = React.useRef<VListHandle>(null);
+  const [searchQuery, setSearchQuery] = React.useState("");
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+    onSearchChange(e.target.value);
+  };
 
   const checkScrollPosition = React.useCallback(() => {
     if (!listContainerRef.current) return;
@@ -146,6 +154,17 @@ export const HistorySidebar: React.FC<HistorySidebarProps> = ({
             
           </button>
         </div>
+        {!isHistoryCollapsed && (
+          <div className="px-4 pb-4">
+            <input
+              type="text"
+              placeholder="搜索历史记录..."
+              className="w-full p-2 text-sm text-gray-700 bg-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 border-none"
+              value={searchQuery}
+              onChange={handleSearchChange}
+            />
+          </div>
+        )}
         <div className="flex-1">
           
             <Spinner loading={historyLoading}>

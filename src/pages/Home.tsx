@@ -39,7 +39,12 @@ export function meta({}: Route.MetaArgs) {
 
 function App() {
   // const navigate = useNavigate();
-  const {isOpen,openModal,closeModal,params: addPendingToken} = useModal<Token>();
+  const {
+    isOpen,
+    openModal,
+    closeModal,
+    params: addPendingToken,
+  } = useModal<Token>();
   const [loading, setLoading] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [isHistoryCollapsed, setIsHistoryCollapsed] = useState(false);
@@ -61,10 +66,10 @@ function App() {
     runAsync: historyLoad,
   } = useAntdTable<
     { total: number; list: TranslationRecord[] },
-    [{ current: number; pageSize: number }, { init?: boolean } | undefined]
+    [{ current: number; pageSize: number; keyword?: string }, { init?: boolean } | undefined]
   >(
     async (
-      { current, pageSize },
+      { current, pageSize, keyword },
       params?: { init?: boolean }
     ): Promise<{ total: number; list: TranslationRecord[] }> => {
       try {
@@ -75,7 +80,7 @@ function App() {
               pagination?: PaginatedResponse;
             }
         >("/api/translation", {
-          params: { page: current, limit: pageSize },
+          params: { page: current, limit: pageSize, keyword: keyword },
         });
         if ("message" in data) {
           throw Error(data.message);
@@ -87,13 +92,24 @@ function App() {
               ? []
               : (history?.dataSource as TranslationRecord[])) ?? []
           ).concat(
-            data.translations?.map((translation) => ({
-              ...translation,
-              translated_text:
-                translation?.translated_text?.length > 0
-                  ? JSON.parse(jsonrepair(translation?.translated_text))
-                  : translation?.translated_text,
-            })) ?? []
+            data.translations?.map((translation) => {
+              try {
+                return {
+                ...translation,
+                translated_text:
+                  translation?.translated_text?.length > 0
+                    ? JSON.parse(jsonrepair(translation?.translated_text))
+                    : translation?.translated_text,
+              }
+              } catch (error) {
+                console.error(error)
+                return {
+                  created_at: "", id: 12, source_lang: "ja", source_text: "",
+                  target_lang: "zh", translated_text: ""
+                }
+              }
+              
+            }) ?? []
           ),
         };
       } catch (error) {
@@ -101,7 +117,7 @@ function App() {
         // if(error instanceof Error && error.message !== "translation limit reached")  {
         //   navigate("/login");
         // }
-        Toast.error(error instanceof Error ? error.message : String(error))
+        Toast.error(error instanceof Error ? error.message : String(error));
         return {
           total: 0,
           list: [],
@@ -113,6 +129,7 @@ function App() {
         {
           current: 1,
           pageSize: 10,
+          keyword: "",
         },
         undefined,
       ],
@@ -130,7 +147,7 @@ function App() {
   });
 
   useKeyPress("alt.q", () => {
-    form.setFocus('text')
+    form.setFocus("text");
   });
 
   const onSubmit = async (data: TranslationFormData) => {
@@ -170,7 +187,7 @@ function App() {
               setLoading(false);
               break;
             case "error":
-              Toast.error(String(data?.data?.message))
+              Toast.error(String(data?.data?.message));
               setLoading(false);
               break;
             case "complete":
@@ -195,21 +212,27 @@ function App() {
     }
   };
 
-  const {runAsync: handlWordCreate, loading: wordCreateLoading} = useRequest(async(word: Token) => {
-    if (!translation) return;
-    try {
-      const res = await alovaInstance.Post<{[key: string]: string | number | undefined, code?: number}>("/api/words", word);
-      if(res.code) {
-        throw Error(res.message?.toString() || "保存单词失败");
+  const { runAsync: handlWordCreate, loading: wordCreateLoading } = useRequest(
+    async (word: Token) => {
+      if (!translation) return;
+      try {
+        const res = await alovaInstance.Post<{
+          [key: string]: string | number | undefined;
+          code?: number;
+        }>("/api/words", word);
+        if (res.code) {
+          throw Error(res.message?.toString() || "保存单词失败");
+        }
+        Toast.success("单词已保存");
+      } catch (error) {
+        console.error("保存单词失败:", error);
+        Toast.error("保存单词失败，请重试");
       }
-      Toast.success("单词已保存");
-    } catch (error) {
-      console.error("保存单词失败:", error);
-      Toast.error("保存单词失败，请重试");
+    },
+    {
+      manual: true,
     }
-  }, {
-    manual: true
-  })
+  );
 
   const { runAsync: handleTTS, loading: ttsLoading } = useRequest(
     async (text: string, lang: string) => {
@@ -256,6 +279,9 @@ function App() {
           hasMore={history.dataSource.length < (history.pagination?.total ?? 0)}
           isLoadingMore={history.loading}
           isError={false}
+          onSearchChange={(keyword) => {
+            historyLoad({ current: 1, pageSize: 10, keyword: keyword }, { init: true });
+          }}
         />
 
         {/* 遮罩层 - 移动端显示 */}
@@ -276,10 +302,7 @@ function App() {
                 </h1>
 
                 <div className="">
-                  <Tooltip
-                  content="按 Alt + Enter 提交"
-                  placement="bottom"
-                  >
+                  <Tooltip content="按 Alt + Enter 提交" placement="bottom">
                     <Button
                       key="submit"
                       ref={submitRef}
@@ -322,7 +345,9 @@ function App() {
                     <textarea
                       {...form.register("text")}
                       className="bg-white w-full h-[25vh]  md:h-[70vh] p-4 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-                      placeholder={"日本語を入力してください\n例：こんにちは、元気ですか？\nAlt + Q 选择输入框"}
+                      placeholder={
+                        "日本語を入力してください\n例：こんにちは、元気ですか？\nAlt + Q 选择输入框"
+                      }
                     />
                     {/* 原文区域的 TTS 按钮 */}
                     <CircleButton
@@ -371,9 +396,11 @@ function App() {
                         <>
                           <div className="p-4  max-h-[40%] overflow-auto">
                             <div className="flex justify-between items-start">
-                              {translation?.error && <div
-                              className="bg-amber-50 border-amber-800 border-2 rounded-2xl p-1 pl-2 pr-2 text-amber-800"
-                              >{translation?.error}</div> }
+                              {translation?.error && (
+                                <div className="bg-amber-50 border-amber-800 border-2 rounded-2xl p-1 pl-2 pr-2 text-amber-800">
+                                  {translation?.error}
+                                </div>
+                              )}
                               <div className="inline-flex gap-2 text-gray-700">
                                 <span>{translation?.translation}</span>
                                 <div className="inline-flex items-center gap-2">
@@ -418,12 +445,12 @@ function App() {
                               ast={translation?.ast}
                               loading={loading}
                               onAddToken={(token) => {
-                                if(!token) return;
+                                if (!token) return;
                                 // 显示词性、原型、变形、意义和仮名
                                 // Toast.info(
                                 //   `词性: ${token.pos}, 原型: ${token.lemma}, 变形: ${token.inflection}, 意义: ${token.meaning}, 仮名: ${token.kana}`)
                                 //   handlWordCreate(token)
-                                  openModal(token)
+                                openModal(token);
                               }}
                             />
                           </div>
@@ -459,30 +486,25 @@ function App() {
           </div>
         </div>
       </div>
-      <Modal
-        isOpen={isOpen}
-        onClose={closeModal}
-        title="Word"
-        size="lg">
-          <div>Add Word to Vocabulary?</div>
-          <div className="p-2"></div>
-          <div className="flex justify-end gap-2">
-            <Button
+      <Modal isOpen={isOpen} onClose={closeModal} title="Word" size="lg">
+        <div>Add Word to Vocabulary?</div>
+        <div className="p-2"></div>
+        <div className="flex justify-end gap-2">
+          <Button
             loading={wordCreateLoading}
             onClick={async () => {
               if (!addPendingToken) return;
               await handlWordCreate(addPendingToken);
               closeModal();
             }}
-            >Yes</Button>
-            <Button
-            variant="secondary"
-            
-            onClick={() => closeModal()}
-            >No</Button>
-          </div>
-          
-        </Modal>
+          >
+            Yes
+          </Button>
+          <Button variant="secondary" onClick={() => closeModal()}>
+            No
+          </Button>
+        </div>
+      </Modal>
     </form>
   );
 }
