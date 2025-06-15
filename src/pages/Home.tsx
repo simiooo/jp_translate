@@ -24,6 +24,7 @@ import { HistorySidebar } from "../components/HistorySidebar";
 import { Button } from "~/components/Button";
 import { Tooltip } from "~/components/Tooltip";
 import { Modal, useModal } from "~/components/Modal";
+import { ImageUploader } from "~/components/ImageUploader";
 
 // import { unknown } from "zod";
 
@@ -343,6 +344,7 @@ function App() {
               <div className="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-6 flex-1">
                 <div className="md:col-span-5 space-y-5">
                   <div className="relative">
+                    
                     <textarea
                       {...form.register("text")}
                       className="bg-white dark:bg-gray-800 w-full h-[25vh]  md:h-[70vh] p-4 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-gray-900 dark:text-gray-100"
@@ -350,6 +352,7 @@ function App() {
                         "日本語を入力してください\n例：こんにちは、元気ですか？\nAlt + Q 选择输入框"
                       }
                     />
+                    <ImageUploader></ImageUploader>
                     {/* 原文区域的 TTS 按钮 */}
                     <CircleButton
                       onClick={(e) => {
