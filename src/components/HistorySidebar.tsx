@@ -180,7 +180,7 @@ export const HistorySidebar: React.FC<HistorySidebarProps> = ({
                   if (!record) return <></>;
                   return (
                     <div
-                      key={record.id ?? record?.source_text + record?.created_at}
+                      key={record?.source_text + record?.created_at + record?.target_lang}
                       className="py-4 px-2  hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer"
                       onClick={() => {
                         onSelectHistoryItem(record.source_text);
