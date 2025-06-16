@@ -169,7 +169,7 @@ function App() {
           "Content-Type": "application/json",
         },
         
-        body: JSON.stringify({ source_text: data.text, image_url:`/api/files/${files?.[0].ID}` }),
+        body: JSON.stringify({ source_text: data.text, image_url:files?.[0].ID ? `/api/files/${files?.[0].ID}`:undefined }),
         onMessage(data: EventData<{ text?: string; message?: string }>) {
           switch (data.type) {
             case "chunk":
