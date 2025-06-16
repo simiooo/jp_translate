@@ -8,7 +8,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { useRequest } from 'ahooks';
 import { FileRecord } from '../types/file'; // Import FileRecord
 
-interface UploadFile extends FileRecord {
+export interface UploadFile extends FileRecord {
   uid: string;
   status: 'uploading' | 'done' | 'error' | 'removed';
   percent?: number;

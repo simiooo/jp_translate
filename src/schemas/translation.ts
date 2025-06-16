@@ -5,6 +5,7 @@ export const translationFormSchema = z.object({
   sourceLanguage: z.enum(['zh', 'ja'], {
     required_error: '请选择源语言',
   }),
+  imgURL: z.string()
 })
 
 export type TranslationFormData = z.infer<typeof translationFormSchema> 

@@ -24,7 +24,7 @@ import { HistorySidebar } from "../components/HistorySidebar";
 import { Button } from "~/components/Button";
 import { Tooltip } from "~/components/Tooltip";
 import { Modal, useModal } from "~/components/Modal";
-import { ImageUploader } from "~/components/ImageUploader";
+import { ImageUploader, ImageUploaderRef, UploadFile } from "~/components/ImageUploader";
 
 // import { unknown } from "zod";
 
@@ -152,17 +152,24 @@ function App() {
     form.setFocus("text");
   });
 
+  const imgRef = useRef<ImageUploaderRef>(null)
+
   const onSubmit = async (data: TranslationFormData) => {
     try {
       let fullResponse = "";
       setLoading(true);
       setBufferedTranslation(null);
+      let files: UploadFile[] = []
+      if(imgRef.current !== null) {
+        files = imgRef.current.getUploadedFiles() ?? []
+      }
       const sse = createSSEStream("/api/translation", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ source_text: data.text }),
+        
+        body: JSON.stringify({ source_text: data.text, image_url:files?.[0].URL }),
         onMessage(data: EventData<{ text?: string; message?: string }>) {
           switch (data.type) {
             case "chunk":
@@ -352,7 +359,9 @@ function App() {
                         "日本語を入力してください\n例：こんにちは、元気ですか？\nAlt + Q 选择输入框"
                       }
                     />
-                    <ImageUploader></ImageUploader>
+                    <ImageUploader
+                    ref={imgRef}
+                    ></ImageUploader>
                     {/* 原文区域的 TTS 按钮 */}
                     <CircleButton
                       onClick={(e) => {
