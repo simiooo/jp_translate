@@ -126,7 +126,8 @@ function App() {
       }
     },
     {
-      throttleWait: 1000,
+      debounceWait: 1000,
+      debounceLeading: false,
       defaultParams: [
         {
           current: 1,
