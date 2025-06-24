@@ -25,6 +25,7 @@ import { Button } from "~/components/Button";
 import { Tooltip } from "~/components/Tooltip";
 import { Modal, useModal } from "~/components/Modal";
 import { ImageUploader, ImageUploaderRef, UploadFile } from "~/components/ImageUploader";
+import { TypewriterText } from "~/components/TypewriterText";
 
 // import { unknown } from "zod";
 
@@ -416,7 +417,9 @@ function App() {
                                 </div>
                               )}
                               <div className="inline-flex gap-2 text-gray-700 dark:text-gray-300">
-                                <span>{translation?.translation}</span>
+                                <TypewriterText
+                                text={translation?.translation ?? ""}
+                                ></TypewriterText>
                                 <div className="inline-flex items-center gap-2">
                                   {loading && <Cursor />}
                                 </div>
