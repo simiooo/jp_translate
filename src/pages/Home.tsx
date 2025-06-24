@@ -192,7 +192,7 @@ function App() {
               break;
             case "start":
               setBufferedTranslation(null);
-
+              imgRef.current?.clearFiles?.()
               break;
             case "end":
               setLoading(false);
