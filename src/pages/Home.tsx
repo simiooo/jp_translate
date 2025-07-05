@@ -12,6 +12,7 @@ import { AstTokens } from "../components/AstTokens";
 import { createPortal } from "react-dom";
 import { CircleButton } from "../components/CircleButton";
 import type { Route } from "./+types/Home";
+import Markdown from 'react-markdown'
 import {
   alovaBlobInstance,
   alovaInstance,
@@ -25,7 +26,7 @@ import { Button } from "~/components/Button";
 import { Tooltip } from "~/components/Tooltip";
 import { Modal, useModal } from "~/components/Modal";
 import { ImageUploader, ImageUploaderRef, UploadFile } from "~/components/ImageUploader";
-import { TypewriterText } from "~/components/TypewriterText";
+// import { TypewriterText } from "~/components/TypewriterText";
 
 // import { unknown } from "zod";
 
@@ -171,7 +172,7 @@ function App() {
           "Content-Type": "application/json",
         },
         
-        body: JSON.stringify({ source_text: data.text, image_url:files?.[0]?.ID ? `${location.origin}/api/files/${files?.[0].ID}`:undefined }),
+        body: JSON.stringify({ source_text: data.text, image_url:files?.[0]?.ID ? `${location.origin}/api/files/${files?.[0].ID}`:undefined}),
         onMessage(data: EventData<{ text?: string; message?: string }>) {
           switch (data.type) {
             case "chunk":
@@ -417,9 +418,7 @@ function App() {
                                 </div>
                               )}
                               <div className="inline-flex gap-2 text-gray-700 dark:text-gray-300">
-                                <TypewriterText
-                                text={translation?.translation ?? ""}
-                                ></TypewriterText>
+                                <Markdown>{translation?.translation ?? ""}</Markdown>
                                 <div className="inline-flex items-center gap-2">
                                   {loading && <Cursor />}
                                 </div>
