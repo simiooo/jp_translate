@@ -6,6 +6,7 @@ import serve from 'electron-serve';
 import electronSquirrelStartup from 'electron-squirrel-startup';
 
 const isDev = process.env.NODE_ENV === 'development';
+// const isDev = false
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -16,19 +17,21 @@ if (electronSquirrelStartup) {
 
 let mainWindow: BrowserWindow | null = null;
 let tray: Tray | null = null;
-const icon = '../build/client/logo.png';
-const loadURL = serve({ directory: '../build/client' });
+const icon = isDev ? '../build/client/logo.png' :  path.join(process.resourcesPath, "client",'logo.png');
+const loadURL = isDev ? serve({ directory: '../build/client' }) : serve({directory: path.join(process.resourcesPath, "client") } );
 
 const createWindow = (): void => {
   // Create the browser window.
   const options: BrowserWindowConstructorOptions = {
     width: 1200,
     height: 800,
+    minWidth:800,
+    minHeight: 600,
     frame: false, // No border
     roundedCorners: true,
     icon: nativeImage.createFromPath(path.join(__dirname, icon)),
     webPreferences: {
-      preload: isDev ? path.join(__dirname, 'preload.ts') : path.join(__dirname, 'preload.js'),
+      preload: isDev ? path.join(__dirname, 'preload.ts') : path.join(process.resourcesPath,"dist-electron", 'preload.js'),
       nodeIntegration: true,
     },
   };

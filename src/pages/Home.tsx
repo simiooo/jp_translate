@@ -167,7 +167,7 @@ function App() {
       if(imgRef.current !== null) {
         files = imgRef.current.getUploadedFiles() ?? []
       }
-      const sse = createSSEStream(new URL("/api/translation", isElectron() ? "https://risureader.top" : undefined).toString(), {
+      const sse = createSSEStream(new URL("/api/translation", isElectron() ? "https://risureader.top" : location.origin).toString(), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

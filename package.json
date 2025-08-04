@@ -6,14 +6,16 @@
   "scripts": {
     "build": "react-router build",
     "dev": "react-router dev",
-    "start": "react-router-serve ./build/server/index.js",
+    "start": "electron-forge start",
     "typecheck": "react-router typegen && tsc",
     "build-electron": "vite build -c vite.config.electron.ts",
     "electron": "env-cmd -f ./.development.env electron ./dist-electron/main.js",
     "electron-dev": "env-cmd -f ./.development.env electron ./electron/main-dev.js",
     "electron-package": "electron-forge package",
     "electron-make": "electron-forge make",
-    "electron-publish": "electron-forge publish"
+    "electron-publish": "electron-forge publish",
+    "package": "electron-forge package",
+    "make": "electron-forge make"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
@@ -56,6 +58,7 @@
     "@electron-forge/maker-rpm": "^7.8.2",
     "@electron-forge/maker-squirrel": "^7.8.2",
     "@electron-forge/maker-zip": "^7.8.2",
+    "@electron-forge/publisher-s3": "^7.8.2",
     "@eslint/js": "^9.17.0",
     "@types/react": "^18.3.18",
     "@types/react-dom": "^18.3.5",
@@ -77,31 +80,7 @@
     "win32-def": "^26.1.2"
   },
   "config": {
-    "forge": {
-      "packagerConfig": {},
-      "makers": [
-        {
-          "name": "@electron-forge/maker-squirrel",
-          "config": {
-            "name": "jp_translate"
-          }
-        },
-        {
-          "name": "@electron-forge/maker-zip",
-          "platforms": [
-            "darwin"
-          ]
-        },
-        {
-          "name": "@electron-forge/maker-deb",
-          "config": {}
-        },
-        {
-          "name": "@electron-forge/maker-rpm",
-          "config": {}
-        }
-      ]
-    }
+    
   },
   "main": "dist-electron/main.js"
 }
