@@ -10,6 +10,7 @@ import Spinner from "~/components/Spinner";
 import { VList, VListHandle } from "virtua";
 import { useThrottleFn } from "ahooks";
 
+
 const Vocabulary: React.FC = () => {
   // Sample data for demonstration
   const navigate = useNavigate();
