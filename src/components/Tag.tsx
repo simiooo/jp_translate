@@ -1,3 +1,5 @@
+import { TypewriterText } from "./TypewriterText";
+
 interface TagProps {
   label: string;
   type: 'pos' | 'lemma' | 'inflection'| "meaning" | "kana";
@@ -24,7 +26,9 @@ export const Tag = ({ label, type, value }: TagProps) => {
       `}
       tabIndex={0}
     >
-      {value ? `${label}: ${value}` : label}
+      <TypewriterText text={value ? `${label}: ${value}` : label}
+      ></TypewriterText>
+      {/* {value ? `${label}: ${value}` : label} */}
     </span>
   );
 };

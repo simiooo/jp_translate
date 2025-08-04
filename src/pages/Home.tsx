@@ -12,6 +12,7 @@ import { AstTokens } from "../components/AstTokens";
 import { createPortal } from "react-dom";
 import { CircleButton } from "../components/CircleButton";
 import type { Route } from "./+types/Home";
+import Markdown from 'react-markdown'
 import {
   alovaBlobInstance,
   alovaInstance,
@@ -25,6 +26,8 @@ import { Button } from "~/components/Button";
 import { Tooltip } from "~/components/Tooltip";
 import { Modal, useModal } from "~/components/Modal";
 import { isElectron } from "~/utils/electron";
+import { ImageUploader, ImageUploaderRef, UploadFile } from "~/components/ImageUploader";
+// import { TypewriterText } from "~/components/TypewriterText";
 
 // import { unknown } from "zod";
 
@@ -126,7 +129,8 @@ function App() {
       }
     },
     {
-      throttleWait: 1000,
+      debounceWait: 1000,
+      debounceLeading: false,
       defaultParams: [
         {
           current: 1,
@@ -152,17 +156,24 @@ function App() {
     form.setFocus("text");
   });
 
+  const imgRef = useRef<ImageUploaderRef>(null)
+
   const onSubmit = async (data: TranslationFormData) => {
     try {
       let fullResponse = "";
       setLoading(true);
       setBufferedTranslation(null);
+      let files: UploadFile[] = []
+      if(imgRef.current !== null) {
+        files = imgRef.current.getUploadedFiles() ?? []
+      }
       const sse = createSSEStream(new URL("/api/translation", isElectron() ? "https://risureader.top" : undefined).toString(), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ source_text: data.text }),
+        
+        body: JSON.stringify({ source_text: data.text, image_url:files?.[0]?.ID ? `${location.origin}/api/files/${files?.[0].ID}`: null}),
         onMessage(data: EventData<{ text?: string; message?: string }>) {
           switch (data.type) {
             case "chunk":
@@ -183,7 +194,7 @@ function App() {
               break;
             case "start":
               setBufferedTranslation(null);
-
+              imgRef.current?.clearFiles?.()
               break;
             case "end":
               setLoading(false);
@@ -346,6 +357,7 @@ function App() {
               <div className="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-6 flex-1">
                 <div className="md:col-span-5 space-y-5">
                   <div className="relative">
+                    
                     <textarea
                       {...form.register("text")}
                       className="bg-white dark:bg-gray-800 w-full h-[25vh]  md:h-[70vh] p-4 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-gray-900 dark:text-gray-100"
@@ -353,6 +365,9 @@ function App() {
                         "日本語を入力してください\n例：こんにちは、元気ですか？\nAlt + Q 选择输入框"
                       }
                     />
+                    <ImageUploader
+                    ref={imgRef}
+                    ></ImageUploader>
                     {/* 原文区域的 TTS 按钮 */}
                     <CircleButton
                       onClick={(e) => {
@@ -406,7 +421,7 @@ function App() {
                                 </div>
                               )}
                               <div className="inline-flex gap-2 text-gray-700 dark:text-gray-300">
-                                <span>{translation?.translation}</span>
+                                <Markdown>{translation?.translation ?? ""}</Markdown>
                                 <div className="inline-flex items-center gap-2">
                                   {loading && <Cursor />}
                                 </div>
