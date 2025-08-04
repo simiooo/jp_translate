@@ -133,7 +133,7 @@ export const HistorySidebar: React.FC<HistorySidebarProps> = ({
         overflow-hidden
         md:relative ${
         isHistoryCollapsed ? "w-12" : "w-64"
-      } h-screen bg-white dark:bg-gray-800 shadow-lg dark:shadow-xl
+      } h-[clac(100vh-51px)] bg-white dark:bg-gray-800 shadow-lg dark:shadow-xl
       transition-all duration-300 transform translate z-20`}
     >
       <div className="h-full flex flex-col">

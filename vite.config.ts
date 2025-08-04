@@ -11,18 +11,18 @@ export default defineConfig({
     tailwindcss(),
     reactRouter(),
     tsconfigPaths(),
-    basicSsl({
-      /** name of certification */
-      name: "test",
-      /** custom trust domains */
-      domains: ["localhost"],
-      /** custom certification directory */
-      certDir: ".devServer/cert",
-    }),
+    // basicSsl({
+    //   /** name of certification */
+    //   name: "test",
+    //   /** custom trust domains */
+    //   domains: ["localhost"],
+    //   /** custom certification directory */
+    //   certDir: ".devServer/cert",
+    // }),
   ],
   server: {
     proxy: {
-      "/api": "http://localhost:8080",
+      "/api": "https://risureader.top",
     },
   },
 });

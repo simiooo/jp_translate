@@ -123,7 +123,7 @@ const Vocabulary: React.FC = () => {
 
   return (
     <Spinner loading={wordsLoading}>
-      <div className="h-screen overflow-y-auto bg-gray-100 dark:bg-gray-900 py-8 px-4 sm:px-6 lg:px-8">
+      <div className="h-full overflow-y-auto bg-gray-100 dark:bg-gray-900 py-8 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto h-[calc(100vh-4rem)]">
           {/* Main container with shadow and rounded corners */}
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-8 sm:p-8 h-full flex flex-col">

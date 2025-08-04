@@ -24,6 +24,7 @@ import { HistorySidebar } from "../components/HistorySidebar";
 import { Button } from "~/components/Button";
 import { Tooltip } from "~/components/Tooltip";
 import { Modal, useModal } from "~/components/Modal";
+import { isElectron } from "~/utils/electron";
 
 // import { unknown } from "zod";
 
@@ -156,7 +157,7 @@ function App() {
       let fullResponse = "";
       setLoading(true);
       setBufferedTranslation(null);
-      const sse = createSSEStream("/api/translation", {
+      const sse = createSSEStream(new URL("/api/translation", isElectron() ? "https://risureader.top" : undefined).toString(), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -259,8 +260,10 @@ function App() {
   );
 
   return (
-    <form onSubmit={form.handleSubmit(onSubmit)}>
-      <div className="min-h-screen bg-gray-100 dark:bg-gray-900 overflow-x-hidden flex">
+    <form 
+    className="h-full"
+    onSubmit={form.handleSubmit(onSubmit)}>
+      <div className="h-full bg-gray-100 dark:bg-gray-900 overflow-x-hidden flex">
         {/* 侧边栏历史记录 */}
         <HistorySidebar
           isHistoryCollapsed={isHistoryCollapsed}
@@ -339,7 +342,7 @@ function App() {
               </div>
             </div>
 
-            <div className="h-[calc(100vh - 144px)] flex flex-col">
+            <div className="flex flex-col">
               <div className="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-6 flex-1">
                 <div className="md:col-span-5 space-y-5">
                   <div className="relative">

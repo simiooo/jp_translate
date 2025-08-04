@@ -1,0 +1,9 @@
+.appTitlebar {
+    user-select: none;
+    app-region: drag;
+}
+
+/* All buttons should be non-draggable */
+.appTitlebar button {
+    app-region: no-drag;
+}

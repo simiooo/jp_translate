@@ -85,7 +85,7 @@ export default function Recognize() {
   }, [photos]);
 
   return (
-    <div className="flex flex-col h-screen dark:bg-gray-900">
+    <div className="flex flex-col h-full dark:bg-gray-900">
       <CameraPreview className="grow bg-gray-900 dark:bg-gray-900">
         {error ? (
           <div

@@ -1,7 +1,8 @@
 import { createAlova } from "alova";
 import adapterFetch from "alova/fetch";
-
+import { isElectron } from '~/utils/electron';
 export const alovaInstance = createAlova({
+  baseURL: isElectron() ? import.meta.env.VITE_CLIENT_FOR_SERVER_PROXY : undefined,
   requestAdapter: adapterFetch(),
   responded: (response) => response.json(),
   cacheFor: null,
@@ -10,6 +11,7 @@ export const alovaInstance = createAlova({
   }
 });
 export const alovaBlobInstance = createAlova({
+  baseURL: isElectron() ? import.meta.env.VITE_CLIENT_FOR_SERVER_PROXY : undefined,
   requestAdapter: adapterFetch(),
   responded: (response) => response.blob(),
   beforeRequest: (method) => {
