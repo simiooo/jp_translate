@@ -17,8 +17,9 @@ if (electronSquirrelStartup) {
 
 let mainWindow: BrowserWindow | null = null;
 let tray: Tray | null = null;
-const icon = isDev ? '../build/client/logo.png' :  path.join(process.resourcesPath, "client",'logo.png');
+const icon = isDev ?path.join(__dirname, '../build/client/logo.png')  :  path.join(process.resourcesPath, "client",'logo.png');
 const loadURL = isDev ? serve({ directory: '../build/client' }) : serve({directory: path.join(process.resourcesPath, "client") } );
+console.log("process.resourcesPath",process.resourcesPath);
 
 const createWindow = (): void => {
   // Create the browser window.
@@ -29,9 +30,9 @@ const createWindow = (): void => {
     minHeight: 600,
     frame: false, // No border
     roundedCorners: true,
-    icon: nativeImage.createFromPath(path.join(__dirname, icon)),
+    icon: nativeImage.createFromPath(icon),
     webPreferences: {
-      preload: isDev ? path.join(__dirname, 'preload.ts') : path.join(process.resourcesPath,"dist-electron", 'preload.js'),
+      preload: isDev ? path.join(__dirname, 'preload.ts') : path.join(process.resourcesPath, "dist-electron",'preload.js'),
       nodeIntegration: true,
     },
   };
@@ -50,7 +51,7 @@ const createWindow = (): void => {
 
 // Create system tray
 const createTray = (): void => {
-  const iconPath = path.join(__dirname, icon);
+  const iconPath = icon;
   tray = new Tray(iconPath);
   
   const contextMenu = Menu.buildFromTemplate([
