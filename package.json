@@ -15,7 +15,9 @@
     "electron-make": "electron-forge make",
     "electron-publish": "electron-forge publish",
     "package": "electron-forge package",
-    "make": "electron-forge make"
+    "test": "vitest",
+    "make": "electron-forge make",
+    "test:browser": "vitest --config=vitest.browser.config.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
@@ -25,6 +27,7 @@
     "@tailwindcss/vite": "^4.1.4",
     "@types/electron-squirrel-startup": "^1.0.2",
     "@vitejs/plugin-basic-ssl": "^2.0.0",
+    "@vitejs/plugin-react": "^4.7.0",
     "ahooks": "^3.8.4",
     "alova": "^3.2.10",
     "autoprefixer": "^10.4.20",
@@ -44,7 +47,6 @@
     "react-icons": "^5.5.0",
     "react-markdown": "^10.1.0",
     "react-router": "^7.5.0",
-    "routes": "link:@react-router/dev/routes",
     "tailwind-scrollbar": "^3.1.0",
     "tailwindcss": "^4.1.4",
     "uuid": "^11.1.0",
@@ -60,9 +62,12 @@
     "@electron-forge/maker-zip": "^7.8.2",
     "@electron-forge/publisher-s3": "^7.8.2",
     "@eslint/js": "^9.17.0",
+    "@testing-library/jest-dom": "^6.6.4",
+    "@testing-library/react": "^16.3.0",
     "@types/react": "^18.3.18",
     "@types/react-dom": "^18.3.5",
     "@vitejs/plugin-react-swc": "^3.5.0",
+    "@vitest/browser": "^3.2.4",
     "electron": "^37.2.5",
     "electron-is-dev": "^3.0.1",
     "env-cmd": "^10.1.0",
@@ -71,16 +76,18 @@
     "eslint-plugin-react-refresh": "^0.4.16",
     "favicons": "^7.2.0",
     "globals": "^15.14.0",
+    "jsdom": "^26.1.0",
+    "playwright": "^1.54.2",
     "tsx": "^4.7.1",
     "typescript": "~5.6.2",
     "typescript-eslint": "^8.18.2",
     "vite": "^6.0.5",
     "vite-plugin-node": "^7.0.0",
     "vite-tsconfig-paths": "^5.1.4",
+    "vitest": "^3.2.4",
+    "vitest-browser-react": "^1.0.1",
     "win32-def": "^26.1.2"
   },
-  "config": {
-    
-  },
+  "config": {},
   "main": "dist-electron/main.js"
 }

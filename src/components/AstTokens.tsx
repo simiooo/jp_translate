@@ -24,15 +24,15 @@ export const AstToken: React.FC<{
       >
         <span className="text-gray-900 dark:text-gray-100 font-medium">{token.word}</span>
         <div className="flex gap-2 ml-2">
-          <Tag type="pos" label={token.pos} />
-          {token.lemma && <Tag type="lemma" label="原型" value={token.lemma} />}
+          <Tag key={token.pos} type="pos" label={token.pos} />
+          {token.lemma && <Tag type="lemma" key={token.lemma} label="原型" value={token.lemma} />}
           {token.inflection && (
-            <Tag type="inflection" label="変形" value={token.inflection} />
+            <Tag type="inflection" label="変形" key={token.inflection} value={token.inflection} />
           )}
           {token.meaning && (
-            <Tag type="meaning" label="意味" value={token.meaning} />
+            <Tag key={token.meaning} type="meaning" label="意味" value={token.meaning} />
           )}
-          {token.kana && <Tag type="kana" label="仮名" value={token.kana} />}
+          {token.kana && <Tag key={token.kana} type="kana" label="仮名" value={token.kana} />}
         </div>
 
         <div className="pl-2"></div>
@@ -64,6 +64,7 @@ export const AstTokens: React.FC<AstTokensProps> = ({
         <div className="flex flex-wrap gap-3 items-start">
           {ast.tokens.map((token, index) => (
             <AstToken
+              key={token.word ?? index}
               onClick={(token) => {
                 onTokenClick?.(token);
                 onClick?.(token);
@@ -71,7 +72,6 @@ export const AstTokens: React.FC<AstTokensProps> = ({
               onAdd={(token) => {
                 onAddToken?.(token);
               }}
-              key={index}
               token={token}
             />
           ))}

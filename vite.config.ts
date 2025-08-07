@@ -1,3 +1,4 @@
+/// <reference types="vitest/config" />
 import { defineConfig } from "vite";
 import { reactRouter } from "@react-router/dev/vite";
 // import react from '@vitejs/plugin-react-swc'
@@ -22,7 +23,8 @@ export default defineConfig({
   ],
   server: {
     proxy: {
-      "/api": "https://risureader.top",
+      "/api": "http://127.0.0.1:8080",
     },
   },
+
 });
