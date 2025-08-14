@@ -9,17 +9,23 @@ interface AstTokensProps {
   onClick?: (ast?: Token) => void;
   onTokenClick?: (token?: Token) => void;
   onAddToken?: (token?: Token) => void;
+  onTokenHover?: (position?: { start: number; end: number }) => void;
+  onTokenLeave?: () => void;
 }
 
 export const AstToken: React.FC<{
   token: Token;
   onClick?: (ast?: Token) => void;
   onAdd?: (token?: Token) => void;
-}> = ({ token, onClick, onAdd }) => {
+  onHover?: (position?: { start: number; end: number }) => void;
+  onLeave?: () => void;
+}> = ({ token, onClick, onAdd, onHover, onLeave }) => {
   return (
     <div className="inline-flex flex-col gap-2">
       <div
         onClick={() => onClick?.(token)}
+        onMouseEnter={() => token.position && onHover?.(token.position)}
+        onMouseLeave={() => onLeave?.()}
         className="inline-flex items-center bg-gray-50 dark:bg-gray-700 rounded-lg p-2 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"
       >
         <span className="text-gray-900 dark:text-gray-100 font-medium">{token.word}</span>
@@ -33,6 +39,7 @@ export const AstToken: React.FC<{
             <Tag key={token.meaning} type="meaning" label="意味" value={token.meaning} />
           )}
           {token.kana && <Tag key={token.kana} type="kana" label="仮名" value={token.kana} />}
+          
         </div>
 
         <div className="pl-2"></div>
@@ -54,6 +61,8 @@ export const AstTokens: React.FC<AstTokensProps> = ({
   onTokenClick,
   onClick,
   onAddToken,
+  onTokenHover,
+  onTokenLeave,
 }) => {
   if (!ast) return null;
 
@@ -72,6 +81,8 @@ export const AstTokens: React.FC<AstTokensProps> = ({
               onAdd={(token) => {
                 onAddToken?.(token);
               }}
+              onHover={onTokenHover}
+              onLeave={onTokenLeave}
               token={token}
             />
           ))}
@@ -83,7 +94,12 @@ export const AstTokens: React.FC<AstTokensProps> = ({
         <div className="flex ml-4 pl-4">
           {ast.children.map((child, index) => (
             <>
-              <AstTokens key={index} ast={child} />
+              <AstTokens 
+                key={index} 
+                ast={child} 
+                onTokenHover={onTokenHover}
+                onTokenLeave={onTokenLeave}
+              />
               {/* 在非最后一个子节点后添加分隔符 */}
               {index < (ast.children ?? []).length - 1 && (
                 <div className="my-8 border-b border-gray-200 dark:border-gray-700" />

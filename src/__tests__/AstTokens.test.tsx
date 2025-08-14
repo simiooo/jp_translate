@@ -13,7 +13,11 @@ describe('AstTokens', () => {
           meaning: 'Test meaning',
           kana: 'テスト',
           lemma: 'Test lemma',
-          inflection: 'Test inflection'
+          inflection: 'Test inflection',
+          position: {
+            start: 0,
+            end: 5
+          }
         }
       ]
     }

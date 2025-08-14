@@ -76,6 +76,8 @@ const WordCard: React.FC<WordCardProps> = ({
             </p>
           </div>
         )}
+        
+    
       </div>
     </div>
   );

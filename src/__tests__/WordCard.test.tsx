@@ -10,7 +10,11 @@ describe('WordCard', () => {
       kana: 'テスト',
       meaning: 'Test meaning',
       lemma: 'Test lemma',
-      inflection: 'Test inflection'
+      inflection: 'Test inflection',
+      position: {
+        start: 0,
+        end: 5
+      }
     }
     const { container } = render(<WordCard token={token} />)
     expect(container).toMatchSnapshot()

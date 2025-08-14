@@ -1,5 +1,10 @@
 export type POS = "adverb" | "conjunction" | "verb" | "adjective" | "numeral" | "particle" | "fixed_phrase" | "other";
 
+export interface Position {
+  start: number; // Start character offset in the original sentence
+  end: number;   // End character offset in the original sentence
+}
+
 export interface Token {
   word: string; // 单词或短语
   pos: POS; // 词性
@@ -7,6 +12,7 @@ export interface Token {
   kana: string | null; //词的含义
   lemma: string | null; // 词的原型（如果有的话）
   inflection: string | null; // 词的变形（如果有的话）
+  position?: Position; // Source code position information
 }
 
 export interface AST {
