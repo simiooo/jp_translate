@@ -110,6 +110,12 @@ export const HistorySidebar: React.FC<HistorySidebarProps> = ({
 }) => {
   const listContainerRef = React.useRef<VListHandle>(null);
   const [searchQuery, setSearchQuery] = React.useState("");
+  const [vlistKey, setVlistKey] = React.useState(0);
+
+  // Reset VList key when collapsing/expanding to prevent rendering artifacts
+  React.useEffect(() => {
+    setVlistKey(prev => prev + 1);
+  }, [isHistoryCollapsed]);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
@@ -125,6 +131,14 @@ export const HistorySidebar: React.FC<HistorySidebarProps> = ({
       onPageChange(page + 1);
     }
   }, [hasMore, isLoadingMore, isError, onPageChange, page]);
+
+  // Reset VList when translations change significantly to prevent rendering artifacts
+  React.useEffect(() => {
+    if (listContainerRef.current) {
+      // Force VList to reset its internal state when translations change
+      listContainerRef.current.scrollTo(0);
+    }
+  }, [translations.length]);
 
   return (
     <div
@@ -165,15 +179,17 @@ export const HistorySidebar: React.FC<HistorySidebarProps> = ({
             />
           </div>
         )}
-        <div className="flex-1">
+        <div className="flex-1 relative">
           
             <Spinner loading={historyLoading}>
               <VList
-              ref={listContainerRef}
+                ref={listContainerRef}
                 count={translations?.length || 0}
                 overscan={10}
                 onScroll={checkScrollPosition}
                 itemSize={isHistoryCollapsed ? 60 : 100}
+                key={`vlist-${vlistKey}-${isHistoryCollapsed ? 'collapsed' : 'expanded'}`}
+                style={{ position: 'relative', zIndex: 1 }}
               >
                 {(index: number) => {
                   const record = translations?.[index];
