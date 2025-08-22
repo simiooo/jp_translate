@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import WordCard from "../components/WordCard";
 import { Token } from "../types/jp_ast";
 import { useAntdTable } from "ahooks";
@@ -7,15 +7,31 @@ import { alovaInstance } from "~/utils/request";
 import { useNavigate } from "react-router";
 import { FaBookOpen } from "react-icons/fa6";
 import Spinner from "~/components/Spinner";
-import { VList, VListHandle } from "virtua";
+import { Grid, GridCellRenderer } from "react-virtualized";
 import { useThrottleFn } from "ahooks";
 
 
 const Vocabulary: React.FC = () => {
   // Sample data for demonstration
   const navigate = useNavigate();
-  const listContainerRef = useRef<VListHandle>(null);
+  const gridRef = useRef<Grid>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [windowSize, setWindowSize] = useState({
+    width: window.innerWidth,
+    height: window.innerHeight
+  });
+
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowSize({
+        width: window.innerWidth,
+        height: window.innerHeight
+      });
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const {
     tableProps: wordsTableProps,
@@ -102,13 +118,8 @@ const Vocabulary: React.FC = () => {
 
   // 处理滚动加载 (带节流)
   const { run: throttledCheckScroll } = useThrottleFn(
-    () => {
-      if (!listContainerRef.current) return;
-      const isAtBottom =
-        listContainerRef.current.scrollOffset +
-          listContainerRef.current.viewportSize +
-          10 >
-        listContainerRef.current.scrollSize;
+    ({ scrollTop, clientHeight, scrollHeight }: { scrollTop: number; clientHeight: number; scrollHeight: number }) => {
+      const isAtBottom = scrollTop + clientHeight + 10 > scrollHeight;
 
       const hasMore =
         wordsTableProps?.dataSource?.length <
@@ -121,6 +132,59 @@ const Vocabulary: React.FC = () => {
     },
     { wait: 200 }
   );
+
+  const cellRenderer: GridCellRenderer = ({ columnIndex, rowIndex, key, style }) => {
+    const index = rowIndex * 2 + columnIndex;
+    const token = wordsTableProps?.dataSource?.[index];
+    
+    if (!token) return <div key={key} style={style} />;
+    
+    return (
+      <div key={key} style={{ ...style, padding: '8px' }}>
+        <WordCard
+          token={token}
+          isSelected={selectedTokens.has(token.word)}
+          onSelect={() => handleTokenSelect(token.word)}
+          onEdit={() => handleTokenEdit(token)}
+          onDelete={() => handleTokenDelete(token)}
+        />
+      </div>
+    );
+  };
+
+  // 计算列数和宽度
+  const calculateGridDimensions = () => {
+    const containerWidth = windowSize.width - 64; // 减去padding
+    const columnWidth = 300; // 固定卡片宽度
+    const columnCount = Math.max(1, Math.floor(containerWidth / columnWidth));
+    const rowCount = Math.ceil((wordsTableProps?.dataSource?.length || 0) / columnCount);
+    
+    return { columnCount, columnWidth, rowCount };
+  };
+
+  const { columnCount, columnWidth, rowCount } = calculateGridDimensions();
+
+  // 检查是否需要加载更多数据来填满容器
+  useEffect(() => {
+    if (!gridRef.current || !wordsTableProps?.dataSource?.length || wordsLoading ||
+        wordsTableProps.dataSource.length >= (wordsTableProps.pagination?.total ?? 0)) return;
+
+    // 给一点时间让网格渲染完成
+    const timer = setTimeout(() => {
+      if (gridRef.current) {
+        // 检查内容高度是否小于容器高度
+        const contentHeight = rowCount * 200; // rowHeight是200
+        const containerHeight = windowSize.height - 200;
+        
+        if (contentHeight < containerHeight) {
+          const nextPage = (wordsTableProps.pagination?.current ?? 1) + 1;
+          wordsRunAsync({ current: nextPage, pageSize: 10 }, undefined);
+        }
+      }
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, [wordsTableProps?.dataSource?.length, rowCount, windowSize.height, wordsLoading, wordsTableProps?.pagination, wordsRunAsync]);
 
   return (
     <Spinner loading={wordsLoading}>
@@ -151,31 +215,19 @@ const Vocabulary: React.FC = () => {
             </div>
 
             <div className="flex-grow">
-              <VList
-                ref={listContainerRef}
-                count={wordsTableProps?.dataSource?.length ?? 0}
-                overscan={10}
-                itemSize={180}
-                className=""
+              <Grid
+                ref={gridRef}
+                width={windowSize.width - 64}
+                height={windowSize.height - 200} // 减去header和padding的高度
+                columnCount={columnCount}
+                columnWidth={columnWidth}
+                rowCount={rowCount}
+                rowHeight={200} // 固定行高
+                cellRenderer={cellRenderer}
+                overscanRowCount={10}
                 onScroll={throttledCheckScroll}
-              >
-                {(index) => {
-                  const token = wordsTableProps?.dataSource?.[index];
-                  if (!token) return <div>暂无单词</div>;
-                  return (
-                    <div className="m-2">
-                      <WordCard
-                        key={`${token.word}-${index}`}
-                        token={token}
-                        isSelected={selectedTokens.has(token.word)}
-                        onSelect={() => handleTokenSelect(token.word)}
-                        onEdit={() => handleTokenEdit(token)}
-                        onDelete={() => handleTokenDelete(token)}
-                      />
-                    </div>
-                  );
-                }}
-              </VList>
+                style={{ outline: 'none' }}
+              />
             </div>
             {/* Virtualized word cards grid */}
 

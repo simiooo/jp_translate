@@ -1,7 +1,7 @@
 import React from "react";
 import { TranslationRecord } from "~/types/history";
 import Spinner from "~/components/Spinner";
-import { VList, VListHandle } from "virtua";
+import { List, ListRowRenderer } from "react-virtualized";
 import { FaAngleLeft,FaAngleRight  } from "react-icons/fa6";
 
 
@@ -108,7 +108,37 @@ export const HistorySidebar: React.FC<HistorySidebarProps> = ({
   isError,
   onSearchChange,
 }) => {
-  const listContainerRef = React.useRef<VListHandle>(null);
+  const listContainerRef = React.useRef<List>(null);
+  const [windowHeight, setWindowHeight] = React.useState(window.innerHeight);
+
+  React.useEffect(() => {
+    const handleResize = () => {
+      setWindowHeight(window.innerHeight);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // 检查是否需要加载更多数据来填满容器
+  React.useEffect(() => {
+    if (!listContainerRef.current || !translations.length || isLoadingMore || !hasMore) return;
+
+    // 给一点时间让列表渲染完成
+    const timer = setTimeout(() => {
+      if (listContainerRef.current) {
+        // 检查内容高度是否小于容器高度
+        const contentHeight = translations.length * (isHistoryCollapsed ? 60 : 100);
+        const containerHeight = windowHeight - 51 - 120;
+        
+        if (contentHeight < containerHeight && hasMore && !isLoadingMore) {
+          onPageChange(page + 1);
+        }
+      }
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, [translations.length, windowHeight, isHistoryCollapsed, hasMore, isLoadingMore, onPageChange, page]);
   const [searchQuery, setSearchQuery] = React.useState("");
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -116,15 +146,55 @@ export const HistorySidebar: React.FC<HistorySidebarProps> = ({
     onSearchChange(e.target.value);
   };
 
-  const checkScrollPosition = React.useCallback(() => {
-    if (!listContainerRef.current) return;
-    const isAtBottom = listContainerRef.current.scrollOffset  + listContainerRef.current.viewportSize + 10 > listContainerRef.current.scrollSize
-    // console.log(listContainerRef.current.scrollOffset, listContainerRef.current.viewportSize,listContainerRef.current.scrollSize);
+  const checkScrollPosition = React.useCallback(({ scrollTop, clientHeight, scrollHeight }: { scrollTop: number; clientHeight: number; scrollHeight: number }) => {
+    const isAtBottom = scrollTop + clientHeight + 10 > scrollHeight;
     
     if (isAtBottom && hasMore && !isLoadingMore && !isError) {
       onPageChange(page + 1);
     }
   }, [hasMore, isLoadingMore, isError, onPageChange, page]);
+
+  const rowRenderer: ListRowRenderer = ({ index, key, style }) => {
+    const record = translations?.[index];
+    if (!record) return <div key={key} style={style} />;
+    
+    return (
+      <div
+        key={key}
+        style={style}
+        className="py-4 px-2 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer"
+        onClick={() => {
+          onSelectHistoryItem(record.source_text);
+          setShowHistory(false);
+        }}
+      >
+        {isHistoryCollapsed ? (
+          <div className="text-center">
+            <div
+              className={`inline-block w-8 h-8 ${COLOR_VARIANTS[index % COLOR_VARIANTS.length].bg}
+              rounded-full flex items-center justify-center text-lg font-semibold
+              ${COLOR_VARIANTS[index % COLOR_VARIANTS.length].text}
+              `}
+            >{record.source_text.slice(0, 1)}</div>
+          </div>
+        ) : (
+          <>
+            <div className="text-xs text-gray-500 dark:text-gray-400 mb-2">
+              {new Date(record.created_at).toLocaleString()}
+            </div>
+            <div className="text-sm text-gray-700 dark:text-gray-300 line-clamp-2">
+              {record.source_text}
+            </div>
+            <div className="text-sm text-gray-900 dark:text-gray-100 line-clamp-2 mt-1">
+              {typeof record.translated_text === 'object'
+                ? (record.translated_text as unknown as ParsedTranslation)?.translation
+                : record.translated_text}
+            </div>
+          </>
+        )}
+      </div>
+    );
+  };
 
   return (
     <div
@@ -168,54 +238,17 @@ export const HistorySidebar: React.FC<HistorySidebarProps> = ({
         <div className="flex-1">
           
             <Spinner loading={historyLoading}>
-              <VList
-              ref={listContainerRef}
-                count={translations?.length || 0}
-                overscan={10}
+              <List
+                ref={listContainerRef}
+                width={isHistoryCollapsed ? 48 : 256}
+                height={windowHeight - 51 - 120} // 减去header和search的高度
+                rowCount={translations?.length || 0}
+                rowHeight={isHistoryCollapsed ? 60 : 100}
+                rowRenderer={rowRenderer}
+                overscanRowCount={10}
                 onScroll={checkScrollPosition}
-                itemSize={isHistoryCollapsed ? 60 : 100}
-              >
-                {(index: number) => {
-                  const record = translations?.[index];
-                  if (!record) return <></>;
-                  return (
-                    <div
-                      key={record?.source_text + record?.created_at + record?.target_lang}
-                      className="py-4 px-2  hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer"
-                      onClick={() => {
-                        onSelectHistoryItem(record.source_text);
-                        setShowHistory(false);
-                      }}
-                    >
-                      {isHistoryCollapsed ? (
-                        <div className="text-center ">
-                          <div
-                          className={`inline-block w-8 h-8 ${COLOR_VARIANTS[index % COLOR_VARIANTS.length].bg}
-                          rounded-full flex items-center justify-center text-lg font-semibold
-                          ${COLOR_VARIANTS[index % COLOR_VARIANTS.length].text}
-                          `}
-                          >{record.source_text.slice(0, 1)}</div>
-                          
-                        </div>
-                      ) : (
-                        <>
-                          <div className="text-xs text-gray-500 dark:text-gray-400 mb-2">
-                            {new Date(record.created_at).toLocaleString()}
-                          </div>
-                          <div className="text-sm text-gray-700 dark:text-gray-300 line-clamp-2">
-                            {record.source_text}
-                          </div>
-                          <div className="text-sm text-gray-900 dark:text-gray-100 line-clamp-2 mt-1">
-                            {typeof record.translated_text === 'object' 
-                              ? (record.translated_text as unknown as ParsedTranslation)?.translation 
-                              : record.translated_text}
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  );
-                }}
-              </VList>
+                style={{ outline: 'none' }}
+              />
               {!hasMore && translations.length > 0 && (
                 <div className="p-4 text-center text-sm text-gray-500 dark:text-gray-400">
                   没有更多数据了
