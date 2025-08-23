@@ -173,10 +173,10 @@ function App() {
               fullResponse += data.data?.text?.trim?.();
               try {
                 if ((data.data?.text ?? "")?.length > 0) {
-                  if(fullResponse.trim().startsWith("[TEXT]")) {
-                    fullResponse = fullResponse.slice(6)
-                  }
-                  console.log(fullResponse)
+                  // if(fullResponse.trim().startsWith("[TEXT]")) {
+                  //   fullResponse = fullResponse.slice(6)
+                  // }
+                  // console.log(fullResponse)
                   const translationData = JSON.parse(
                     jsonrepair(fullResponse)
                   ) as TranslationResult;
