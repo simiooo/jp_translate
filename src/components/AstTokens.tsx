@@ -32,9 +32,7 @@ export const AstToken: React.FC<{
           {token.word}
         </span>
         <div className="flex gap-2 ml-2">
-          {(token.pos ?? []).map((pos) => (
-            <Tag key={pos} type="pos" label={pos} />
-          ))}
+          
 
           {token.lemma && (
             <Tag
@@ -52,6 +50,9 @@ export const AstToken: React.FC<{
               value={token.inflection}
             />
           )}
+          {(token.pos ?? []).map((pos) => (
+            <Tag key={pos} type="pos" label={pos} />
+          ))}
           {token.meaning && (
             <Tag
               key={token.meaning}
