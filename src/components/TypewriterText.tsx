@@ -54,7 +54,7 @@ export interface TypewriterTextProps {
 }
 export const TypewriterText = ({ text, delay = 0, charDelay = 0.05, duration = 0.1 }: TypewriterTextProps) => {
   const controls = useAnimation();
-  const characters = (text ?? "").split('');
+  const characters = (text ?? "")?.split('');
 
   useEffect(() => {
     const sequence = async () => {

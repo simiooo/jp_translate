@@ -28,25 +28,47 @@ export const AstToken: React.FC<{
         onMouseLeave={() => onLeave?.()}
         className="inline-flex items-center bg-gray-50 dark:bg-gray-700 rounded-lg p-2 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"
       >
-        <span className="text-gray-900 dark:text-gray-100 font-medium">{token.word}</span>
+        <span className="text-gray-900 dark:text-gray-100 font-medium">
+          {token.word}
+        </span>
         <div className="flex gap-2 ml-2">
-          <Tag key={token.pos} type="pos" label={token.pos} />
-          {token.lemma && <Tag type="lemma" key={token.lemma} label="原型" value={token.lemma} />}
+          {(token.pos ?? []).map((pos) => (
+            <Tag key={pos} type="pos" label={pos} />
+          ))}
+
+          {token.lemma && (
+            <Tag
+              type="lemma"
+              key={token.lemma}
+              label="原型"
+              value={token.lemma}
+            />
+          )}
           {token.inflection && (
-            <Tag type="inflection" label="変形" key={token.inflection} value={token.inflection} />
+            <Tag
+              type="inflection"
+              label="変形"
+              key={token.inflection}
+              value={token.inflection}
+            />
           )}
           {token.meaning && (
-            <Tag key={token.meaning} type="meaning" label="意味" value={token.meaning} />
+            <Tag
+              key={token.meaning}
+              type="meaning"
+              label="意味"
+              value={token.meaning}
+            />
           )}
-          {token.kana && <Tag key={token.kana} type="kana" label="仮名" value={token.kana} />}
-          
+          {token.kana && (
+            <Tag key={token.kana} type="kana" label="仮名" value={token.kana} />
+          )}
         </div>
 
         <div className="pl-2"></div>
 
         <div>
-          <Button 
-          onClick={() => onAdd?.(token)} variant="link" size="sm">
+          <Button onClick={() => onAdd?.(token)} variant="link" size="sm">
             +
           </Button>
         </div>
@@ -94,9 +116,9 @@ export const AstTokens: React.FC<AstTokensProps> = ({
         <div className="flex ml-4 pl-4">
           {ast.children.map((child, index) => (
             <>
-              <AstTokens 
-                key={index} 
-                ast={child} 
+              <AstTokens
+                key={index}
+                ast={child}
                 onTokenHover={onTokenHover}
                 onTokenLeave={onTokenLeave}
               />
