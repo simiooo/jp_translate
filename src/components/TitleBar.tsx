@@ -6,6 +6,7 @@ import {
   FaArrowRight,
   FaBookmark,
   FaCameraRetro,
+  FaUser,
 } from "react-icons/fa";
 import { Button } from "~/components/ui/button";
 import { isElectron, electronAPI } from "~/utils/electron";
@@ -90,6 +91,15 @@ export default function TitleBar({ }: TitleBarProps) {
             variant={location.pathname === "/recognize" ? "outline" : "ghost"}
           >
             <FaCameraRetro className="" />
+          </Button>
+          <Button
+            onClick={() => {
+              navigate("/profile");
+            }}
+            size="sm"
+            variant={location.pathname === "/profile" ? "outline" : "ghost"}
+          >
+            <FaUser className="" />
           </Button>
         </div>
 

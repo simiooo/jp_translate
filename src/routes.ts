@@ -5,6 +5,7 @@ export default [
     index("./pages/Home.tsx"),
     route("login", "./pages/LoginPage.tsx"),
     route("register", "./pages/RegisterPage.tsx"),
+    route("profile", "./pages/ProfilePage.tsx"),
     route("vocabulary", "./pages/Vocabulary.tsx"),
     route("recognize", "./pages/Recognize.tsx")
   ]),

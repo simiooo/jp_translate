@@ -19,6 +19,9 @@ type Pages = {
   "/register": {
     params: {};
   };
+  "/profile": {
+    params: {};
+  };
   "/vocabulary": {
     params: {};
   };
@@ -30,11 +33,11 @@ type Pages = {
 type RouteFiles = {
   "root.tsx": {
     id: "root";
-    page: "/" | "/login" | "/register" | "/vocabulary" | "/recognize";
+    page: "/" | "/login" | "/register" | "/profile" | "/vocabulary" | "/recognize";
   };
   "./layout/rootLayout.tsx": {
     id: "layout/rootLayout";
-    page: "/" | "/login" | "/register" | "/vocabulary" | "/recognize";
+    page: "/" | "/login" | "/register" | "/profile" | "/vocabulary" | "/recognize";
   };
   "./pages/Home.tsx": {
     id: "pages/Home";
@@ -47,6 +50,10 @@ type RouteFiles = {
   "./pages/RegisterPage.tsx": {
     id: "pages/RegisterPage";
     page: "/register";
+  };
+  "./pages/ProfilePage.tsx": {
+    id: "pages/ProfilePage";
+    page: "/profile";
   };
   "./pages/Vocabulary.tsx": {
     id: "pages/Vocabulary";
