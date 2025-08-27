@@ -244,8 +244,8 @@ function App() {
 
           body: JSON.stringify({
             source_text: data.text,
-            image_url: files?.[0]?.ID
-              ? `${location.origin}/api/files/${files?.[0].ID}`
+            image_url: data.imgURL
+              ? `${location.origin}/api/files/${data.imgURL}`
               : null,
           }),
           onMessage(data: EventData<{ text?: string; message?: string }>) {
@@ -515,7 +515,7 @@ function App() {
                               <CarouselContent className="">
                                 {fileList.map((file) => {
                                   return (
-                                    <CarouselItem className="basis-1">
+                                    <CarouselItem className="">
                                       <Card className="p-1 px-0">
                                         <CardContent className="p-1">
                                           <div className="flex justify-end gap-1 pb-1">
