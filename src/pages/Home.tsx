@@ -1,21 +1,22 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Token, TranslationResult } from "../types/jp_ast";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { jsonrepair } from "jsonrepair";
-import { type TranslationFormData, translationFormSchema } from "../schemas/translation";
+import {
+  type TranslationFormData,
+  translationFormSchema,
+} from "../schemas/translation";
 import { Toast } from "../components/ToastCompat";
 import { useAntdTable, useKeyPress, useRequest, useThrottle } from "ahooks";
 import { Cursor } from "../components/Cursor";
 import { AstTokens } from "../components/AstTokens";
+import { AiOutlineLoading } from "react-icons/ai";
+import { IoImageOutline } from "react-icons/io5";
 import { createPortal } from "react-dom";
 import type { Route } from "./+types/Home";
 import Markdown from "react-markdown";
-import {
-  alovaInstance,
-  createSSEStream,
-  EventData,
-} from "~/utils/request";
+import { alovaInstance, createSSEStream, EventData } from "~/utils/request";
 import { PaginatedResponse, TranslationRecord } from "~/types/history";
 import { HistorySidebar } from "../components/HistorySidebar";
 import { Button } from "~/components/ui/button";
@@ -36,10 +37,7 @@ import {
 } from "~/components/ui/tooltip";
 import { Modal, useModal } from "~/components/ModalCompat";
 import { isElectron } from "~/utils/electron";
-import {
-  ImageUploaderRef,
-  UploadFile,
-} from "~/components/ImageUploader";
+import { ImageUploaderRef, UploadFile } from "~/components/ImageUploader";
 import { motion } from "framer-motion";
 import {
   ResizableHandle,
@@ -47,6 +45,26 @@ import {
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
 import { Input } from "~/components/ui/input";
+import { MdDelete, MdOutlineTranslate } from "react-icons/md";
+import { UploadFileItem, useFileUpload } from "~/hooks/useFileUpload";
+import { toast } from "sonner";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "~/components/ui/carousel";
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "~/components/ui/card";
+import { Badge } from "~/components/ui/badge";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -87,6 +105,23 @@ function App() {
     },
   });
 
+  const uploadBtnRef = useRef<HTMLInputElement>(null);
+
+  const {
+    fileList,
+    addFiles,
+    removeFile,
+    updateFile,
+    clearFiles,
+    retryUpload,
+    uploadFile,
+    loading: fileUploadLoading,
+  } = useFileUpload({
+    maxCount: 1
+  });
+  useEffect(() => {
+    form.setValue("imgURL", fileList[0]?.URL);
+  }, [fileList])
   const {
     tableProps: history,
     refresh: historyRefresh,
@@ -175,11 +210,13 @@ function App() {
     }
   );
   useKeyPress("alt.enter", () => {
-    console.log('sub')
+    console.log("sub");
     form.handleSubmit(onSubmit)();
   });
 
   useKeyPress("alt.q", () => {
+    console.log("text focus");
+
     form.setFocus("text");
   });
 
@@ -363,6 +400,88 @@ function App() {
                     <ResizablePanel>
                       <div className="">
                         <div className="p-4">
+                          <div className="flex">
+                            <FormField
+                              control={form.control}
+                              name="imgURL"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>
+                                    <Button
+                                      className=""
+                                      variant={"ghost"}
+                                      disabled={fileUploadLoading}
+                                      onClick={(e) => {
+                                        e.preventDefault();
+                                        uploadBtnRef.current?.click();
+                                      }}
+                                    >
+                                      <IoImageOutline></IoImageOutline>
+                                    </Button>
+                                  </FormLabel>
+                                  <Input
+                                    type="file"
+                                    accept="image/*"
+                                    className="hidden"
+                                    id="image-upload-input"
+                                    ref={uploadBtnRef}
+                                    onChange={async (e) => {
+                                      try {
+                                        const thisFile = e.target.files?.[0];
+                                        let uploadableFile:
+                                          | UploadFileItem
+                                          | undefined;
+                                        if (
+                                          (uploadableFile = fileList?.find?.(
+                                            (el) =>
+                                              el.FileName === thisFile?.name
+                                          ))
+                                        ) {
+                                          await retryUpload(uploadableFile.uid);
+                                          return;
+                                        }
+                                        if (
+                                          thisFile?.name &&
+                                          thisFile.size > 0
+                                        ) {
+                                          await addFiles([thisFile]);
+                                        }
+                                      } catch (error) {
+                                        toast("Failed to upload file");
+                                        console.error(error);
+                                      }
+                                    }}
+                                  />
+                                  <FormControl>
+                                    <input {...field} className="hidden" type="text" />
+                                  </FormControl>
+
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            <div className="p-1"></div>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  key="submit"
+                                  ref={submitRef}
+                                  // variant={'ghost'}
+                                  type="submit"
+                                  disabled={
+                                    loading || form.formState.isSubmitting
+                                  }
+                                >
+                                  <MdOutlineTranslate />
+                                  {loading ? "翻译中..." : "翻译"}
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent side="bottom">
+                                按 Alt + Enter 提交
+                              </TooltipContent>
+                            </Tooltip>
+                          </div>
+                          <div className="p-1"></div>
                           <FormField
                             control={form.control}
                             name="text"
@@ -391,115 +510,115 @@ function App() {
                               />
                             </div>
                           )}
+                          {fileList?.length > 0 && <div className="px-12 py-8">
+                            <Carousel>
+                              <CarouselContent className="">
+                                {fileList.map((file) => {
+                                  return (
+                                    <CarouselItem className="basis-1">
+                                      <Card className="p-1 px-0">
+                                        <CardContent className="p-1">
+                                          <div className="flex justify-end gap-1 pb-1">
+                                            <Badge
+                                            variant={"outline"}
+                                            >
+                                              {file.status}
+                                            </Badge>
 
-                          <div className="p-1"></div>
+                                            <Button
+                                              size={"sm"}
+                                              variant={"ghost"}
+                                              onClick={(e) => {
+                                                e.preventDefault()
+                                                if(!file?.uid)return
+                                                removeFile(file?.uid)
+                                              }}
+                                            >
+                                              <MdDelete />
+                                            </Button>
+                                          </div>
 
-                          <FormField
-                            control={form.control}
-                            name="imgURL"
-                            render={({ field }) => (
-                              <FormItem>
-                                {/* <FormLabel>图片上传</FormLabel> */}
-                                <FormControl>
-                                  <Input
-                                    type="file"
-                                    accept="image/*"
-                                    className=""
-                                    id="image-upload-input"
-                                    multiple
-                                    onChange={(e) => {
-                                      // Handle file upload if needed
-                                      field.onChange(e.target.value);
-                                    }}
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <div className="p-1"></div>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                key="submit"
-                                ref={submitRef}
-                                type="submit"
-                                disabled={loading || form.formState.isSubmitting}
-                              >
-                                {loading ? "翻译中..." : "翻译"}
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent side="bottom">
-                              按 Alt + Enter 提交
-                            </TooltipContent>
-                          </Tooltip>
-                          
+                                          <img
+                                            className="h-full object-cover"
+                                            src={file.URL}
+                                            alt={file?.FileName}
+                                          />
+                                        </CardContent>
+                                      </Card>
+                                    </CarouselItem>
+                                  );
+                                })}
+                              </CarouselContent>
+                              <CarouselPrevious />
+                              <CarouselNext />
+                            </Carousel>
+                          </div>}
                         </div>
                       </div>
-                  </ResizablePanel>
-                  <ResizableHandle />
-                  <ResizablePanel>
-                    <div className="">
-                      <div className="relative h-[calc(100vh-121px)]">
-                        {loading && (
-                          <div className="absolute top-4 right-4 z-10">
-                            <Skeleton className="h-8 w-8 rounded-full" />
-                          </div>
-                        )}
-                        <div className="h-full flex flex-col bg-card rounded-lg">
-                          {translation || loading ? (
-                            <>
-                              <div className="p-4  max-h-[40%] overflow-auto">
-                                <div className="flex justify-between items-start">
-                                  {translation?.error && (
-                                    <div className="bg-amber-50 border-amber-800 border-2 rounded-2xl p-1 pl-2 pr-2 text-amber-800">
-                                      {translation?.error}
-                                    </div>
-                                  )}
-                                  <div className="inline-flex gap-2 text-foreground">
-                                    <Markdown>
-                                      {translation?.translation ?? ""}
-                                    </Markdown>
-                                    <div className="inline-flex items-center gap-2">
-                                      {loading && <Cursor />}
+                    </ResizablePanel>
+                    <ResizableHandle />
+                    <ResizablePanel>
+                      <div className="">
+                        <div className="relative h-[calc(100vh-121px)]">
+                          {loading && (
+                            <div className="absolute top-4 right-4 z-10">
+                              <Skeleton className="h-8 w-8 rounded-full" />
+                            </div>
+                          )}
+                          <div className="h-full flex flex-col bg-card rounded-lg">
+                            {translation || loading ? (
+                              <>
+                                <div className="p-4  max-h-[40%] overflow-auto">
+                                  <div className="flex justify-between items-start">
+                                    {translation?.error && (
+                                      <div className="bg-amber-50 border-amber-800 border-2 rounded-2xl p-1 pl-2 pr-2 text-amber-800">
+                                        {translation?.error}
+                                      </div>
+                                    )}
+                                    <div className="inline-flex gap-2 text-foreground">
+                                      <Markdown>
+                                        {translation?.translation ?? ""}
+                                      </Markdown>
+                                      <div className="inline-flex items-center gap-2">
+                                        {loading && <Cursor />}
+                                      </div>
                                     </div>
                                   </div>
                                 </div>
-                              </div>
 
-                              <div className="flex-1 p-4 overflow-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-gray-100 dark:scrollbar-track-gray-800 hover:scrollbar-thumb-gray-400 dark:hover:scrollbar-thumb-gray-500">
-                                <AstTokens
-                                  ast={translation?.ast}
-                                  loading={loading}
-                                  onAddToken={(token) => {
-                                    if (!token) return;
-                                    openModal(token);
-                                  }}
-                                  onTokenHover={(p) =>
-                                    setHighlightPosition(p ?? null)
-                                  }
-                                  onTokenLeave={() =>
-                                    setHighlightPosition(null)
-                                  }
-                                />
+                                <div className="flex-1 p-4 overflow-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-gray-100 dark:scrollbar-track-gray-800 hover:scrollbar-thumb-gray-400 dark:hover:scrollbar-thumb-gray-500">
+                                  <AstTokens
+                                    ast={translation?.ast}
+                                    loading={loading}
+                                    onAddToken={(token) => {
+                                      if (!token) return;
+                                      openModal(token);
+                                    }}
+                                    onTokenHover={(p) =>
+                                      setHighlightPosition(p ?? null)
+                                    }
+                                    onTokenLeave={() =>
+                                      setHighlightPosition(null)
+                                    }
+                                  />
+                                </div>
+                              </>
+                            ) : (
+                              <div className="h-full flex items-center justify-center text-muted-foreground">
+                                翻译结果将在这里显示
                               </div>
-                            </>
-                          ) : (
-                            <div className="h-full flex items-center justify-center text-muted-foreground">
-                              翻译结果将在这里显示
-                            </div>
-                          )}
+                            )}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </ResizablePanel>
-                </ResizablePanelGroup>
-              </div>
+                    </ResizablePanel>
+                  </ResizablePanelGroup>
+                </div>
 
-              {createPortal(
-                loading && (
-                  <div
-                    className="
+                {createPortal(
+                  loading && (
+                    <div
+                      className="
           absolute
           left-1/2
           top-1/2
@@ -507,13 +626,13 @@ function App() {
           -translate-x-1/2
           -translate-y-1/2
           "
-                  ></div>
-                ),
-                document.documentElement
-              )}
-            </div>
-          </form>
-        </Form>
+                    ></div>
+                  ),
+                  document.documentElement
+                )}
+              </div>
+            </form>
+          </Form>
         </div>
       </div>
       <Modal isOpen={isOpen} onClose={closeModal} title="Word" size="lg">
