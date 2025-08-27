@@ -7,12 +7,17 @@ import {
   FaBookmark,
   FaCameraRetro,
 } from "react-icons/fa";
-import { Button } from "~/components/Button";
+import { Button } from "~/components/ui/button";
 import { isElectron, electronAPI } from "~/utils/electron";
 import { useToggle } from "ahooks";
 import { useNavigate, useLocation } from "react-router";
-import { Tooltip } from "~/components/Tooltip";
-import { Switch } from "~/components/Switch";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "~/components/ui/tooltip";
+import { Switch } from "~/components/ui/switch";
 import styles from "./TitleBar.module.css";
 
 interface TitleBarProps {
@@ -61,7 +66,7 @@ export default function TitleBar({ }: TitleBarProps) {
         <div className="flex space-x-4">
           <Button
             size="sm"
-            variant={location.pathname === "/" ? "normal" : "text"}
+            variant={location.pathname === "/" ? "outline" : "ghost"}
             onClick={() => {
               navigate("/");
             }}
@@ -73,7 +78,7 @@ export default function TitleBar({ }: TitleBarProps) {
               navigate("/vocabulary");
             }}
             size="sm"
-            variant={location.pathname === "/vocabulary" ? "normal" : "text"}
+            variant={location.pathname === "/vocabulary" ? "outline" : "ghost"}
           >
             <FaBookmark className="" />
           </Button>
@@ -82,7 +87,7 @@ export default function TitleBar({ }: TitleBarProps) {
               navigate("/recognize");
             }}
             size="sm"
-            variant={location.pathname === "/recognize" ? "normal" : "text"}
+            variant={location.pathname === "/recognize" ? "outline" : "ghost"}
           >
             <FaCameraRetro className="" />
           </Button>
@@ -93,11 +98,18 @@ export default function TitleBar({ }: TitleBarProps) {
             <Switch />
           </div>
           <div>
-            <Tooltip content="Sign Out" placement="bottom">
-              <Button onClick={handleSignOut} variant="text">
-                <FaArrowRight />
-              </Button>
-            </Tooltip>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button onClick={handleSignOut} variant="ghost">
+                    <FaArrowRight />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom">
+                  Sign Out
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
           <div>
             <div className="inline-flex items-center justify-between dark:bg-gray-800 select-none">
@@ -105,7 +117,7 @@ export default function TitleBar({ }: TitleBarProps) {
               {isElectron() && (
                 <div className="flex space-x-2 no-drag">
                   <Button
-                    variant="text"
+                    variant="ghost"
                     size="sm"
                     onClick={handleMinimize}
                     className="h-6 w-6 p-0 flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-700"
@@ -113,7 +125,7 @@ export default function TitleBar({ }: TitleBarProps) {
                     <FaWindowMinimize className=" dark:text-gray-400" />
                   </Button>
                   <Button
-                    variant="text"
+                    variant="ghost"
                     size="sm"
                     onClick={handleMaximize}
                     className="h-6 w-6 p-0 flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-700"
@@ -125,7 +137,7 @@ export default function TitleBar({ }: TitleBarProps) {
                     )}
                   </Button>
                   <Button
-                    variant="text"
+                    variant="ghost"
                     size="sm"
                     onClick={handleMinimize}
                     className="h-6 w-6 p-0 flex items-center justify-center hover:bg-red-500 hover:text-white"

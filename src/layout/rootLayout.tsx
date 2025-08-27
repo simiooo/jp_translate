@@ -1,5 +1,6 @@
 import { Outlet } from "react-router";
 import TitleBar from "~/components/TitleBar";
+import { Toaster } from "~/components/ui/sonner";
 
 // 公开路由，不需要认证
 const PUBLIC_ROUTES = ["/login", "/register"];
@@ -8,7 +9,12 @@ export default function RootLayout() {
 
   // 对于公开路由，直接渲染内容
   if (PUBLIC_ROUTES.includes(location.pathname)) {
-    return <Outlet />;
+    return (
+      <>
+        <Outlet />
+        <Toaster />
+      </>
+    );
   }
 
 
@@ -21,9 +27,10 @@ export default function RootLayout() {
       </div>
 
       {/* 主要内容区域 */}
-      <main className="h-[calc(100vh-51px)] overflow-y-auto dark:bg-gray-900">
+      <main className="h-[calc(100vh-53px)] overflow-y-auto dark:bg-gray-900">
         <Outlet />
       </main>
+      <Toaster />
     </div>
   );
 }

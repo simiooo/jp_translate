@@ -1,11 +1,11 @@
 // src/pages/Recognize.tsx
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Button } from "~/components/Button";
+import { Button } from "~/components/ui/button";
 import CameraPreview from "~/components/CameraPreview";
 import { RiCameraLensFill } from "react-icons/ri";
 import { MdOutlineFlipCameraAndroid } from "react-icons/md";
 import { useRequest } from "ahooks";
-import { Modal, useModal } from "~/components/Modal";
+import { Modal, useModal } from "~/components/ModalCompat";
 
 export default function Recognize() {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -126,7 +126,7 @@ export default function Recognize() {
           ></RiCameraLensFill>
         </Button>
         <Button
-          variant="text"
+          variant="ghost"
           onClick={() => {
             setFacingMode(facingMode === "user" ? "environment" : "user");
           }}

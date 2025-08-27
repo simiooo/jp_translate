@@ -9,7 +9,9 @@
     "rootDirs": [".", "./.react-router/types"],
     "paths": {
       "~/*": ["./src/*"],
+      "@/*": ["./src/*"]
     },
+    "baseUrl": ".",
     /* Bundler mode */
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,

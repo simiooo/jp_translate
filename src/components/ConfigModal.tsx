@@ -1,6 +1,39 @@
 import { useForm } from 'react-hook-form'
-import { Button } from './Button'
-import { Select } from './Select'
+import { zodResolver } from '@hookform/resolvers/zod'
+import * as z from 'zod'
+import { Button } from './ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from './ui/dialog'
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from './ui/form'
+import { Input } from './ui/input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from './ui/select'
+
+// Zod validation schema
+const configSchema = z.object({
+  apiUrl: z.string().url('请输入有效的 API URL').min(1, 'API URL 是必填项'),
+  apiKey: z.string().min(1, 'API Key 是必填项'),
+  model: z.string().min(1, '模型名称是必填项'),
+  openaiApiUrl: z.string().url('请输入有效的 OpenAI API URL').min(1, 'OpenAI API URL 是必填项'),
+  openaiApiKey: z.string().min(1, 'OpenAI API Key 是必填项'),
+  voice: z.string().min(1, '请选择音声'),
+});
 
 export interface ConfigFormData {
   apiUrl: string
@@ -19,7 +52,8 @@ interface ConfigModalProps {
 }
 
 export function ConfigModal({ isOpen, onClose, onSave, initialConfig }: ConfigModalProps) {
-  const { register, handleSubmit, formState: { errors } } = useForm<ConfigFormData>({
+  const form = useForm<z.infer<typeof configSchema>>({
+    resolver: zodResolver(configSchema),
     defaultValues: {
       apiUrl: initialConfig.apiUrl || 'https://api.deepseek.com/chat/completions',
       apiKey: initialConfig.apiKey || '',
@@ -30,9 +64,7 @@ export function ConfigModal({ isOpen, onClose, onSave, initialConfig }: ConfigMo
     }
   })
 
-  if (!isOpen) return null
-
-  const onSubmit = (data: ConfigFormData) => {
+  const onSubmit = (data: z.infer<typeof configSchema>) => {
     onSave({
       apiUrl: data.apiUrl.trim(),
       apiKey: data.apiKey.trim(),
@@ -45,115 +77,143 @@ export function ConfigModal({ isOpen, onClose, onSave, initialConfig }: ConfigMo
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-      <div className="bg-white dark:bg-gray-900 rounded-xl shadow-2xl p-8 w-full max-w-md mx-4">
-        <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-6">API 配置</h2>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-              Openai Compatible API URL
-            </label>
-            <input
-              {...register("apiUrl", { required: "API URL 是必填项" })}
-              className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 text-sm rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
-              placeholder="请输入 API URL"
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="w-full max-w-md mx-4">
+        <DialogHeader>
+          <DialogTitle className="text-2xl font-bold">API 配置</DialogTitle>
+        </DialogHeader>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <FormField
+              control={form.control}
+              name="apiUrl"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Openai Compatible API URL</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="请输入 API URL"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-            {errors.apiUrl && (
-              <p className="mt-2 text-sm text-red-600">{errors.apiUrl.message}</p>
-            )}
-          </div>
-          
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-            Openai Compatible API Key
-            </label>
-            <input
-              type="password"
-              {...register("apiKey", { required: "API Key 是必填项" })}
-              className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 text-sm rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
-              placeholder="请输入 API Key"
-            />
-            {errors.apiKey && (
-              <p className="mt-2 text-sm text-red-600">{errors.apiKey.message}</p>
-            )}
-          </div>
-
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-              模型
-            </label>
-            <input
-              {...register("model", { required: "模型名称是必填项" })}
-              className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 text-sm rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
-              placeholder="请输入模型名称"
-            />
-            {errors.model && (
-              <p className="mt-2 text-sm text-red-600">{errors.model.message}</p>
-            )}
-          </div>
-
-          <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">OpenAI TTS 配置</h3>
             
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                  OpenAI API URL
-                </label>
-                <input
-                  {...register("openaiApiUrl", { required: "OpenAI API URL 是必填项" })}
-                  className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 text-sm rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
-                  placeholder="请输入 OpenAI API URL"
-                />
-                {errors.openaiApiUrl && (
-                  <p className="mt-2 text-sm text-red-600">{errors.openaiApiUrl.message}</p>
-                )}
-              </div>
+            <FormField
+              control={form.control}
+              name="apiKey"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Openai Compatible API Key</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="password"
+                      placeholder="请输入 API Key"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                  OpenAI TTS API Key
-                </label>
-                <input
-                  type="password"
-                  {...register("openaiApiKey", { required: "OpenAI API Key 是必填项" })}
-                  className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 text-sm rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
-                  placeholder="请输入 OpenAI API Key"
-                />
-                {errors.openaiApiKey && (
-                  <p className="mt-2 text-sm text-red-600">{errors.openaiApiKey.message}</p>
-                )}
-              </div>
+            <FormField
+              control={form.control}
+              name="model"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>模型</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="请输入模型名称"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                  TTS 音声
-                </label>
-                <Select
-                  {...register("voice")}
-                  options={[
-                    { value: 'alloy', label: 'Alloy' },
-                    { value: 'echo', label: 'Echo' },
-                    { value: 'fable', label: 'Fable' },
-                    { value: 'onyx', label: 'Onyx' },
-                    { value: 'nova', label: 'Nova' },
-                    { value: 'shimmer', label: 'Shimmer' }
-                  ]}
+            <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">OpenAI TTS 配置</h3>
+              
+              <div className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="openaiApiUrl"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>OpenAI API URL</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="请输入 OpenAI API URL"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="openaiApiKey"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>OpenAI TTS API Key</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="password"
+                          placeholder="请输入 OpenAI API Key"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="voice"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>TTS 音声</FormLabel>
+                      <FormControl>
+                        <Select value={field.value} onValueChange={field.onChange}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="选择音声" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="alloy">Alloy</SelectItem>
+                            <SelectItem value="echo">Echo</SelectItem>
+                            <SelectItem value="fable">Fable</SelectItem>
+                            <SelectItem value="onyx">Onyx</SelectItem>
+                            <SelectItem value="nova">Nova</SelectItem>
+                            <SelectItem value="shimmer">Shimmer</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
               </div>
             </div>
-          </div>
 
-          <div className="flex justify-end gap-4 mt-8">
-            <Button type="button" onClick={onClose} variant="secondary">
-              取消
-            </Button>
-            <Button type="submit">
-              保存
-            </Button>
-          </div>
-        </form>
-      </div>
-    </div>
+            <div className="flex justify-end gap-4 mt-8">
+              <Button type="button" onClick={onClose} variant="secondary">
+                取消
+              </Button>
+              <Button type="submit" disabled={form.formState.isSubmitting}>
+                {form.formState.isSubmitting ? '保存中...' : '保存'}
+              </Button>
+            </div>
+          </form>
+        </Form>
+      </DialogContent>
+    </Dialog>
   )
 }

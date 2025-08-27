@@ -1,9 +1,20 @@
 import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import * as z from 'zod'
 import { LoginFormData } from '../types/auth'
-import { Input } from '../components/Input'
-import { Toast } from '../components/Toast'
+import { Input } from '../components/ui/input'
+import { Toast } from '../components/ToastCompat'
 import type { Route } from "./+types/LoginPage";
-import { Button } from '~/components/Button';
+import { Button } from '~/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '~/components/ui/form';
 import { useNavigate } from 'react-router';
 import { alovaInstance } from '~/utils/request';
 import { useRequest } from 'ahooks';
@@ -17,6 +28,12 @@ export function meta({}: Route.MetaArgs) {
   ];
 }
 
+// Zod validation schema
+const loginSchema = z.object({
+  email: z.string().email('请输入有效的邮箱地址'),
+  password: z.string().min(6, '密码至少需要6位字符'),
+})
+
 interface LoginPageProps {
   onLogin: (data: LoginFormData) => void
   onSwitchToRegister: () => void
@@ -28,18 +45,19 @@ export interface User {
 }
 
 export default function LoginPage({ }: LoginPageProps) {
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<LoginFormData>({
-    // mode: 'onBlur',
+  const form = useForm<z.infer<typeof loginSchema>>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: '',
+      password: '',
+    },
   })
+  
   const navigate = useNavigate();
-  const onSubmit = async (data: LoginFormData) => {
-    
+  
+  const onSubmit = async (data: z.infer<typeof loginSchema>) => {
     try {
-      const res=  await alovaInstance.Post<{token?: string, user?: User}>('/api/auth/login', {
+      const res = await alovaInstance.Post<{token?: string, user?: User}>('/api/auth/login', {
         email: data.email,
         password: data.password
       })
@@ -52,7 +70,6 @@ export default function LoginPage({ }: LoginPageProps) {
       console.log(error);
       Toast.error('登录失败，请重试')
       console.log(error);
-      
     }
   }
 
@@ -76,55 +93,73 @@ export default function LoginPage({ }: LoginPageProps) {
   }
 
   return (
-    <div>
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8 bg-white dark:bg-gray-800 p-8 rounded-xl shadow-md">
-        <div className="text-center">
-          <h2 className="mt-6 text-3xl font-extrabold text-gray-900 dark:text-gray-100">用户登录</h2>
-        </div>
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit(onSubmit)}>
-          <div className=" space-y-4">
-            <Input
-              label="邮箱"  
-              error={errors.email}
-              required="请输入邮箱"
-              placeholder="example@example.com"
-              name="email"
-              register={register}
-            />
-            <Input
-              label="密码"
-              name="password"
-              type="password"
-              register={register}
-              error={errors.password}
-              required="请输入密码"
-              placeholder="至少6位字符"
-            />
-          </div>
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
+      <Card className="w-full max-w-md">
+        <CardHeader className="text-center">
+          <CardTitle className="text-3xl font-extrabold">用户登录</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <div className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>邮箱</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="example@example.com"
+                          type="email"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>密码</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="password"
+                          placeholder="至少6位字符"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
 
-          <div>
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={form.formState.isSubmitting}
+              >
+                {form.formState.isSubmitting ? '登录中...' : '登录'}
+              </Button>
+            </form>
+          </Form>
+
+          <div className="mt-6 text-center text-sm text-muted-foreground">
+            <span>没有账号？</span>
             <Button
-              type="submit"
-              
+              variant="link"
+              onClick={onSwitchToRegister}
+              className="p-0 h-auto font-medium ml-1"
             >
-              登录
+              立即注册
             </Button>
           </div>
-        </form>
-
-        <div className="text-center text-sm text-gray-600 dark:text-gray-400">
-          <span>没有账号？</span>
-          <button
-            onClick={onSwitchToRegister}
-            className="font-medium text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300 focus:outline-none"
-          >
-            立即注册
-          </button>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </div>
-    </div>
-    
   )
 }
