@@ -6,7 +6,7 @@
   "scripts": {
     "build": "react-router build",
     "dev": "react-router dev",
-    "start": "react-router-serve ./build/server/index.js",
+    "start": "env-cmd -f ./.production.env --  react-router-serve ./build/server/index.js",
     "electron:start": "electron-forge start",
     "typecheck": "react-router typegen && tsc",
     "build-electron": "vite build -c vite.config.electron.ts",

@@ -87,7 +87,7 @@ function App() {
     useState<TranslationResult | null>(null);
   const responsiveInfo = useResponsive()
   useEffect(() => {
-    if((responsiveInfo["xs"] || responsiveInfo["sm"]) && !responsiveInfo["md"] ) {
+    if((responsiveInfo["xs"] || responsiveInfo["sm"] && responsiveInfo["md"]) && !responsiveInfo["lg"] ) {
         setIsHistoryCollapsed(true)
     }
     
@@ -122,7 +122,6 @@ function App() {
   });
   useEffect(() => {
     const [file] = fileList;
-    console.log(file?.ObjectKey)
     form.setValue("imgURL", file?.ObjectKey ? `${location.origin}/api/files/${file?.ObjectKey}` : undefined);
   }, [fileList]);
   const {
@@ -210,7 +209,6 @@ function App() {
     }
   );
   useKeyPress("alt.enter", () => {
-    console.log("sub");
     form.handleSubmit(onSubmit)();
   });
 
@@ -384,7 +382,7 @@ function App() {
             <form className="h-full" onSubmit={form.handleSubmit(onSubmit)}>
               <div className="container mx-auto px-4 py-6 h-full">
                 <div className="h-full">
-                  <ResizablePanelGroup className="" direction={((responsiveInfo?.["xs"] || responsiveInfo?.["sm"]) && !responsiveInfo?.["md"] ) ? "vertical" :"horizontal"}>
+                  <ResizablePanelGroup className="" direction={((responsiveInfo?.["xs"] || responsiveInfo?.["sm"] && responsiveInfo?.["md"]) && !responsiveInfo["lg"] ) ? "vertical" :"horizontal"}>
                     <ResizablePanel className="">
                       <div className="">
                         <div className="p-4">
