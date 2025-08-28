@@ -4,7 +4,7 @@ import { useRequest } from 'ahooks';
 import { toast } from 'sonner';
 import { alovaInstance } from '~/utils/request';
 import { FileRecord } from '~/types/file';
-
+import humps from 'humps'
 // 文件状态类型
 export type FileStatus = '待上传' | '上传中' | '上传失败' | '上传成功';
 
@@ -116,7 +116,7 @@ export const useFileUpload = (options: UseFileUploadOptions = {}): UseFileUpload
             if (item.uid === uid) {
               const updatedItem = {
                 ...item,
-                ...result,
+                ...humps.pascalizeKeys(result ?? {}) ,
                 status: '上传成功' as FileStatus,
                 percent: 100,
                 error: undefined,

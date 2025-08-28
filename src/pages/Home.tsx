@@ -117,11 +117,14 @@ function App() {
     uploadFile,
     loading: fileUploadLoading,
   } = useFileUpload({
-    maxCount: 1
+    maxCount: 1,
   });
   useEffect(() => {
-    form.setValue("imgURL", fileList[0]?.URL);
-  }, [fileList])
+    const [file] = fileList;
+    form.setValue("imgURL", `${location.origin}/api/files/${file?.ObjectKey}`);
+
+    console.log(fileList);
+  }, [fileList]);
   const {
     tableProps: history,
     refresh: historyRefresh,
@@ -244,9 +247,7 @@ function App() {
 
           body: JSON.stringify({
             source_text: data.text,
-            image_url: data.imgURL
-              ? `${location.origin}/api/files/${data.imgURL}`
-              : null,
+            image_url: data.imgURL ? data.imgURL : null,
           }),
           onMessage(data: EventData<{ text?: string; message?: string }>) {
             switch (data.type) {
@@ -453,7 +454,11 @@ function App() {
                                     }}
                                   />
                                   <FormControl>
-                                    <input {...field} className="hidden" type="text" />
+                                    <input
+                                      {...field}
+                                      className="hidden"
+                                      type="text"
+                                    />
                                   </FormControl>
 
                                   <FormMessage />
@@ -482,26 +487,29 @@ function App() {
                             </Tooltip>
                           </div>
                           <div className="p-1"></div>
-                          <FormField
-                            control={form.control}
-                            name="text"
-                            render={({ field }) => (
-                              <FormItem>
-                                {/* <FormLabel>翻译文本</FormLabel> */}
-                                <FormControl>
-                                  <Textarea
-                                    {...field}
-                                    className="h-60"
-                                    placeholder={
-                                      "日本語を入力してください\n例：こんにちは、元気ですか？\nAlt + Q 选择输入框"
-                                    }
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          {/* 高亮遮罩层 */}
+                          <div
+                          className="relative"
+                          >
+                            <FormField
+                              control={form.control}
+                              name="text"
+                              render={({ field }) => (
+                                <FormItem>
+                                  {/* <FormLabel>翻译文本</FormLabel> */}
+                                  <FormControl>
+                                    <Textarea
+                                      {...field}
+                                      className="h-60 text-base"
+                                      placeholder={
+                                        "日本語を入力してください\n例：こんにちは、元気ですか？\nAlt + Q 选择输入框"
+                                      }
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            {/* 高亮遮罩层 */}
                           {highlightPosition && (
                             <div className="absolute left-0 top-0 inset-0 pointer-events-none z-20">
                               <TextHighlightMask
@@ -510,49 +518,52 @@ function App() {
                               />
                             </div>
                           )}
-                          {fileList?.length > 0 && <div className="px-12 py-8">
-                            <Carousel>
-                              <CarouselContent className="">
-                                {fileList.map((file) => {
-                                  return (
-                                    <CarouselItem className="">
-                                      <Card className="p-1 px-0">
-                                        <CardContent className="p-1">
-                                          <div className="flex justify-end gap-1 pb-1">
-                                            <Badge
-                                            variant={"outline"}
-                                            >
-                                              {file.status}
-                                            </Badge>
+                          </div>
 
-                                            <Button
-                                              size={"sm"}
-                                              variant={"ghost"}
-                                              onClick={(e) => {
-                                                e.preventDefault()
-                                                if(!file?.uid)return
-                                                removeFile(file?.uid)
-                                              }}
-                                            >
-                                              <MdDelete />
-                                            </Button>
-                                          </div>
+                          
+                          {fileList?.length > 0 && (
+                            <div className="px-12 py-8">
+                              <Carousel>
+                                <CarouselContent className="">
+                                  {fileList.map((file) => {
+                                    return (
+                                      <CarouselItem className="">
+                                        <Card className="p-1 px-0">
+                                          <CardContent className="p-1">
+                                            <div className="flex justify-end gap-1 pb-1">
+                                              <Badge variant={"outline"}>
+                                                {file.status}
+                                              </Badge>
 
-                                          <img
-                                            className="h-full object-cover"
-                                            src={file.URL}
-                                            alt={file?.FileName}
-                                          />
-                                        </CardContent>
-                                      </Card>
-                                    </CarouselItem>
-                                  );
-                                })}
-                              </CarouselContent>
-                              <CarouselPrevious />
-                              <CarouselNext />
-                            </Carousel>
-                          </div>}
+                                              <Button
+                                                size={"sm"}
+                                                variant={"ghost"}
+                                                onClick={(e) => {
+                                                  e.preventDefault();
+                                                  if (!file?.uid) return;
+                                                  removeFile(file?.uid);
+                                                }}
+                                              >
+                                                <MdDelete />
+                                              </Button>
+                                            </div>
+
+                                            <img
+                                              className="h-full object-cover"
+                                              src={file.URL}
+                                              alt={file?.FileName}
+                                            />
+                                          </CardContent>
+                                        </Card>
+                                      </CarouselItem>
+                                    );
+                                  })}
+                                </CarouselContent>
+                                <CarouselPrevious />
+                                <CarouselNext />
+                              </Carousel>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </ResizablePanel>
@@ -681,12 +692,12 @@ const TextHighlightMask = ({
     <div className="w-full h-full p-0">
       <div className="w-full h-full bg-transparent">
         {/* 使用绝对定位来覆盖textarea */}
-        <div className="absolute inset-0 p-4 pointer-events-none">
+        <div className="absolute inset-0 py-2 px-3 pointer-events-none">
           {/* 隐藏的textarea用于测量尺寸 */}
-          <textarea
+          <Textarea
             readOnly
             value={text}
-            className="absolute inset-0 p-4 bg-transparent opacity-0 whitespace-pre-wrap break-words resize-none pointer-events-none"
+            className="absolute inset-0 bg-transparent opacity-0 whitespace-pre-wrap break-words resize-none pointer-events-none"
             style={{
               fontFamily: "inherit",
               fontSize: "inherit",
@@ -698,13 +709,13 @@ const TextHighlightMask = ({
 
           {/* 高亮遮罩 */}
           <div className="relative w-full h-full">
-            <div className="absolute inset-0 p-0 whitespace-pre-wrap break-words">
+            <div className="absolute inset-0 p-0 whitespace-pre-wrap break-words leading-normal">
               {/* 前面的文本 */}
               <span className="text-transparent">{beforeText}</span>
 
               {/* 高亮部分 */}
               <motion.span
-                className="bg-yellow-300 bg-opacity-50 rounded px-0.5 py-0.5 -mx-0.5 -my-0.5"
+                className="bg-red-100 text-red-800 text-base md:text-sm border-none bg-opacity-50 rounded px-0 py-0 inline-block align-baseline"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.3 }}

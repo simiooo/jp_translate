@@ -41,23 +41,23 @@ export const AstToken: React.FC<{
         onClick={() => onClick?.(token)}
         onMouseEnter={() => token.position && onHover?.(token.position)}
         onMouseLeave={() => onLeave?.()}
-        className="inline-flex items-center bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 hover:shadow-md transition-all duration-200 cursor-pointer group focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:ring-offset-2 min-h-[3rem]"
-        tabIndex={0}
-        role="button"
+        className="bg-"
         aria-label={`Token: ${token.word}`}
       >
         {/* Token word */}
         <div className="flex-shrink-0 mr-4">
-          <span className="text-gray-900 dark:text-gray-100 font-semibold text-base select-text">
+          <h6 className="text-gray-800 dark:text-gray-100 font-semibold text-base select-text">
             {token.word}
-          </span>
+          </h6>
         </div>
-        
+        <div
+        className="p-1"
+        ></div>
         {/* Token badges */}
-        <div className="flex flex-wrap gap-2 items-center flex-1">
+        <div className="flex flex-wrap gap-2 gap-y-1 items-center flex-1">
           {token.lemma && (
             <Badge
-              key={token.lemma}
+              key={`lemma-${token.lemma}`}
               variant="outline"
               className={cn(
                 "text-xs font-medium px-2.5 py-1 rounded-full transition-all duration-200 hover:scale-105",
@@ -69,7 +69,7 @@ export const AstToken: React.FC<{
           )}
           {token.inflection && (
             <Badge
-              key={token.inflection}
+              key={`inflection-${token.inflection}`}
               variant="outline"
               className={cn(
                 "text-xs font-medium px-2.5 py-1 rounded-full transition-all duration-200 hover:scale-105",
@@ -93,7 +93,7 @@ export const AstToken: React.FC<{
           ))}
           {token.meaning && (
             <Badge
-              key={token.meaning}
+              key={`meaning-${token.meaning}`}
               variant="outline"
               className={cn(
                 "text-xs font-medium px-2.5 py-1 rounded-full transition-all duration-200 hover:scale-105",
@@ -105,7 +105,7 @@ export const AstToken: React.FC<{
           )}
           {token.kana && (
             <Badge
-              key={token.kana}
+              key={`kana-${token.kana}`}
               variant="outline"
               className={cn(
                 "text-xs font-medium px-2.5 py-1 rounded-full transition-all duration-200 hover:scale-105",
@@ -115,18 +115,15 @@ export const AstToken: React.FC<{
               <TypewriterText text={`仮名: ${token.kana}`} />
             </Badge>
           )}
-        </div>
-
-        {/* Add button */}
-        <div className="flex-shrink-0 ml-3">
           <Button 
             onClick={(e) => {
               e.stopPropagation();
+              e.preventDefault()
               onAdd?.(token);
             }} 
             variant="ghost" 
             size="sm"
-            className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-all duration-200 hover:bg-blue-100 dark:hover:bg-blue-900 hover:text-blue-600 dark:hover:text-blue-400 rounded-lg"
+            className=""
             aria-label="Add token to vocabulary"
           >
             <span className="text-sm font-bold">+</span>
@@ -153,8 +150,10 @@ export const AstTokens: React.FC<AstTokensProps> = ({
       {/* Display current level tokens */}
       {ast.tokens && (
         <div className="flex flex-wrap gap-4 items-start justify-start">
-          {ast.tokens.map((token, index) => (
-            <AstToken
+          {ast.tokens.map((token, index) => (<div
+          className="py-2"
+          >
+          <AstToken
               key={token.word ?? index}
               onClick={(token) => {
                 onTokenClick?.(token);
@@ -167,6 +166,8 @@ export const AstTokens: React.FC<AstTokensProps> = ({
               onLeave={onTokenLeave}
               token={token}
             />
+          </div>
+            
           ))}
         </div>
       )}
