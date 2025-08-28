@@ -76,7 +76,7 @@ export const AstToken: React.FC<{
                 getBadgeColorClass('inflection')
               )}
             >
-              <TypewriterText text={`変形: ${token.inflection}`} />
+              <TypewriterText text={`${token.inflection}`} />
             </Badge>
           )}
           {(token.pos ?? []).map((pos) => (

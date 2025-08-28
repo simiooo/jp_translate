@@ -8,10 +8,9 @@ import {
   translationFormSchema,
 } from "../schemas/translation";
 import { Toast } from "../components/ToastCompat";
-import { useAntdTable, useKeyPress, useRequest, useThrottle } from "ahooks";
+import { useAntdTable, useKeyPress, useRequest, useResponsive, useThrottle } from "ahooks";
 import { Cursor } from "../components/Cursor";
 import { AstTokens } from "../components/AstTokens";
-import { AiOutlineLoading } from "react-icons/ai";
 import { IoImageOutline } from "react-icons/io5";
 import { createPortal } from "react-dom";
 import type { Route } from "./+types/Home";
@@ -22,6 +21,7 @@ import { HistorySidebar } from "../components/HistorySidebar";
 import { Button } from "~/components/ui/button";
 import { Textarea } from "~/components/ui/textarea";
 import { Skeleton } from "~/components/ui/skeleton";
+const PAGE_SIZE = 50;
 import {
   Form,
   FormControl,
@@ -37,7 +37,7 @@ import {
 } from "~/components/ui/tooltip";
 import { Modal, useModal } from "~/components/ModalCompat";
 import { isElectron } from "~/utils/electron";
-import { ImageUploaderRef, UploadFile } from "~/components/ImageUploader";
+import { ImageUploaderRef } from "~/components/ImageUploader";
 import { motion } from "framer-motion";
 import {
   ResizableHandle,
@@ -57,12 +57,7 @@ import {
 } from "~/components/ui/carousel";
 import {
   Card,
-  CardAction,
   CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
 } from "~/components/ui/card";
 import { Badge } from "~/components/ui/badge";
 
@@ -88,7 +83,14 @@ function App() {
   const [isHistoryCollapsed, setIsHistoryCollapsed] = useState(false);
   const [bufferedTranslation, setBufferedTranslation] =
     useState<TranslationResult | null>(null);
-
+  const responsiveInfo = useResponsive()
+  useEffect(() => {
+    if((responsiveInfo["xs"] || responsiveInfo["sm"]) && !responsiveInfo["md"] ) {
+        setIsHistoryCollapsed(true)
+    }
+    
+  }, [responsiveInfo])
+  
   // 高亮状态
   const [highlightPosition, setHighlightPosition] = useState<{
     start: number;
@@ -111,19 +113,15 @@ function App() {
     fileList,
     addFiles,
     removeFile,
-    updateFile,
-    clearFiles,
     retryUpload,
-    uploadFile,
     loading: fileUploadLoading,
   } = useFileUpload({
     maxCount: 1,
   });
   useEffect(() => {
     const [file] = fileList;
-    form.setValue("imgURL", `${location.origin}/api/files/${file?.ObjectKey}`);
-
-    console.log(fileList);
+    console.log(file?.ObjectKey)
+    form.setValue("imgURL", file?.ObjectKey ? `${location.origin}/api/files/${file?.ObjectKey}` : undefined);
   }, [fileList]);
   const {
     tableProps: history,
@@ -156,7 +154,9 @@ function App() {
         return {
           total: data.pagination?.total ?? 0,
           list: (
-            (params?.init
+            // Only reset data when it's an initial load (search or first page)
+            // For pagination, always concatenate with existing data
+            (params?.init && current === 1
               ? []
               : (history?.dataSource as TranslationRecord[])) ?? []
           ).concat(
@@ -195,14 +195,9 @@ function App() {
     {
       debounceWait: 1000,
       debounceLeading: false,
-      defaultParams: [
-        {
-          current: 1,
-          pageSize: 10,
-          keyword: "",
-        },
-        undefined,
-      ],
+      defaultPageSize: PAGE_SIZE,
+      defaultCurrent: 1,
+
     }
   );
 
@@ -230,10 +225,6 @@ function App() {
       let fullResponse = "";
       setLoading(true);
       setBufferedTranslation(null);
-      let files: UploadFile[] = [];
-      if (imgRef.current !== null) {
-        files = imgRef.current.getUploadedFiles() ?? [];
-      }
       const sse = createSSEStream(
         new URL(
           "/api/translation",
@@ -255,10 +246,6 @@ function App() {
                 fullResponse += data.data?.text?.trim?.();
                 try {
                   if ((data.data?.text ?? "")?.length > 0) {
-                    // if(fullResponse.trim().startsWith("[TEXT]")) {
-                    //   fullResponse = fullResponse.slice(6)
-                    // }
-                    // console.log(fullResponse)
                     const translationData = JSON.parse(
                       jsonrepair(fullResponse)
                     ) as TranslationResult;
@@ -284,7 +271,7 @@ function App() {
                 break;
               case "complete":
                 historyRefresh();
-                historyLoad({ current: 1, pageSize: 10 }, { init: true });
+                historyLoad({ current: 1, pageSize: PAGE_SIZE }, { init: true });
                 setLoading(false);
                 break;
             }
@@ -370,14 +357,14 @@ function App() {
           page={history?.pagination?.current ?? 1}
           total={history?.pagination?.total ?? 0}
           onPageChange={(page) => {
-            historyLoad({ current: page, pageSize: 10 }, undefined);
+            historyLoad({ current: page, pageSize: PAGE_SIZE }, undefined);
           }}
           hasMore={history.dataSource.length < (history.pagination?.total ?? 0)}
           isLoadingMore={history.loading}
           isError={false}
           onSearchChange={(keyword) => {
             historyLoad(
-              { current: 1, pageSize: 10, keyword: keyword },
+              { current: 1, pageSize: PAGE_SIZE, keyword: keyword },
               { init: true }
             );
           }}
@@ -390,15 +377,15 @@ function App() {
             onClick={() => setShowHistory(false)}
           ></div>
         )}
-
+  
         {/* 主要内容区域 */}
         <div className="flex-1 min-w-0">
           <Form {...form}>
             <form className="h-full" onSubmit={form.handleSubmit(onSubmit)}>
               <div className="container mx-auto px-4 py-6 h-full">
-                <div className="flex flex-col">
-                  <ResizablePanelGroup direction="horizontal">
-                    <ResizablePanel>
+                <div className="h-full">
+                  <ResizablePanelGroup className="" direction={((responsiveInfo["xs"] || responsiveInfo["sm"]) && !responsiveInfo["md"] ) ? "vertical" :"horizontal"}>
+                    <ResizablePanel className="">
                       <div className="">
                         <div className="p-4">
                           <div className="flex">
@@ -499,7 +486,7 @@ function App() {
                                   <FormControl>
                                     <Textarea
                                       {...field}
-                                      className="h-60 text-base"
+                                      className="h-60 text-base 2xl:text-lg"
                                       placeholder={
                                         "日本語を入力してください\n例：こんにちは、元気ですか？\nAlt + Q 选择输入框"
                                       }
@@ -566,8 +553,8 @@ function App() {
                           )}
                         </div>
                       </div>
-                    </ResizablePanel>
-                    <ResizableHandle />
+                    </ResizablePanel >
+                    <ResizableHandle withHandle />
                     <ResizablePanel>
                       <div className="">
                         <div className="relative h-[calc(100vh-121px)]">
@@ -582,11 +569,11 @@ function App() {
                                 <div className="p-4  max-h-[40%] overflow-auto">
                                   <div className="flex justify-between items-start">
                                     {translation?.error && (
-                                      <div className="bg-amber-50 border-amber-800 border-2 rounded-2xl p-1 pl-2 pr-2 text-amber-800">
-                                        {translation?.error}
-                                      </div>
-                                    )}
-                                    <div className="inline-flex gap-2 text-foreground">
+                                        <div className="bg-amber-50 border-amber-800 border-2 rounded-2xl p-1 pl-2 pr-2 text-amber-800 2xl:text-base">
+                                          {translation?.error}
+                                        </div>
+                                      )}
+                                    <div className="inline-flex gap-2 text-foreground 2xl:text-lg">
                                       <Markdown>
                                         {translation?.translation ?? ""}
                                       </Markdown>
@@ -615,7 +602,7 @@ function App() {
                                 </div>
                               </>
                             ) : (
-                              <div className="h-full flex items-center justify-center text-muted-foreground">
+                              <div className="h-full flex items-center justify-center text-muted-foreground 2xl:text-lg">
                                 翻译结果将在这里显示
                               </div>
                             )}
@@ -692,7 +679,7 @@ const TextHighlightMask = ({
     <div className="w-full h-full p-0">
       <div className="w-full h-full bg-transparent">
         {/* 使用绝对定位来覆盖textarea */}
-        <div className="absolute inset-0 py-2 px-3 pointer-events-none">
+        <div className="absolute inset-0 py-1.5 px-3 pointer-events-none">
           {/* 隐藏的textarea用于测量尺寸 */}
           <Textarea
             readOnly
@@ -708,14 +695,14 @@ const TextHighlightMask = ({
           />
 
           {/* 高亮遮罩 */}
-          <div className="relative w-full h-full">
+          <div className="relative w-full h-full text-base  md:text-sm">
             <div className="absolute inset-0 p-0 whitespace-pre-wrap break-words leading-normal">
               {/* 前面的文本 */}
-              <span className="text-transparent">{beforeText}</span>
+              <span className="text-transparent inset-0 p-0 text-base  md:text-sm">{beforeText}</span>
 
               {/* 高亮部分 */}
               <motion.span
-                className="bg-red-100 text-red-800 text-base md:text-sm border-none bg-opacity-50 rounded px-0 py-0 inline-block align-baseline"
+                className="bg-red-100 text-red-800 text-base md:text-sm 2xl:text-base border-none bg-opacity-50 rounded px-0 py-0 inline-block align-baseline"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.3 }}
@@ -724,7 +711,7 @@ const TextHighlightMask = ({
               </motion.span>
 
               {/* 后面的文本 */}
-              <span className="text-transparent">{afterText}</span>
+              <span className="text-transparent inset-0 p-0 text-base  md:text-sm">{afterText}</span>
             </div>
           </div>
         </div>

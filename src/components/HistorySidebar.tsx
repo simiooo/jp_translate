@@ -81,41 +81,47 @@ export const HistorySidebar: React.FC<HistorySidebarProps> = ({
     }
   }, [hasMore, isLoadingMore, isError, onPageChange, page]);
 
-  // Reset VList when translations change significantly to prevent rendering artifacts
+  // Check if we need to load more data on initial render or when translations change
   React.useEffect(() => {
-    if (listContainerRef.current) {
-      // Force VList to reset its internal state when translations change
-      listContainerRef.current.scrollTo(0);
+    if (!listContainerRef.current || !hasMore || isLoadingMore || isError) return;
+    
+    // Check if there's empty space in the viewport that could be filled with more data
+    const hasEmptySpace = listContainerRef.current.viewportSize > listContainerRef.current.scrollSize;
+    
+    if (hasEmptySpace) {
+      onPageChange(page + 1);
     }
-  }, [translations.length]);
+  }, [translations.length, hasMore, isLoadingMore, isError, onPageChange, page]);
+
+  // Reset VList only when search query changes or when collapsing/expanding
+  // This prevents unwanted scroll reset during infinite loading
 
   return (
     <Card
       className={cn(
         "rounded-r-2xl rounded-l-none border-l-0 overflow-hidden",
         "transition-all duration-300",
-        isHistoryCollapsed ? "w-12" : "w-64"
+        isHistoryCollapsed ? "w-16" : "w-64"
       )}
       style={{ height: 'calc(100vh - 53px)' }}
     >
       <div className="h-full flex flex-col">
-        <CardHeader className="pr-2 pl-4 pb-0">
-          <div className="flex justify-between items-center">
+        <CardHeader className={cn("pb-0", isHistoryCollapsed ? "p-2" : "pr-2 pl-4")}>
+          <div className={cn("flex items-center", isHistoryCollapsed ? "justify-center" : "justify-between")}>
             {!isHistoryCollapsed && (
               <CardTitle>翻译历史</CardTitle>
             )}
             <Button
               variant="ghost"
-              // size="icon"
-              size={"sm"}
+              size="icon"
               onClick={() => setIsHistoryCollapsed(!isHistoryCollapsed)}
-              className=""
+              className={cn(isHistoryCollapsed ? "w-8 h-8" : "")}
               aria-label={isHistoryCollapsed ? "展开历史面板" : "折叠历史面板"}
             >
               {isHistoryCollapsed ? (
-                <ChevronRight />
+                <ChevronRight className="h-4 w-4" />
               ) : (
-                <ChevronLeft />
+                <ChevronLeft className="h-4 w-4" />
               )}
             </Button>
           </div>
@@ -162,7 +168,10 @@ export const HistorySidebar: React.FC<HistorySidebarProps> = ({
                   return (
                     <div
                       key={record?.source_text + record?.created_at + record?.target_lang}
-                      className="p-4 hover:bg-accent cursor-pointer border-b last:border-b-0"
+                      className={cn(
+                        "hover:bg-accent cursor-pointer border-b last:border-b-0",
+                        isHistoryCollapsed ? "p-2" : "p-4"
+                      )}
                       onClick={() => {
                         onSelectHistoryItem(record.source_text);
                         setShowHistory(false);
@@ -178,7 +187,7 @@ export const HistorySidebar: React.FC<HistorySidebarProps> = ({
                       }}
                     >
                       {isHistoryCollapsed ? (
-                        <div className="flex justify-center">
+                        <div className="flex justify-center items-center h-full">
                           <div
                             className={cn(
                               "w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold",

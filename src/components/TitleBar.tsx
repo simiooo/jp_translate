@@ -20,6 +20,7 @@ import {
 } from "~/components/ui/tooltip";
 import { Switch } from "~/components/ui/switch";
 import styles from "./TitleBar.module.css";
+import { ModeToggle } from "./mode-toggle";
 
 interface TitleBarProps {
   title?: string;
@@ -105,7 +106,7 @@ export default function TitleBar({ }: TitleBarProps) {
 
         <div className="ml-auto flex items-center space-x-4">
           <div>
-            <Switch />
+            <ModeToggle />
           </div>
           <div>
             <TooltipProvider>

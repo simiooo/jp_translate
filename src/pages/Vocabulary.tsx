@@ -132,16 +132,16 @@ const Vocabulary: React.FC = () => {
             <div className="mb-4">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
                 <div>
-                  <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-0">
+                  <h1 className="text-3xl 2xl:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-0">
                     单词表
                   </h1>
-                  <p className="text-gray-600 dark:text-gray-400">管理和学习您的日语词汇</p>
+                  <p className="text-gray-600 dark:text-gray-400 2xl:text-base">管理和学习您的日语词汇</p>
                 </div>
               </div>
               <input
                 type="text"
                 placeholder="搜索单词..."
-                className="w-full p-2 text-sm text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 border-none"
+                className="w-full p-2 text-sm 2xl:text-base text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 border-none"
                 value={searchQuery}
                 onChange={(e) => {
                   setSearchQuery(e.target.value);
@@ -187,10 +187,10 @@ const Vocabulary: React.FC = () => {
                     style={{ fontSize: "6rem", color: "#9CA3AF" }}
                   ></FaBookOpen>
                 </div>
-                <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
+                <h3 className="text-lg 2xl:text-xl font-medium text-gray-900 dark:text-gray-100 mb-2">
                   暂无单词
                 </h3>
-                <p className="text-gray-500 dark:text-gray-400 mb-6">
+                <p className="text-gray-500 dark:text-gray-400 2xl:text-base mb-6">
                   开始添加一些单词来构建您的词汇表
                 </p>
               </div>

@@ -43,6 +43,19 @@
 
 :root {
   --radius: 0.625rem;
+  --text-xs: 0.84rem;    /* 12px → ~13.4px (12% increase) */
+  --text-sm: 0.98rem;    /* 14px → ~15.7px (12% increase) */
+  --text-base: 1.12rem;  /* 16px → ~17.9px (12% increase) */
+  --text-lg: 1.26rem;    /* 18px → ~20.2px (12% increase) */
+  --text--xl: 1.4rem;     /* 20px → ~22.4px (12% increase) */
+  --text-2xl: 1.68rem;   /* 24px → ~26.9px (12% increase) */
+  --text-3xl: 2.1rem;    /* 30px → ~33.6px (12% increase) */
+  --text-4xl: 2.52rem;   /* 36px → ~40.3px (12% increase) */
+  --text-5xl: 3.36rem;   /* 48px → ~53.8px (12% increase) */
+  --text-6xl: 4.2rem;    /* 60px → ~67.2px (12% increase) */
+  --text-7xl: 5.04rem;   /* 72px → ~80.6px (12% increase) */
+  --text-8xl: 6.72rem;   /* 96px → ~107.5px (12% increase) */
+  --text-9xl: 8.96rem;   /* 128px → ~143.4px (12% increase) */
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
