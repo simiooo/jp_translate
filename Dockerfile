@@ -8,7 +8,6 @@ COPY package*.json ./
 COPY pnpm-lock.yaml ./
 RUN npm install -g pnpm && pnpm install
 RUN npm i -g bun
-
 # Copy source code and build the application
 COPY . .
 RUN pnpm run build
