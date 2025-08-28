@@ -1,21 +1,33 @@
 import { createAlova } from "alova";
 import adapterFetch from "alova/fetch";
 import { isElectron } from '~/utils/electron';
+// Helper function to get base URL dynamically (avoids SSR issues)
+const getBaseURL = (): string | undefined => {
+  if (typeof window === 'undefined') {
+    return undefined; // SSR - no base URL needed
+  }
+  return isElectron() ? import.meta.env.VITE_CLIENT_FOR_SERVER_PROXY : undefined;
+};
+
 export const alovaInstance = createAlova({
-  baseURL: isElectron() ? import.meta.env.VITE_CLIENT_FOR_SERVER_PROXY : undefined,
+  baseURL: getBaseURL(),
   requestAdapter: adapterFetch(),
   responded: (response) => response.json(),
   cacheFor: null,
   beforeRequest: (method) => {
-    method.config.headers["Authorization"] = localStorage.getItem('Authorization')
+    if (typeof window !== 'undefined') {
+      method.config.headers["Authorization"] = localStorage.getItem('Authorization')
+    }
   }
 });
 export const alovaBlobInstance = createAlova({
-  baseURL: isElectron() ? import.meta.env.VITE_CLIENT_FOR_SERVER_PROXY : undefined,
+  baseURL: getBaseURL(),
   requestAdapter: adapterFetch(),
   responded: (response) => response.blob(),
   beforeRequest: (method) => {
-    method.config.headers["Authorization"] = localStorage.getItem('Authorization')
+    if (typeof window !== 'undefined') {
+      method.config.headers["Authorization"] = localStorage.getItem('Authorization')
+    }
   }
 });
 

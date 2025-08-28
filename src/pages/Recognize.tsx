@@ -6,6 +6,7 @@ import { RiCameraLensFill } from "react-icons/ri";
 import { MdOutlineFlipCameraAndroid } from "react-icons/md";
 import { useRequest } from "ahooks";
 import { Modal, useModal } from "~/components/ModalCompat";
+import { HydrateFallbackTemplate } from "~/components/HydrateFallbackTemplate";
 
 export default function Recognize() {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -147,3 +148,5 @@ export default function Recognize() {
     </div>
   );
 }
+
+export const HydrateFallback = HydrateFallbackTemplate

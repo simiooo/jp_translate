@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import Spinner from "@/components/Spinner";
 import { cn } from "@/lib/utils";
 
 
@@ -23,13 +24,10 @@ interface HistorySidebarProps {
   historyLoading: boolean;
   translations: TranslationRecord[];
   onSelectHistoryItem: (text: string) => void;
-  page: number;
-  total: number;
-  onPageChange: (page: number) => void;
   hasMore: boolean;
-  isLoadingMore: boolean;
   isError: boolean;
   onSearchChange: (query: string) => void; // New prop for search functionality
+  onLoadMore: () => Promise<void>; // New prop for loading more data
 }
 // Avatar color variants using shadcn design tokens
 const getAvatarColor = (index: number) => {
@@ -50,16 +48,16 @@ export const HistorySidebar: React.FC<HistorySidebarProps> = ({
   historyLoading,
   translations,
   onSelectHistoryItem,
-  page,
-  onPageChange,
   hasMore,
-  isLoadingMore,
   isError,
   onSearchChange,
+  onLoadMore,
 }) => {
   const listContainerRef = React.useRef<VListHandle>(null);
   const [searchQuery, setSearchQuery] = React.useState("");
   const [vlistKey, setVlistKey] = React.useState(0);
+  const [fetching, setFetching] = React.useState(false);
+  const fetchedCountRef = React.useRef(-1);
 
   // Reset VList key when collapsing/expanding to prevent rendering artifacts
   React.useEffect(() => {
@@ -71,27 +69,39 @@ export const HistorySidebar: React.FC<HistorySidebarProps> = ({
     onSearchChange(e.target.value);
   };
 
-  const checkScrollPosition = React.useCallback(() => {
-    if (!listContainerRef.current) return;
-    const isAtBottom = listContainerRef.current.scrollOffset  + listContainerRef.current.viewportSize + 10 > listContainerRef.current.scrollSize
-    // console.log(listContainerRef.current.scrollOffset, listContainerRef.current.viewportSize,listContainerRef.current.scrollSize);
+  const fetchItems = React.useCallback(async () => {
+    if (fetching || !hasMore || isError) return;
     
-    if (isAtBottom && hasMore && !isLoadingMore && !isError) {
-      onPageChange(page + 1);
+    setFetching(true);
+    try {
+      await onLoadMore();
+    } finally {
+      setFetching(false);
     }
-  }, [hasMore, isLoadingMore, isError, onPageChange, page]);
+  }, [fetching, hasMore, isError, onLoadMore]);
 
-  // Check if we need to load more data on initial render or when translations change
+  const handleScroll = React.useCallback(async () => {
+    if (!listContainerRef.current) return;
+    
+    const count = translations.length;
+    if (fetchedCountRef.current < count &&
+        listContainerRef.current.findEndIndex() + 50 > count) {
+      fetchedCountRef.current = count;
+      await fetchItems();
+    }
+  }, [translations.length, fetchItems]);
+
+  // Check if we need to load more data on initial render
   React.useEffect(() => {
-    if (!listContainerRef.current || !hasMore || isLoadingMore || isError) return;
+    if (!listContainerRef.current || !hasMore || isError) return;
     
     // Check if there's empty space in the viewport that could be filled with more data
     const hasEmptySpace = listContainerRef.current.viewportSize > listContainerRef.current.scrollSize;
     
     if (hasEmptySpace) {
-      onPageChange(page + 1);
+      fetchItems();
     }
-  }, [translations.length, hasMore, isLoadingMore, isError, onPageChange, page]);
+  }, [translations.length, hasMore, isError, fetchItems]);
 
   // Reset VList only when search query changes or when collapsing/expanding
   // This prevents unwanted scroll reset during infinite loading
@@ -158,7 +168,7 @@ export const HistorySidebar: React.FC<HistorySidebarProps> = ({
                 ref={listContainerRef}
                 count={translations?.length || 0}
                 overscan={10}
-                onScroll={checkScrollPosition}
+                onScroll={handleScroll}
                 itemSize={isHistoryCollapsed ? 60 : 100}
                 key={`vlist-${vlistKey}-${isHistoryCollapsed ? 'collapsed' : 'expanded'}`}
               >
@@ -216,6 +226,11 @@ export const HistorySidebar: React.FC<HistorySidebarProps> = ({
                   );
                 }}
               </VList>
+              {fetching && (
+                <div className="p-4 flex justify-center">
+                  <Spinner loading={true} />
+                </div>
+              )}
               {!hasMore && translations.length > 0 && (
                 <div className="p-4 text-center text-sm text-muted-foreground">
                   没有更多数据了

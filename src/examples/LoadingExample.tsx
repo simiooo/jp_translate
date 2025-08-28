@@ -1,5 +1,5 @@
 import React from 'react';
-import { HydrateFallback } from '../components/HydrateFallback';
+import { HydrateFallback } from '../components/HydrateFallbackTemplate';
 
 export default function LoadingExample() {
   return (

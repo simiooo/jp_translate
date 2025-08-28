@@ -18,6 +18,7 @@ import {
 import { alovaInstance } from "~/utils/request";
 import { useNavigate } from "react-router";
 import { User } from "./LoginPage";
+import { HydrateFallbackTemplate } from "~/components/HydrateFallbackTemplate";
 
 interface RegisterPageProps {
   onRegister: (data: RegisterFormData) => void;
@@ -181,3 +182,5 @@ export default function RegisterPage({}: RegisterPageProps) {
     </div>
   );
 }
+
+export const HydrateFallback = HydrateFallbackTemplate

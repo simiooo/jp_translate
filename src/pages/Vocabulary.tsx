@@ -9,6 +9,7 @@ import { FaBookOpen } from "react-icons/fa6";
 import Spinner from "~/components/Spinner";
 import { VList, VListHandle } from "virtua";
 import { useThrottleFn } from "ahooks";
+import { HydrateFallbackTemplate } from "~/components/HydrateFallbackTemplate";
 
 
 const Vocabulary: React.FC = () => {
@@ -203,3 +204,4 @@ const Vocabulary: React.FC = () => {
 };
 
 export default Vocabulary;
+export const HydrateFallback = HydrateFallbackTemplate

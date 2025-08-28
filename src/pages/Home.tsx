@@ -60,6 +60,8 @@ import {
   CardContent,
 } from "~/components/ui/card";
 import { Badge } from "~/components/ui/badge";
+import { isBrowser } from "~/utils/ssr";
+import { HydrateFallbackTemplate } from "~/components/HydrateFallbackTemplate";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -354,19 +356,17 @@ function App() {
           onSelectHistoryItem={(text) => {
             form.setValue("text", text);
           }}
-          page={history?.pagination?.current ?? 1}
-          total={history?.pagination?.total ?? 0}
-          onPageChange={(page) => {
-            historyLoad({ current: page, pageSize: PAGE_SIZE }, undefined);
-          }}
           hasMore={history.dataSource.length < (history.pagination?.total ?? 0)}
-          isLoadingMore={history.loading}
           isError={false}
           onSearchChange={(keyword) => {
             historyLoad(
               { current: 1, pageSize: PAGE_SIZE, keyword: keyword },
               { init: true }
             );
+          }}
+          onLoadMore={async () => {
+            const nextPage = (history?.pagination?.current ?? 0) + 1;
+            await historyLoad({ current: nextPage, pageSize: PAGE_SIZE }, undefined);
           }}
         />
 
@@ -384,7 +384,7 @@ function App() {
             <form className="h-full" onSubmit={form.handleSubmit(onSubmit)}>
               <div className="container mx-auto px-4 py-6 h-full">
                 <div className="h-full">
-                  <ResizablePanelGroup className="" direction={((responsiveInfo["xs"] || responsiveInfo["sm"]) && !responsiveInfo["md"] ) ? "vertical" :"horizontal"}>
+                  <ResizablePanelGroup className="" direction={((responsiveInfo?.["xs"] || responsiveInfo?.["sm"]) && !responsiveInfo?.["md"] ) ? "vertical" :"horizontal"}>
                     <ResizablePanel className="">
                       <div className="">
                         <div className="p-4">
@@ -613,7 +613,7 @@ function App() {
                   </ResizablePanelGroup>
                 </div>
 
-                {createPortal(
+                {isBrowser() && createPortal(
                   loading && (
                     <div
                       className="
@@ -626,7 +626,7 @@ function App() {
           "
                     ></div>
                   ),
-                  document.documentElement
+                   document.documentElement
                 )}
               </div>
             </form>
@@ -719,5 +719,5 @@ const TextHighlightMask = ({
     </div>
   );
 };
-
+export const HydrateFallback = HydrateFallbackTemplate
 export default App;

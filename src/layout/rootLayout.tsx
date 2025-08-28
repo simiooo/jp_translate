@@ -1,5 +1,5 @@
-import { Outlet, useNavigation } from "react-router";
-import GlobalSpinner from "~/components/GlobalSpinner";
+import { Outlet, useNavigation, useLocation } from "react-router";
+import { HydrateFallbackTemplate } from "~/components/HydrateFallbackTemplate";
 import TitleBar from "~/components/TitleBar";
 import { Toaster } from "~/components/ui/sonner";
 
@@ -8,6 +8,7 @@ const PUBLIC_ROUTES = ["/login", "/register"];
 
 export default function RootLayout() {
   const navigation = useNavigation();
+  const location = useLocation();
   const isNavigating = Boolean(navigation.location);
   // 对于公开路由，直接渲染内容
   if (PUBLIC_ROUTES.includes(location.pathname)) {
@@ -30,7 +31,7 @@ export default function RootLayout() {
 
       {/* 主要内容区域 - 使用响应式字体大小 */}
       <main className="h-[calc(100vh-53px)] overflow-y-auto dark:bg-gray-900 text-base 2xl:text-lg">
-        {isNavigating ? <GlobalSpinner /> : <Outlet />}
+        {isNavigating ? <HydrateFallbackTemplate /> : <Outlet />}
       </main>
       <Toaster />
     </div>

@@ -18,6 +18,7 @@ import {
 import { useNavigate } from 'react-router';
 import { alovaInstance } from '~/utils/request';
 import { useRequest } from 'ahooks';
+import { HydrateFallbackTemplate } from '~/components/HydrateFallbackTemplate'
 
 
 
@@ -163,3 +164,4 @@ export default function LoginPage({ }: LoginPageProps) {
     </div>
   )
 }
+export const HydrateFallback = HydrateFallbackTemplate

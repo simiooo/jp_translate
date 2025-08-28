@@ -15,6 +15,10 @@ declare global {
 }
 
 export const isElectron = (): boolean => {
+  // Check if we're in a browser environment (not SSR)
+  if (typeof window === 'undefined') {
+    return false;
+  }
   
   // Check if the electronAPI is available in the window object
   return !!window?.electronAPI?.isElectron();

@@ -1,5 +1,5 @@
 # Build stage
-FROM node:20-alpine AS build
+FROM node:22-alpine AS build
 
 WORKDIR /app
 
@@ -13,16 +13,19 @@ COPY . .
 RUN pnpm run build
 
 # Production stage with Nginx
-FROM nginx:alpine
+FROM oven/bun:debian
 
-# Copy the built files from the build stage
-COPY --from=build /app/build /usr/share/nginx/html
+WORKDIR /app
 
-# Copy custom Nginx configuration for SPA routing
-RUN rm /etc/nginx/conf.d/default.conf
-COPY nginx.conf /etc/nginx/conf.d/
+# Copy built application and dependencies
+COPY --from=build /app/build ./build
+COPY --from=build /app/package*.json ./
+RUN apt -y update
+RUN apt -y install python3 python3-pip git
+RUN bun install
 
-# Expose port 80
-EXPOSE 80
+# Expose port for SSR server
+EXPOSE 3000
 
-CMD ["nginx", "-g", "daemon off;"]
+# Start the SSR server with bun
+CMD ["bun", "run", "start"]

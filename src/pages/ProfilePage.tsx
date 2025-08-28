@@ -32,6 +32,7 @@ import {
 } from '~/components/ui/dialog'
 
 import type { Route } from './+types/Home'
+import { HydrateFallbackTemplate } from '~/components/HydrateFallbackTemplate'
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -368,3 +369,4 @@ export default function ProfilePage() {
     </div>
   )
 }
+export const HydrateFallback = HydrateFallbackTemplate

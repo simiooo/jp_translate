@@ -65,6 +65,11 @@ const ImgPreview: React.FC<ImgPreviewProps> = ({ src, alt, className, onClose })
 };
 
 export const showImagePreview = (props: Omit<ImgPreviewProps, 'onClose'>) => {
+  // Check if we're in a browser environment (not SSR)
+  if (typeof document === 'undefined') {
+    return;
+  }
+  
   const container = document.createElement('div');
   document.body.appendChild(container);
 
