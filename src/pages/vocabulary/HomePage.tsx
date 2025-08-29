@@ -61,7 +61,7 @@ const HomePage: React.FC = () => {
         };
       } catch (error) {
         console.error(error);
-        navigate("/login");
+        // navigate("/login");
         return {
           total: 0,
           list: [],
@@ -172,8 +172,6 @@ const HomePage: React.FC = () => {
   return (
     <div className="h-[calc(100vh-60px)] overflow-y-auto bg-background">
       <div className="flex h-full">
-        {/* Left Sidebar */}
-        <VocabularySidebar activeTab="home" />
 
         {/* Main Content */}
         <div className="flex-1 min-w-0 border-x">
