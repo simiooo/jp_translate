@@ -7,6 +7,7 @@ import { useNavigate } from "react-router";
 import Spinner from "~/components/Spinner";
 import { VList, VListHandle } from "virtua";
 import { HydrateFallbackTemplate } from "~/components/HydrateFallbackTemplate";
+import { useTranslation } from 'react-i18next'
 
 // Components
 import VocabularySidebar from "~/components/VocabularySidebar";
@@ -20,6 +21,7 @@ import { Search } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const HomePage: React.FC = () => {
+  const { t } = useTranslation()
   const navigate = useNavigate();
   const listContainerRef = useRef<VListHandle>(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -181,7 +183,7 @@ const HomePage: React.FC = () => {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 type="text"
-                placeholder="搜索社区单词或用户..."
+                placeholder={t("Search for words or users...")}
                 className="w-full pl-10"
                 value={searchQuery}
                 onChange={(e) => {
@@ -228,10 +230,10 @@ const HomePage: React.FC = () => {
                   <Search className="w-full h-full" />
                 </div>
                 <h3 className="text-lg font-medium mb-2">
-                  暂无社区单词
+                  {t("No words yet")}
                 </h3>
                 <p className="text-muted-foreground mb-6">
-                  开始分享单词来构建社区词汇表
+                  {t("Start sharing words to build the community vocabulary")}
                 </p>
               </div>
             ) : (

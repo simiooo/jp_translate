@@ -9,6 +9,7 @@ import {
   FaBookmark,
   FaEllipsisH
 } from "react-icons/fa";
+import { useTranslation } from 'react-i18next';
 
 interface WordTweetProps {
   token: Token;
@@ -37,6 +38,7 @@ const WordTweet: React.FC<WordTweetProps> = ({
   shares = 0,
   views = 0
 }) => {
+  const { t } = useTranslation();
   return (
     <Card className="border-0 rounded-none border-b hover:bg-muted/50 transition-colors">
       <CardContent className="p-4">
@@ -63,21 +65,21 @@ const WordTweet: React.FC<WordTweetProps> = ({
             <div className="text-foreground mb-4">
               {token.meaning && (
                 <p className="mb-2">
-                  <span className="font-medium">含义: </span>
+                  <span className="font-medium">{t('Meaning')}: </span>
                   {token.meaning}
                 </p>
               )}
               
               {token.lemma && token.lemma !== token.word && (
                 <p className="mb-2">
-                  <span className="font-medium">原型: </span>
+                  <span className="font-medium">{t('Original form')}: </span>
                   {token.lemma}
                 </p>
               )}
               
               {token.inflection && (
                 <p className="mb-2">
-                  <span className="font-medium">变形: </span>
+                  <span className="font-medium">{t('Conjugation')}: </span>
                   {token.inflection}
                 </p>
               )}
@@ -85,10 +87,10 @@ const WordTweet: React.FC<WordTweetProps> = ({
             
             {/* Engagement metrics */}
             <div className="flex items-center justify-between text-muted-foreground text-sm mb-3">
-              <span>{views} 浏览</span>
-              <span>{comments} 回复</span>
-              <span>{shares} 转发</span>
-              <span>{likes} 喜欢</span>
+              <span>{views} {t('views')}</span>
+              <span>{comments} {t('replies')}</span>
+              <span>{shares} {t('shares')}</span>
+              <span>{likes} {t('likes')}</span>
             </div>
             
             {/* Action buttons */}
@@ -100,7 +102,7 @@ const WordTweet: React.FC<WordTweetProps> = ({
                 onClick={onComment}
               >
                 <FaComment className="w-4 h-4 mr-1" />
-                回复
+                {t('Reply')}
               </Button>
               
               <Button
@@ -110,7 +112,7 @@ const WordTweet: React.FC<WordTweetProps> = ({
                 onClick={onShare}
               >
                 <FaShare className="w-4 h-4 mr-1" />
-                转发
+                {t('Share')}
               </Button>
               
               <Button
@@ -120,7 +122,7 @@ const WordTweet: React.FC<WordTweetProps> = ({
                 onClick={onLike}
               >
                 <FaHeart className="w-4 h-4 mr-1" />
-                喜欢
+                {t('Like')}
               </Button>
               
               <Button
@@ -130,7 +132,7 @@ const WordTweet: React.FC<WordTweetProps> = ({
                 onClick={onBookmark}
               >
                 <FaBookmark className="w-4 h-4 mr-1" />
-                收藏
+                {t('Bookmark')}
               </Button>
               
               <Button

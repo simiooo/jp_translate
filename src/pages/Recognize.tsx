@@ -7,8 +7,10 @@ import { MdOutlineFlipCameraAndroid } from "react-icons/md";
 import { useRequest } from "ahooks";
 import { Modal, useModal } from "~/components/ModalCompat";
 import { HydrateFallbackTemplate } from "~/components/HydrateFallbackTemplate";
+import { useTranslation } from 'react-i18next';
 
 export default function Recognize() {
+  const { t } = useTranslation();
   const videoRef = useRef<HTMLVideoElement>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [facingMode, setFacingMode] = useState<"user" | "environment">(
@@ -47,7 +49,7 @@ export default function Recognize() {
           setStream(stream);
         }
       } catch (err) {
-        setError(`无法访问相机${err}`);
+        setError(`${t('Unable to access camera')}${err}`);
         console.error(err);
       }
     };

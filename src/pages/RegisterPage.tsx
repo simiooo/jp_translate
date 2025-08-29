@@ -19,6 +19,7 @@ import { alovaInstance } from "~/utils/request";
 import { useNavigate } from "react-router";
 import { User } from "./LoginPage";
 import { HydrateFallbackTemplate } from "~/components/HydrateFallbackTemplate";
+import { useTranslation } from 'react-i18next';
 
 interface RegisterPageProps {
   onRegister: (data: RegisterFormData) => void;
@@ -27,12 +28,12 @@ interface RegisterPageProps {
 
 // Zod validation schema
 const registerSchema = z.object({
-  username: z.string().min(2, '用户名至少需要2位字符').max(20, '用户名不能超过20位字符'),
-  email: z.string().email('请输入有效的邮箱地址'),
-  password: z.string().min(6, '密码至少需要6位字符'),
-  confirmPassword: z.string().min(6, '请再次输入密码'),
+  username: z.string().min(2, 'Username must be 2-20 characters').max(20, 'Username must be 2-20 characters'),
+  email: z.string().email('Please enter a valid email address'),
+  password: z.string().min(6, 'Password must be at least 6 characters'),
+  confirmPassword: z.string().min(6, 'Please enter password again'),
 }).refine((data) => data.password === data.confirmPassword, {
-  message: "两次输入的密码不一致",
+  message: "Passwords do not match",
   path: ["confirmPassword"],
 });
 
@@ -44,6 +45,7 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export default function RegisterPage({}: RegisterPageProps) {
+  const { t } = useTranslation();
   const navigate = useNavigate()
   const form = useForm<z.infer<typeof registerSchema>>({
     resolver: zodResolver(registerSchema),
@@ -69,7 +71,7 @@ export default function RegisterPage({}: RegisterPageProps) {
       localStorage.setItem('Authorization', `Bearer ${res.token}`)
       navigate('/')
     } catch (error) {
-      Toast.error("注册失败，请重试");
+      Toast.error(t('Registration failed, please try again'));
       console.log(error);
     }
   };
@@ -82,7 +84,7 @@ export default function RegisterPage({}: RegisterPageProps) {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="text-3xl font-extrabold">用户注册</CardTitle>
+          <CardTitle className="text-3xl font-extrabold">{t('User Registration')}</CardTitle>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -93,68 +95,68 @@ export default function RegisterPage({}: RegisterPageProps) {
                   name="username"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>用户名</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="2-20位字符"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>邮箱</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="email"
-                          placeholder="example@example.com"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="password"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>密码</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="password"
-                          placeholder="至少6位字符"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="confirmPassword"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>确认密码</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="password"
-                          placeholder="再次输入密码"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                      <FormLabel>{t('Username')}</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder={t('2-20 characters')}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t('Email')}</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="email"
+                            placeholder="example@example.com"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="password"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t('Password')}</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="password"
+                            placeholder={t('At least 6 characters')}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="confirmPassword"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t('Confirm Password')}</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="password"
+                            placeholder={t('Enter password again')}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
               </div>
 
               <Button
@@ -162,19 +164,19 @@ export default function RegisterPage({}: RegisterPageProps) {
                 className="w-full"
                 disabled={form.formState.isSubmitting}
               >
-                {form.formState.isSubmitting ? '注册中...' : '注册'}
+                {form.formState.isSubmitting ? t('Registering...') : t('Register')}
               </Button>
             </form>
           </Form>
 
           <div className="mt-6 text-center text-sm text-muted-foreground">
-            <span>已有账号？</span>
+            <span>{t('Already have an account?')}</span>
             <Button
               variant="link"
               onClick={onSwitchToLogin}
               className="p-0 h-auto font-medium ml-1"
             >
-              立即登录
+              {t('Login now')}
             </Button>
           </div>
         </CardContent>

@@ -5,6 +5,7 @@ import { Separator } from "./ui/separator";
 import { Cursor } from "./Cursor";
 import { TypewriterText } from "./TypewriterText";
 import { cn } from "@/lib/utils";
+import { useTranslation } from 'react-i18next';
 
 interface AstTokensProps {
   ast?: AST;
@@ -35,7 +36,8 @@ export const AstToken: React.FC<{
   onHover?: (position?: { start: number; end: number }) => void;
   onLeave?: () => void;
 }> = ({ token, onClick, onAdd, onHover, onLeave }) => {
-  return (
+ const { t } = useTranslation();
+ return (
     <div className="inline-flex flex-col">
       <div
         onClick={() => onClick?.(token)}
@@ -64,7 +66,7 @@ export const AstToken: React.FC<{
                 getBadgeColorClass('lemma')
               )}
             >
-              <TypewriterText text={`原型: ${token.lemma}`} />
+              <TypewriterText text={t('Lemma: {{lemma}}', { lemma: token.lemma })} />
             </Badge>
           )}
           {token.inflection && (
@@ -100,7 +102,7 @@ export const AstToken: React.FC<{
                 getBadgeColorClass('meaning')
               )}
             >
-              <TypewriterText text={`意味: ${token.meaning}`} />
+              <TypewriterText text={t('Meaning: {{meaning}}', { meaning: token.meaning })} />
             </Badge>
           )}
           {token.kana && (
@@ -112,7 +114,7 @@ export const AstToken: React.FC<{
                 getBadgeColorClass('kana')
               )}
             >
-              <TypewriterText text={`仮名: ${token.kana}`} />
+              <TypewriterText text={t('Kana: {{kana}}', { kana: token.kana })} />
             </Badge>
           )}
           <Button 
@@ -124,7 +126,7 @@ export const AstToken: React.FC<{
             variant="ghost" 
             size="sm"
             className=""
-            aria-label="Add token to vocabulary"
+            aria-label={t('Add token to vocabulary')}
           >
             <span className="text-sm font-bold">+</span>
           </Button>
@@ -143,7 +145,8 @@ export const AstTokens: React.FC<AstTokensProps> = ({
   onTokenHover,
   onTokenLeave,
 }) => {
-  if (!ast) return null;
+ const { t } = useTranslation();
+ if (!ast) return null;
 
   return (
     <div className="flex flex-col gap-4 p-1">
@@ -200,7 +203,7 @@ export const AstTokens: React.FC<AstTokensProps> = ({
       {loading && (
         <div className="flex items-center gap-3 text-sm text-gray-500 dark:text-gray-400 justify-center p-6 rounded-lg bg-gray-50 dark:bg-gray-800">
           <Cursor />
-          <span className="font-medium">解析中...</span>
+          <span className="font-medium">{t('Analyzing...')}</span>
         </div>
       )}
     </div>

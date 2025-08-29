@@ -2,6 +2,7 @@ import React from 'react';
 import { Token } from '../types/jp_ast';
 import { Tag } from './Tag';
 // import { Checkbox } from './Checkbox';
+import { useTranslation } from 'react-i18next';
 
 interface WordCardProps {
   token: Token;
@@ -16,6 +17,7 @@ const WordCard: React.FC<WordCardProps> = ({
   isSelected = false,
   onSelect,
 }) => {
+  const { t } = useTranslation();
   const baseClasses = "rounded-xl border-1 p-4 cursor-pointer transition-all duration-200 ";
   const selectedClasses = isSelected 
     ? "border-blue-300 dark:border-blue-600 bg-blue-50 dark:bg-blue-900 shadow-2xs text-blue-700 dark:text-blue-200 hover:bg-blue-100 dark:hover:bg-blue-800" 
@@ -50,13 +52,13 @@ const WordCard: React.FC<WordCardProps> = ({
       {/* Content area */}
       <div className="space-y-2">
         {token.inflection && <div className="flex items-center gap-2">
-          <Tag type="inflection" label="変形" value={token.inflection}></Tag>
+          <Tag type="inflection" label={t('Conjugation')} value={token.inflection}></Tag>
         </div>}
         
         {token.meaning && (
           <div>
             <p className={`text-xs font-medium ${isSelected ? 'text-blue-800 dark:text-blue-200' : 'text-gray-700 dark:text-gray-300'}`}>
-              含义： {token.meaning}
+              {t('Meaning')}: {token.meaning}
             </p>
           </div>
         )}
@@ -64,7 +66,7 @@ const WordCard: React.FC<WordCardProps> = ({
         {token.lemma && (
           <div>
             <p className={`text-xs font-medium ${isSelected ? 'text-blue-800 dark:text-blue-200' : 'text-gray-700 dark:text-gray-300'}`}>
-              原型： {token.lemma}
+              {t('Original form')}: {token.lemma}
             </p>
           </div>
         )}
@@ -72,7 +74,7 @@ const WordCard: React.FC<WordCardProps> = ({
         {token.inflection && (
           <div>
             <p className={`text-sm font-medium ${isSelected ? 'text-blue-800 dark:text-blue-200' : 'text-gray-700 dark:text-gray-300'}`}>
-              变形：{token.inflection}
+              {t('Conjugation')}: {token.inflection}
             </p>
           </div>
         )}

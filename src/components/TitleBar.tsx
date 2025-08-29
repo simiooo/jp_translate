@@ -3,7 +3,6 @@ import {
   FaWindowMaximize,
   FaTimes,
   FaHome,
-  FaArrowRight,
   FaBookmark,
   FaCameraRetro,
   FaUser,
@@ -13,14 +12,10 @@ import { isElectron, electronAPI } from "~/utils/electron";
 import { useToggle } from "ahooks";
 import { useNavigate, useLocation } from "react-router";
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
 } from "~/components/ui/tooltip";
-import { Switch } from "~/components/ui/switch";
 import styles from "./TitleBar.module.css";
 import { ModeToggle } from "./mode-toggle";
+import { LanguageSwitcher } from "./LanguageSwitcher";
 
 interface TitleBarProps {
   title?: string;
@@ -43,15 +38,6 @@ export default function TitleBar({ }: TitleBarProps) {
       api?.maximizeWindow();
     }
     toggleMaximized();
-  };
-
-  // const handleClose = () => {
-  //   api?.closeWindow();
-  // };
-
-  const handleSignOut = () => {
-    localStorage.removeItem("Authorization");
-    navigate("/login", { replace: true });
   };
 
   return (
@@ -106,18 +92,10 @@ export default function TitleBar({ }: TitleBarProps) {
 
         <div className="ml-auto flex items-center space-x-4">
           <div>
-            <ModeToggle />
+            <LanguageSwitcher />
           </div>
           <div>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button onClick={handleSignOut} variant="ghost">
-                    <FaArrowRight />
-                  </Button>
-                </TooltipTrigger>
-              </Tooltip>
-            </TooltipProvider>
+            <ModeToggle />
           </div>
           <div>
             <div className="inline-flex items-center justify-between dark:bg-gray-800 select-none">

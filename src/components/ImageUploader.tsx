@@ -11,7 +11,7 @@ import { cn } from '~/lib/utils';
 import { v4 as uuidv4 } from 'uuid';
 import { useRequest } from 'ahooks';
 import { FileRecord } from '../types/file';
-import { Input } from './ui/input';
+import { useTranslation } from 'react-i18next';
 
 export interface UploadFile extends FileRecord {
   uid: string;
@@ -39,9 +39,10 @@ export const ImageUploader = forwardRef<ImageUploaderRef, ImageUploaderProps>(({
   value, // Destructure new prop
   onChange, // Destructure new prop
 }, ref) => {
-  const [uploadedFiles, setUploadedFiles] = useState<UploadFile[]>([]);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const [isDragOver, setIsDragOver] = useState(false);
+ const { t } = useTranslation();
+ const [uploadedFiles, setUploadedFiles] = useState<UploadFile[]>([]);
+ const fileInputRef = useRef<HTMLInputElement>(null);
+ const [isDragOver, setIsDragOver] = useState(false);
 
   useImperativeHandle(ref, () => ({
     getUploadedFiles: () => uploadedFiles.filter(f => f.status === 'done'),
@@ -100,7 +101,7 @@ export const ImageUploader = forwardRef<ImageUploaderRef, ImageUploaderProps>(({
           return updatedFiles;
         });
         onUploadSuccess?.(fileRecord);
-        toast.success(`文件 ${params.name} 上传成功！`);
+        toast.success(t('File {{name}} uploaded successfully!', { name: params.name }));
       },
       onError: (error, params) => {
         
@@ -126,7 +127,10 @@ export const ImageUploader = forwardRef<ImageUploaderRef, ImageUploaderProps>(({
             errorMessage = customError.message;
           }
         }
-        toast.error(`文件 ${params[0].params.name} 上传失败: ${errorMessage}`);
+        toast.error(t('File {{name}} upload failed: {{error}}', {
+          name: params[0].params.name,
+          error: errorMessage
+        }));
         console.error('Upload error:', error);
       },
     }
@@ -158,12 +162,6 @@ export const ImageUploader = forwardRef<ImageUploaderRef, ImageUploaderProps>(({
     }
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (files && files.length > 0) {
-      Array.from(files).forEach(file => handleUploadFile(file));
-    }
-  };
 
   const handleDragEnter = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -214,7 +212,7 @@ export const ImageUploader = forwardRef<ImageUploaderRef, ImageUploaderProps>(({
       onChange?.(newFiles.filter(f => f.status === 'done'));
       return newFiles;
     });
-    toast.info('文件已从列表中移除');
+    toast.info(t('File removed from list'));
   };
 
   const handlePreviewClick = (file: UploadFile) => {
@@ -253,10 +251,10 @@ export const ImageUploader = forwardRef<ImageUploaderRef, ImageUploaderProps>(({
               onClick={() => fileInputRef.current?.click()}
               className="mb-2"
             >
-              {isDragOver ? '松开即可上传' : '选择图片'}
+              {isDragOver ? t('Release to upload') : t('Select image')}
             </Button>
             <p className="text-sm text-muted-foreground text-center">
-              或拖拽、粘贴图片到此处
+              {t('Or drag, drop, or paste images here')}
             </p>
           </div>
         )}
@@ -311,17 +309,17 @@ export const ImageUploader = forwardRef<ImageUploaderRef, ImageUploaderProps>(({
                       <div className="absolute bottom-1 left-1">
                         {file.status === 'uploading' && (
                           <Badge variant="secondary" className="text-xs">
-                            上传中
+                            {t('Uploading')}
                           </Badge>
                         )}
                         {file.status === 'done' && (
                           <Badge variant="default" className="text-xs">
-                            完成
+                            {t('Completed')}
                           </Badge>
                         )}
                         {file.status === 'error' && (
                           <Badge variant="destructive" className="text-xs">
-                            失败
+                            {t('Failed')}
                           </Badge>
                         )}
                       </div>
@@ -352,7 +350,7 @@ export const ImageUploader = forwardRef<ImageUploaderRef, ImageUploaderProps>(({
                   <div className="aspect-square flex flex-col items-center justify-center">
                     <Upload className="h-6 w-6 text-muted-foreground mb-2" />
                     <p className="text-xs text-muted-foreground text-center">
-                      {isDragOver ? '松开上传' : '添加图片'}
+                      {isDragOver ? t('Release to upload more') : t('Add image')}
                     </p>
                   </div>
                 </CardContent>

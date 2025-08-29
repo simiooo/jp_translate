@@ -8,6 +8,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import Spinner from "@/components/Spinner";
 import { cn } from "@/lib/utils";
+import { useTranslation } from 'react-i18next';
 
 
 // Define the structure of the parsed translated_text
@@ -53,7 +54,8 @@ export const HistorySidebar: React.FC<HistorySidebarProps> = ({
   onSearchChange,
   onLoadMore,
 }) => {
-  const listContainerRef = React.useRef<VListHandle>(null);
+ const { t } = useTranslation();
+ const listContainerRef = React.useRef<VListHandle>(null);
   const [searchQuery, setSearchQuery] = React.useState("");
   const [vlistKey, setVlistKey] = React.useState(0);
   const [fetching, setFetching] = React.useState(false);
@@ -119,14 +121,14 @@ export const HistorySidebar: React.FC<HistorySidebarProps> = ({
         <CardHeader className={cn("pb-0", isHistoryCollapsed ? "p-2" : "pr-2 pl-4")}>
           <div className={cn("flex items-center", isHistoryCollapsed ? "justify-center" : "justify-between")}>
             {!isHistoryCollapsed && (
-              <CardTitle>翻译历史</CardTitle>
+              <CardTitle>{t('Translation History')}</CardTitle>
             )}
             <Button
               variant="ghost"
               size="icon"
               onClick={() => setIsHistoryCollapsed(!isHistoryCollapsed)}
               className={cn(isHistoryCollapsed ? "w-8 h-8" : "")}
-              aria-label={isHistoryCollapsed ? "展开历史面板" : "折叠历史面板"}
+              aria-label={isHistoryCollapsed ? t('Expand history panel') : t('Collapse history panel')}
             >
               {isHistoryCollapsed ? (
                 <ChevronRight className="h-4 w-4" />
@@ -143,7 +145,7 @@ export const HistorySidebar: React.FC<HistorySidebarProps> = ({
               <Input
                 
                 type="text"
-                placeholder="搜索历史记录..."
+                placeholder={t('Search history...')}
                 className="pl-9"
                 value={searchQuery}
                 onChange={handleSearchChange}
@@ -233,12 +235,12 @@ export const HistorySidebar: React.FC<HistorySidebarProps> = ({
               )}
               {!hasMore && translations.length > 0 && (
                 <div className="p-4 text-center text-sm text-muted-foreground">
-                  没有更多数据了
+                  {t('No more data')}
                 </div>
               )}
               {isError && (
                 <div className="p-4 text-center text-sm text-destructive">
-                  加载失败，请重试
+                  {t('Load failed, please try again')}
                 </div>
               )}
             </div>

@@ -1,8 +1,12 @@
+import { useTranslation } from 'react-i18next'
+
 export default function FollowingPage() {
+  const { t } = useTranslation()
+  
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">关注列表</h1>
-      <p>这里展示您关注的用户列表。</p>
+      <h1 className="text-2xl font-bold mb-4">{t("Following List")}</h1>
+      <p>{t("Here shows the list of users you are following.")}</p>
     </div>
   );
 }

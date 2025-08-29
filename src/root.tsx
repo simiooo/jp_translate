@@ -11,6 +11,7 @@ import type { Route } from "./+types/root";
 import "./app.css";
 import icon from "~/assets/favicon.ico";
 import { ThemeProvider } from "./components/theme-provider";
+import "./i18n"; // Import i18n configuration
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -35,11 +36,13 @@ export const links: Route.LinksFunction = () => [
   },
 ];
 
+import { useTranslation } from 'react-i18next';
+
 export function Layout({ children }: { children: React.ReactNode }) {
-  
+  const { i18n } = useTranslation();
 
   return (
-    <html className="text-base" lang="en">
+    <html className="text-base" lang={i18n.language}>
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />

@@ -3,6 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FaImage, FaSmile, FaMapMarkerAlt, FaPaperPlane } from "react-icons/fa";
+import { useTranslation } from 'react-i18next';
 
 interface WordPostFormProps {
   onSubmit?: (word: string, meaning: string, kana?: string, lemma?: string, inflection?: string) => void;
@@ -11,6 +12,7 @@ interface WordPostFormProps {
 const WordPostForm: React.FC<WordPostFormProps> = ({
   onSubmit
 }) => {
+  const { t } = useTranslation();
   const [word, setWord] = useState('');
   const [meaning, setMeaning] = useState('');
   const [kana, setKana] = useState('');
@@ -47,7 +49,7 @@ const WordPostForm: React.FC<WordPostFormProps> = ({
           <div className="flex-1 space-y-3">
             {/* Word input */}
             <Input
-              placeholder="单词 (必填)"
+              placeholder={`${t('Word')} (${t('Required')})`}
               value={word}
               onChange={(e) => setWord(e.target.value)}
               onKeyPress={handleKeyPress}
@@ -56,7 +58,7 @@ const WordPostForm: React.FC<WordPostFormProps> = ({
 
             {/* Meaning input */}
             <Input
-              placeholder="含义 (必填)"
+              placeholder={`${t('Meaning')} (${t('Required')})`}
               value={meaning}
               onChange={(e) => setMeaning(e.target.value)}
               onKeyPress={handleKeyPress}
@@ -65,14 +67,14 @@ const WordPostForm: React.FC<WordPostFormProps> = ({
             {/* Optional fields */}
             <div className="grid grid-cols-2 gap-2">
               <Input
-                placeholder="假名 (可选)"
+                placeholder={`${t('Kana')} (${t('Optional')})`}
                 value={kana}
                 onChange={(e) => setKana(e.target.value)}
                 onKeyPress={handleKeyPress}
                 className="text-sm"
               />
               <Input
-                placeholder="原型 (可选)"
+                placeholder={`${t('Lemma')} (${t('Optional')})`}
                 value={lemma}
                 onChange={(e) => setLemma(e.target.value)}
                 onKeyPress={handleKeyPress}
@@ -81,7 +83,7 @@ const WordPostForm: React.FC<WordPostFormProps> = ({
             </div>
 
             <Input
-              placeholder="变形 (可选)"
+              placeholder={`${t('Inflection')} (${t('Optional')})`}
               value={inflection}
               onChange={(e) => setInflection(e.target.value)}
               onKeyPress={handleKeyPress}
@@ -108,7 +110,7 @@ const WordPostForm: React.FC<WordPostFormProps> = ({
                 className="bg-primary hover:bg-primary/90"
               >
                 <FaPaperPlane className="w-4 h-4 mr-2" />
-                发布
+                {t('Publish')}
               </Button>
             </div>
           </div>

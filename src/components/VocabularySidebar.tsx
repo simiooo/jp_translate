@@ -11,14 +11,17 @@ import {
   FaHome,
   FaHashtag
 } from "react-icons/fa";
+import { useTranslation } from 'react-i18next';
 
 interface VocabularySidebarProps {
   activeTab?: string;
+  onTabChange?: (tab: string) => void;
 }
 
 const VocabularySidebar: React.FC<VocabularySidebarProps> = ({
   activeTab
 }) => {
+  const { t } = useTranslation();
   const location = useLocation();
   
   // If activeTab is not provided, determine it from the current path
@@ -34,19 +37,19 @@ const VocabularySidebar: React.FC<VocabularySidebarProps> = ({
     return "home";
   })();
   const menuItems = [
-    { id: 'home', label: '首页', icon: FaHome },
-    { id: 'my-vocabulary', label: '我的单词表', icon: FaBook },
-    { id: 'recommended', label: '推荐单词表', icon: FaStar },
-    { id: 'notifications', label: '通知', icon: FaBell },
-    { id: 'following', label: '关注列表', icon: FaUserFriends },
-    { id: 'followers', label: '粉丝列表', icon: FaUserPlus },
-    { id: 'trends', label: '当前趋势', icon: FaHashtag },
+    { id: 'home', label: t('Home'), icon: FaHome },
+    { id: 'my-vocabulary', label: t('My Vocabulary'), icon: FaBook },
+    { id: 'recommended', label: t('Recommended Vocabulary'), icon: FaStar },
+    { id: 'notifications', label: t('Notifications'), icon: FaBell },
+    { id: 'following', label: t('Following List'), icon: FaUserFriends },
+    { id: 'followers', label: t('Followers List'), icon: FaUserPlus },
+    { id: 'trends', label: t('Current Trends'), icon: FaHashtag },
   ];
 
   return (
     <div className="w-64 h-full bg-background border-r">
       <div className="p-4">
-        <h2 className="text-xl font-bold mb-6">词汇社区</h2>
+        <h2 className="text-xl font-bold mb-6">{t('Vocabulary Community')}</h2>
         
         <nav className="space-y-2">
           {menuItems.map((item) => {
@@ -76,7 +79,7 @@ const VocabularySidebar: React.FC<VocabularySidebarProps> = ({
                 <span className="text-white font-bold">U</span>
               </div>
               <div>
-                <p className="font-semibold text-sm">用户名</p>
+                <p className="font-semibold text-sm">{t('Username')}</p>
                 <p className="text-muted-foreground text-xs">@username</p>
               </div>
             </div>

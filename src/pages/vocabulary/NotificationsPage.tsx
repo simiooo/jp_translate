@@ -1,8 +1,12 @@
+import { useTranslation } from 'react-i18next'
+
 export default function NotificationsPage() {
+  const { t } = useTranslation()
+  
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">通知</h1>
-      <p>这里展示您的系统通知和消息。</p>
+      <h1 className="text-2xl font-bold mb-4">{t("Notifications")}</h1>
+      <p>{t("Here shows your system notifications and messages.")}</p>
     </div>
   );
 }

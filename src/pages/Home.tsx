@@ -62,6 +62,7 @@ import {
 import { Badge } from "~/components/ui/badge";
 import { isBrowser } from "~/utils/ssr";
 import { HydrateFallbackTemplate } from "~/components/HydrateFallbackTemplate";
+import { useTranslation } from 'react-i18next';
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -74,6 +75,7 @@ export function meta({}: Route.MetaArgs) {
 }
 
 function App() {
+  const { t } = useTranslation();
   const {
     isOpen,
     openModal,
@@ -463,11 +465,11 @@ function App() {
                                   }
                                 >
                                   <MdOutlineTranslate />
-                                  {loading ? "翻译中..." : "翻译"}
+                                  {loading ? t("Loading") + "..." : t("Translate")}
                                 </Button>
                               </TooltipTrigger>
                               <TooltipContent side="bottom">
-                                按 Alt + Enter 提交
+                                {t("Press Alt + Enter to submit")}
                               </TooltipContent>
                             </Tooltip>
                           </div>
@@ -486,7 +488,7 @@ function App() {
                                       {...field}
                                       className="h-60 text-base 2xl:text-lg"
                                       placeholder={
-                                        "日本語を入力してください\n例：こんにちは、元気ですか？\nAlt + Q 选择输入框"
+                                        t("Enter Japanese text here\nExample: こんにちは、元気ですか？\nAlt + Q to focus input")
                                       }
                                     />
                                   </FormControl>
@@ -601,7 +603,7 @@ function App() {
                               </>
                             ) : (
                               <div className="h-full flex items-center justify-center text-muted-foreground 2xl:text-lg">
-                                翻译结果将在这里显示
+                                {t("Translation results will be displayed here")}
                               </div>
                             )}
                           </div>

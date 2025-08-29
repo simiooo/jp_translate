@@ -7,6 +7,7 @@ import { useNavigate } from "react-router";
 import Spinner from "~/components/Spinner";
 import { VList, VListHandle } from "virtua";
 import { HydrateFallbackTemplate } from "~/components/HydrateFallbackTemplate";
+import { useTranslation } from 'react-i18next'
 
 // Components
 import VocabularySidebar from "~/components/VocabularySidebar";
@@ -20,6 +21,7 @@ import { Search } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const MyVocabularyPage: React.FC = () => {
+  const { t } = useTranslation()
   const navigate = useNavigate();
   const listContainerRef = useRef<VListHandle>(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -181,12 +183,12 @@ const MyVocabularyPage: React.FC = () => {
           {/* Header with search */}
           <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b p-4">
             <div className="flex items-center justify-between">
-              <h1 className="text-xl font-bold">我的单词表</h1>
+              <h1 className="text-xl font-bold">{t("My Vocabulary")}</h1>
               <div className="relative max-w-md">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   type="text"
-                  placeholder="搜索我的单词..."
+                  placeholder={t("Search for words or users...")}
                   className="w-80 pl-10"
                   value={searchQuery}
                   onChange={(e) => {
@@ -234,10 +236,10 @@ const MyVocabularyPage: React.FC = () => {
                   <Search className="w-full h-full" />
                 </div>
                 <h3 className="text-lg font-medium mb-2">
-                  暂无单词
+                  {t("No words yet")}
                 </h3>
                 <p className="text-muted-foreground mb-6">
-                  开始创建您的第一个单词来构建个人词汇表
+                  {t("Start sharing words to build the community vocabulary")}
                 </p>
               </div>
             ) : (

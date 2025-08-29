@@ -19,6 +19,7 @@ import { useNavigate } from 'react-router';
 import { alovaInstance } from '~/utils/request';
 import { useRequest } from 'ahooks';
 import { HydrateFallbackTemplate } from '~/components/HydrateFallbackTemplate'
+import { useTranslation } from 'react-i18next'
 
 
 
@@ -31,8 +32,8 @@ export function meta({}: Route.MetaArgs) {
 
 // Zod validation schema
 const loginSchema = z.object({
-  email: z.string().email('请输入有效的邮箱地址'),
-  password: z.string().min(6, '密码至少需要6位字符'),
+  email: z.string().email('Please enter a valid email address'),
+  password: z.string().min(6, 'Password must be at least 6 characters'),
 })
 
 interface LoginPageProps {
@@ -46,6 +47,7 @@ export interface User {
 }
 
 export default function LoginPage({ }: LoginPageProps) {
+  const { t } = useTranslation();
   const form = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -69,7 +71,7 @@ export default function LoginPage({ }: LoginPageProps) {
       navigate('/')
     } catch (error) {
       console.log(error);
-      Toast.error('登录失败，请重试')
+      Toast.error(t('Login failed, please try again'))
       console.log(error);
     }
   }
@@ -97,7 +99,7 @@ export default function LoginPage({ }: LoginPageProps) {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="text-3xl font-extrabold">用户登录</CardTitle>
+          <CardTitle className="text-3xl font-extrabold">{t('User Login')}</CardTitle>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -108,7 +110,7 @@ export default function LoginPage({ }: LoginPageProps) {
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>邮箱</FormLabel>
+                      <FormLabel>{t('Email')}</FormLabel>
                       <FormControl>
                         <Input
                           placeholder="example@example.com"
@@ -125,11 +127,11 @@ export default function LoginPage({ }: LoginPageProps) {
                   name="password"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>密码</FormLabel>
+                      <FormLabel>{t('Password')}</FormLabel>
                       <FormControl>
                         <Input
                           type="password"
-                          placeholder="至少6位字符"
+                          placeholder={t('At least 6 characters')}
                           {...field}
                         />
                       </FormControl>
@@ -144,19 +146,19 @@ export default function LoginPage({ }: LoginPageProps) {
                 className="w-full"
                 disabled={form.formState.isSubmitting}
               >
-                {form.formState.isSubmitting ? '登录中...' : '登录'}
+                {form.formState.isSubmitting ? t('Logging in...') : t('Login')}
               </Button>
             </form>
           </Form>
 
           <div className="mt-6 text-center text-sm text-muted-foreground">
-            <span>没有账号？</span>
+            <span>{t("Don't have an account?")}</span>
             <Button
               variant="link"
               onClick={onSwitchToRegister}
               className="p-0 h-auto font-medium ml-1"
             >
-              立即注册
+              {t('Register now')}
             </Button>
           </div>
         </CardContent>
