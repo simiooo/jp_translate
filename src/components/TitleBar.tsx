@@ -116,9 +116,6 @@ export default function TitleBar({ }: TitleBarProps) {
                     <FaArrowRight />
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent side="bottom">
-                  Sign Out
-                </TooltipContent>
               </Tooltip>
             </TooltipProvider>
           </div>
