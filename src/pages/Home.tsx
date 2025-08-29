@@ -299,7 +299,7 @@ function App() {
         const res = await alovaInstance.Post<{
           [key: string]: string | number | undefined;
           code?: number;
-        }>("/api/words", word);
+        }>("/api/words", {...word, pos: word?.pos?.join});
         if (res.code) {
           throw Error(res.message?.toString() || "保存单词失败");
         }

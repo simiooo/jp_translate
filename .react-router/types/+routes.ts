@@ -22,10 +22,28 @@ type Pages = {
   "/profile": {
     params: {};
   };
+  "/recognize": {
+    params: {};
+  };
   "/vocabulary": {
     params: {};
   };
-  "/recognize": {
+  "/vocabulary/my-vocabulary": {
+    params: {};
+  };
+  "/vocabulary/recommended": {
+    params: {};
+  };
+  "/vocabulary/notifications": {
+    params: {};
+  };
+  "/vocabulary/following": {
+    params: {};
+  };
+  "/vocabulary/followers": {
+    params: {};
+  };
+  "/vocabulary/trends": {
     params: {};
   };
 };
@@ -33,11 +51,11 @@ type Pages = {
 type RouteFiles = {
   "root.tsx": {
     id: "root";
-    page: "/" | "/login" | "/register" | "/profile" | "/vocabulary" | "/recognize";
+    page: "/" | "/login" | "/register" | "/profile" | "/recognize" | "/vocabulary" | "/vocabulary/my-vocabulary" | "/vocabulary/recommended" | "/vocabulary/notifications" | "/vocabulary/following" | "/vocabulary/followers" | "/vocabulary/trends";
   };
   "./layout/rootLayout.tsx": {
     id: "layout/rootLayout";
-    page: "/" | "/login" | "/register" | "/profile" | "/vocabulary" | "/recognize";
+    page: "/" | "/login" | "/register" | "/profile" | "/recognize" | "/vocabulary" | "/vocabulary/my-vocabulary" | "/vocabulary/recommended" | "/vocabulary/notifications" | "/vocabulary/following" | "/vocabulary/followers" | "/vocabulary/trends";
   };
   "./pages/Home.tsx": {
     id: "pages/Home";
@@ -55,12 +73,40 @@ type RouteFiles = {
     id: "pages/ProfilePage";
     page: "/profile";
   };
-  "./pages/Vocabulary.tsx": {
-    id: "pages/Vocabulary";
-    page: "/vocabulary";
-  };
   "./pages/Recognize.tsx": {
     id: "pages/Recognize";
     page: "/recognize";
+  };
+  "./layout/vocabularyLayout.tsx": {
+    id: "layout/vocabularyLayout";
+    page: "/vocabulary" | "/vocabulary/my-vocabulary" | "/vocabulary/recommended" | "/vocabulary/notifications" | "/vocabulary/following" | "/vocabulary/followers" | "/vocabulary/trends";
+  };
+  "./pages/vocabulary/HomePage.tsx": {
+    id: "pages/vocabulary/HomePage";
+    page: "/vocabulary";
+  };
+  "./pages/vocabulary/MyVocabularyPage.tsx": {
+    id: "pages/vocabulary/MyVocabularyPage";
+    page: "/vocabulary/my-vocabulary";
+  };
+  "./pages/vocabulary/RecommendedPage.tsx": {
+    id: "pages/vocabulary/RecommendedPage";
+    page: "/vocabulary/recommended";
+  };
+  "./pages/vocabulary/NotificationsPage.tsx": {
+    id: "pages/vocabulary/NotificationsPage";
+    page: "/vocabulary/notifications";
+  };
+  "./pages/vocabulary/FollowingPage.tsx": {
+    id: "pages/vocabulary/FollowingPage";
+    page: "/vocabulary/following";
+  };
+  "./pages/vocabulary/FollowersPage.tsx": {
+    id: "pages/vocabulary/FollowersPage";
+    page: "/vocabulary/followers";
+  };
+  "./pages/vocabulary/TrendsPage.tsx": {
+    id: "pages/vocabulary/TrendsPage";
+    page: "/vocabulary/trends";
   };
 };
