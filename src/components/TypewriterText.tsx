@@ -90,7 +90,7 @@ export const TypewriterText = ({ text, delay = 0, charDelay = 0.05, duration = 0
           custom={index} // 传递自定义值给 variants，虽然在这个例子中不直接用到，但在更复杂的场景有用
         //   style={{ display: 'inline-block', whiteSpace: 'pre' }} // 保持空格和独立的字符显示
         >
-          {char === ' ' ? '\u00A0' : char} {/* 处理空格，使其可见 */}
+          {char}
         </motion.span>
       ))}
     </div>
