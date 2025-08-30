@@ -6,6 +6,7 @@ import {
   FaBookmark,
   FaCameraRetro,
   FaUser,
+  FaUserFriends,
 } from "react-icons/fa";
 import { Button } from "~/components/ui/button";
 import { isElectron, electronAPI } from "~/utils/electron";
@@ -68,7 +69,7 @@ export default function TitleBar({ }: TitleBarProps) {
             size="sm"
             variant={location.pathname === "/vocabulary" ? "outline" : "ghost"}
           >
-            <FaBookmark className="" />
+            <FaUserFriends />
           </Button>
           <Button
             onClick={() => {
