@@ -305,10 +305,10 @@ function App() {
         if (res.code) {
           throw Error(res.message?.toString() || "保存单词失败");
         }
-        Toast.success("单词已保存");
+        Toast.success(t("Word saved successfully"));
       } catch (error) {
         console.error("保存单词失败:", error);
-        Toast.error("保存单词失败，请重试");
+        Toast.error(t("Failed to save word, please try again"));
       }
     },
     {
