@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { alovaInstance } from '~/utils/request';
 import { FileRecord } from '~/types/file';
 import humps from 'humps'
+import { useTranslation } from 'react-i18next';
 // 文件状态类型
 export type FileStatus = '待上传' | '上传中' | '上传失败' | '上传成功';
 
@@ -69,6 +70,7 @@ const defaultUploadFunction: CustomUploadFunction = async (file: File) => {
 };
 
 export const useFileUpload = (options: UseFileUploadOptions = {}): UseFileUploadReturn => {
+  const { t } = useTranslation();
   const {
     customUploadFn = defaultUploadFunction,
     maxCount = 10,
@@ -128,7 +130,7 @@ export const useFileUpload = (options: UseFileUploadOptions = {}): UseFileUpload
             return item;
           });
         });
-        toast.success(`文件 ${fileListRef.current.find(f => f.uid === uid)?.FileName} 上传成功！`);
+        toast.success(t("File {{name}} uploaded successfully!", { name: fileListRef.current.find(f => f.uid === uid)?.FileName }));
       },
       onError: (error, [{ uid, file }]) => {
         updateFileList(prevList => {
@@ -149,7 +151,7 @@ export const useFileUpload = (options: UseFileUploadOptions = {}): UseFileUpload
           });
         });
         const fileName = fileListRef.current.find(f => f.uid === uid)?.FileName || file.name;
-        toast.error(`文件 ${fileName} 上传失败: ${getErrorMessage(error)}`);
+        toast.error(t("File {{name}} upload failed: {{error}}", { name: fileName, error: getErrorMessage(error) }));
       },
     }
   );
@@ -180,14 +182,14 @@ export const useFileUpload = (options: UseFileUploadOptions = {}): UseFileUpload
         return file.type.match(type.replace('*', '.*'));
       });
       if (!isAcceptable) {
-        toast.error(`不支持的文件类型: ${file.type}`);
+        toast.error(t("Error: {{error}}", { error: `不支持的文件类型: ${file.type}` }));
         return false;
       }
     }
 
     // 检查文件大小
     if (file.size > maxSize) {
-      toast.error(`文件大小超过限制: ${(maxSize / 1024 / 1024).toFixed(1)}MB`);
+      toast.error(t("Error: {{error}}", { error: `文件大小超过限制: ${(maxSize / 1024 / 1024).toFixed(1)}MB` }));
       return false;
     }
 
@@ -199,7 +201,7 @@ export const useFileUpload = (options: UseFileUploadOptions = {}): UseFileUpload
           return false;
         }
       } catch (error) {
-        toast.error(`文件验证失败: ${getErrorMessage(error)}`);
+        toast.error(t("Error: {{error}}", { error: `文件验证失败: ${getErrorMessage(error)}` }));
         return false;
       }
     }
@@ -216,7 +218,7 @@ export const useFileUpload = (options: UseFileUploadOptions = {}): UseFileUpload
 
     // 检查数量限制
     if (fileListRef.current.length >= maxCount) {
-      toast.error(`最多只能上传 ${maxCount} 个文件`);
+      toast.error(t("Maximum {{count}} files", { count: maxCount }));
       return;
     }
 
@@ -271,7 +273,7 @@ export const useFileUpload = (options: UseFileUploadOptions = {}): UseFileUpload
       
       return newList;
     });
-    toast.info('文件已从列表中移除');
+    toast.info(t("File removed from list"));
   }, [updateFileList, triggerStatusChange]);
 
   // 更新文件信息
@@ -305,7 +307,7 @@ export const useFileUpload = (options: UseFileUploadOptions = {}): UseFileUpload
   const retryUpload = useCallback(async (uid: string) => {
     const fileItem = fileListRef.current.find(f => f.uid === uid);
     if (!fileItem || !fileItem.originFileObj) {
-      toast.error('找不到要重试的文件');
+      toast.error(t("File not found for retry"));
       return;
     }
 

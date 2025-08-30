@@ -175,5 +175,17 @@
   "Meaning: {{meaning}}": "意味: {{meaning}}",
   "Kana: {{kana}}": "仮名: {{kana}}",
   "Add token to vocabulary": "添加到词汇表",
-  "Analyzing...": "解析中..."
+  "Analyzing...": "解析中...",
+  "Word": "单词",
+  "Add Word to Vocabulary?": "添加到词汇表？",
+  "Yes": "是",
+  "No": "否",
+  "Saving...": "保存中...",
+  "Word saved successfully": "单词已保存",
+  "Failed to save word, please try again": "保存单词失败，请重试",
+  "Failed to upload file": "文件上传失败",
+  "File {{name}} uploaded successfully!": "文件 {{name}} 上传成功！",
+  "File {{name}} upload failed: {{error}}": "文件 {{name}} 上传失败: {{error}}",
+  "File removed from list": "文件已从列表中移除",
+  "File not found for retry": "找不到要重试的文件"
 }

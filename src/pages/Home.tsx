@@ -435,7 +435,7 @@ function App() {
                                           await addFiles([thisFile]);
                                         }
                                       } catch (error) {
-                                        toast("Failed to upload file");
+                                        toast(t("Failed to upload file"));
                                         console.error(error);
                                       }
                                     }}
@@ -633,8 +633,8 @@ function App() {
           </Form>
         </div>
       </div>
-      <Modal isOpen={isOpen} onClose={closeModal} title="Word" size="lg">
-        <div>Add Word to Vocabulary?</div>
+      <Modal isOpen={isOpen} onClose={closeModal} title={t("Word")} size="lg">
+        <div>{t("Add Word to Vocabulary?")}</div>
         <div className="p-2"></div>
         <div className="flex justify-end gap-2">
           <Button
@@ -645,10 +645,10 @@ function App() {
               closeModal();
             }}
           >
-            {wordCreateLoading ? "Saving..." : "Yes"}
+            {wordCreateLoading ? t("Saving...") : t("Yes")}
           </Button>
           <Button variant="secondary" onClick={() => closeModal()}>
-            No
+            {t("No")}
           </Button>
         </div>
       </Modal>

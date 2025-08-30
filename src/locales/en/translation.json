@@ -175,5 +175,17 @@
   "Meaning: {{meaning}}": "Meaning: {{meaning}}",
   "Kana: {{kana}}": "Kana: {{kana}}",
   "Add token to vocabulary": "Add token to vocabulary",
-  "Analyzing...": "Analyzing..."
+  "Analyzing...": "Analyzing...",
+  "Word": "Word",
+  "Add Word to Vocabulary?": "Add Word to Vocabulary?",
+  "Yes": "Yes",
+  "No": "No",
+  "Saving...": "Saving...",
+  "Word saved successfully": "Word saved successfully",
+  "Failed to save word, please try again": "Failed to save word, please try again",
+  "Failed to upload file": "Failed to upload file",
+  "File {{name}} uploaded successfully!": "File {{name}} uploaded successfully!",
+  "File {{name}} upload failed: {{error}}": "File {{name}} upload failed: {{error}}",
+  "File removed from list": "File removed from list",
+  "File not found for retry": "File not found for retry"
 }
