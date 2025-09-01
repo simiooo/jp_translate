@@ -1,30 +1,30 @@
 # Build stage
-FROM node:22-alpine AS build
+FROM oven/bun AS builder
 
 WORKDIR /app
 
 # Copy package files and install dependencies
 COPY package*.json ./
-COPY *.env ./
+COPY * ./
 COPY pnpm-lock.yaml ./
-RUN npm install -g pnpm && pnpm install
+
 
 # Copy source code and build the application
 COPY . .
-RUN pnpm run build
-CMD ["bun", "run", "start"]
-# Production stage with Nginx
-FROM node:22-alpine
+RUN bun install -g pnpm
+RUN pnpm install
 
-WORKDIR /app
+# RUN bun install --production
+RUN bun run build
 
-# Copy built application and dependencies
-COPY --from=build /app/build ./build
-COPY --from=build /app/package*.json ./
-COPY --from=build /app/*.env ./
-RUN npm install -g pnpm && pnpm install
-# Expose port for SSR server
+
+# FROM oven/bun
+
+# WORKDIR /app
+# COPY --from=builder /app/package*.json ./
+# COPY --from=builder /app/build ./
+# COPY --from=builder /app/node_modules ./
+
 EXPOSE 3000
 
-# Start the SSR server with bun
-CMD ["pnpm", "run", "start"]
+CMD ["bun", "run", "start"]
