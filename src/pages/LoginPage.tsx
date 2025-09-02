@@ -1,7 +1,6 @@
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
-import { LoginFormData } from '../types/auth'
 import { Input } from '../components/ui/input'
 import { Toast } from '../components/ToastCompat'
 import type { Route } from "./+types/LoginPage";
@@ -20,6 +19,14 @@ import { alovaInstance, getErrorMessage, isStandardizedError } from '~/utils/req
 import { useRequest } from 'ahooks';
 import { HydrateFallbackTemplate } from '~/components/HydrateFallbackTemplate'
 import { useTranslation } from 'react-i18next'
+import { useAuthActions, useIsLoading } from '~/store/auth'
+import {
+  ErrCodeInvalidToken,
+  ErrCodeTokenExpired,
+  ErrCodeUserNotAuthenticated,
+  ErrCodeInvalidCredentials,
+  ErrCodeDailyLimitExceeded
+} from '~/types/errors'
 
 
 
@@ -37,7 +44,6 @@ const loginSchema = z.object({
 })
 
 interface LoginPageProps {
-  onLogin: (data: LoginFormData) => void
   onSwitchToRegister: () => void
 }
 export interface User {
@@ -48,6 +54,8 @@ export interface User {
 
 export default function LoginPage({ }: LoginPageProps) {
   const { t } = useTranslation();
+  const { login } = useAuthActions();
+  const isLoading = useIsLoading();
   const form = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -60,14 +68,7 @@ export default function LoginPage({ }: LoginPageProps) {
   
   const onSubmit = async (data: z.infer<typeof loginSchema>) => {
     try {
-      const res = await alovaInstance.Post<{token?: string, user?: User}>('/api/auth/login', {
-        email: data.email,
-        password: data.password
-      })
-      if(!res.token) {
-        throw Error('token not found')
-      }
-      localStorage.setItem('Authorization', `Bearer ${res.token}`)
+      await login(data.email, data.password);
       navigate('/')
     } catch (error) {
       console.log('Login error:', error);
@@ -76,15 +77,15 @@ export default function LoginPage({ }: LoginPageProps) {
       if (isStandardizedError(error)) {
         // You can use error.code to show specific error messages
         switch (error.code) {
-          case 1003: // ErrCodeInvalidToken
-          case 1004: // ErrCodeTokenExpired
-          case 1006: // ErrCodeUserNotAuthenticated
+          case ErrCodeInvalidToken:
+          case ErrCodeTokenExpired:
+          case ErrCodeUserNotAuthenticated:
             Toast.error(t('Authentication failed, please login again'));
             break;
-          case 1403: // ErrCodeInvalidCredentials
+          case ErrCodeInvalidCredentials:
             Toast.error(t('Invalid email or password'));
             break;
-          case 1303: // ErrCodeDailyLimitExceeded
+          case ErrCodeDailyLimitExceeded:
             Toast.error(t('Daily usage limit exceeded'));
             break;
           default:
@@ -170,9 +171,9 @@ export default function LoginPage({ }: LoginPageProps) {
               <Button
                 type="submit"
                 className="w-full"
-                disabled={form.formState.isSubmitting}
+                disabled={form.formState.isSubmitting || isLoading}
               >
-                {form.formState.isSubmitting ? t('Logging in...') : t('Login')}
+                {(form.formState.isSubmitting || isLoading) ? t('Logging in...') : t('Login')}
               </Button>
             </form>
           </Form>

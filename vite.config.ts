@@ -1,7 +1,7 @@
 /// <reference types="vitest/config" />
 import { defineConfig } from "vite";
 import { reactRouter } from "@react-router/dev/vite";
-// import react from '@vitejs/plugin-react-swc'
+// import { reactRouterHonoServer } from "react-router-hono-server/dev";
 import tsconfigPaths from "vite-tsconfig-paths";
 import tailwindcss from "@tailwindcss/vite";
 import path from "path"
@@ -9,6 +9,7 @@ import path from "path"
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
+    // reactRouterHonoServer(),
     tailwindcss(),
     reactRouter(),
     tsconfigPaths(),

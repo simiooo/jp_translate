@@ -5,9 +5,23 @@ import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router'
 import { useRequest } from 'ahooks'
 
-import { UserProfile, AvatarUploadResponse } from '../types/auth'
+import { AvatarUploadResponse } from '../types/auth'
 import { alovaInstance, getErrorMessage, isStandardizedError } from '../utils/request'
 import { Toast } from '../components/ToastCompat'
+import { useUser, useProfile, useAuthActions, useIsLoading } from '~/store/auth'
+import {
+  ErrCodeInvalidToken,
+  ErrCodeTokenExpired,
+  ErrCodeUserNotAuthenticated,
+  ErrCodeFileTooLarge,
+  ErrCodeFileSizeExceeded,
+  ErrCodeUnsupportedFileType,
+  ErrCodeInvalidFileType,
+  ErrCodeFileProcessingError,
+  ErrCodeImageProcessingError,
+  ErrCodeAvatarNotFound,
+  ErrCodeFileDeleteFailed
+} from '~/types/errors'
 
 import { Button } from '~/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card'
@@ -76,7 +90,10 @@ const formatDate = (dateString: string) => {
 export default function ProfilePage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const [profile, setProfile] = useState<UserProfile | null>(null)
+  const user = useUser()
+  const profile = useProfile()
+  const { logout, fetchProfile } = useAuthActions()
+  const isLoading = useIsLoading()
   const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false)
   const [isAvatarUploading, setIsAvatarUploading] = useState(false)
   const [isAvatarDeleting, setIsAvatarDeleting] = useState(false)
@@ -94,9 +111,7 @@ export default function ProfilePage() {
   const { loading: profileLoading, error: profileError } = useRequest(
     async () => {
       try {
-        const data = await alovaInstance.Get<UserProfile>('/api/user/profile')
-        setProfile(data)
-        return data
+        await fetchProfile()
       } catch (error) {
         console.error('Failed to fetch profile:', error)
         
@@ -105,13 +120,11 @@ export default function ProfilePage() {
           console.log('Profile fetch error code:', error.code, 'Message:', error.message);
           
           // If unauthorized, redirect to login
-          if (error.code === 1006 || error.code === 1003 || error.code === 1004) { // Authentication errors
-            localStorage.removeItem('Authorization')
+          if (error.code === ErrCodeUserNotAuthenticated || error.code === ErrCodeInvalidToken || error.code === ErrCodeTokenExpired) {
             navigate('/login')
           }
         } else if (error instanceof Error && error.message.includes('401')) {
           // Fallback for non-standardized errors
-          localStorage.removeItem('Authorization')
           navigate('/login')
         }
         throw error
@@ -159,17 +172,15 @@ export default function ProfilePage() {
   // Handle logout
   const handleLogout = async () => {
     try {
-      await alovaInstance.Post('/api/auth/logout')
+      await logout()
+      navigate('/login')
     } catch (error) {
-      console.error('Logout API call failed:', error)
+      console.error('Logout failed:', error)
       
       // Handle standardized error format for logging
       if (isStandardizedError(error)) {
         console.log('Logout error code:', error.code, 'Message:', error.message);
       }
-    } finally {
-      localStorage.removeItem('Authorization')
-      navigate('/login')
     }
   }
 
@@ -199,15 +210,11 @@ export default function ProfilePage() {
       formData.append('avatar', file)
       const response = await alovaInstance.Post<AvatarUploadResponse>('/api/user/avatar', formData)
 
-      // Update profile with new avatar URL
-      if (profile) {
-        setProfile({
-          ...profile,
-          user: {
-            ...profile.user,
-            avatar_url: `${response?.avatar_url}`,
-          },
-        })
+      // Update user avatar URL in store
+      if (response?.avatar_url) {
+        // The avatar URL will be updated automatically when the profile is refetched
+        // For now, we can trigger a profile refresh
+        await fetchProfile()
       }
 
       Toast.success(t('Avatar uploaded successfully'))
@@ -217,16 +224,16 @@ export default function ProfilePage() {
       // Handle standardized error format
       if (isStandardizedError(error)) {
         switch (error.code) {
-          case 1502: // ErrCodeFileTooLarge
-          case 1510: // ErrCodeFileSizeExceeded
+          case ErrCodeFileTooLarge:
+          case ErrCodeFileSizeExceeded:
             Toast.error(t('Image size cannot exceed 2MB'));
             break;
-          case 1503: // ErrCodeUnsupportedFileType
-          case 1511: // ErrCodeInvalidFileType
+          case ErrCodeUnsupportedFileType:
+          case ErrCodeInvalidFileType:
             Toast.error(t('Please select JPEG, PNG, GIF or WebP format images'));
             break;
-          case 1512: // ErrCodeFileProcessingError
-          case 1513: // ErrCodeImageProcessingError
+          case ErrCodeFileProcessingError:
+          case ErrCodeImageProcessingError:
             Toast.error(t('Failed to process image'));
             break;
           default:
@@ -250,16 +257,9 @@ export default function ProfilePage() {
     try {
       await alovaInstance.Delete('/api/user/avatar')
 
-      // Update profile to remove avatar URL
-      if (profile) {
-        setProfile({
-          ...profile,
-          user: {
-            ...profile.user,
-            avatar_url: undefined,
-          },
-        })
-      }
+      // Update user avatar URL in store
+      // The avatar removal will be reflected when the profile is refetched
+      await fetchProfile()
 
       Toast.success(t('Avatar deleted successfully'))
     } catch (error) {
@@ -268,10 +268,10 @@ export default function ProfilePage() {
       // Handle standardized error format
       if (isStandardizedError(error)) {
         switch (error.code) {
-          case 1507: // ErrCodeAvatarNotFound
+          case ErrCodeAvatarNotFound:
             Toast.error(t('Avatar not found'));
             break;
-          case 1506: // ErrCodeFileDeleteFailed
+          case ErrCodeFileDeleteFailed:
             Toast.error(t('Failed to delete avatar file'));
             break;
           default:
@@ -304,7 +304,7 @@ export default function ProfilePage() {
     )
   }
 
-  if (profileError || !profile) {
+  if (profileError || !profile || !user) {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
@@ -347,16 +347,16 @@ export default function ProfilePage() {
             <div className="flex items-center gap-6">
               <div className="flex flex-col items-center">
                 <div className="relative">
-                  {profile.user?.avatar_url ? (
+                  {user?.avatar_url ? (
                     <img
-                      src={`${profile.user?.avatar_url}?authorization=${localStorage?.getItem('Authorization')}`}
+                      src={`${user?.avatar_url}?authorization=${localStorage?.getItem('Authorization')}`}
                       alt="Avatar"
                       className="w-24 h-24 rounded-full object-cover border-2 border-gray-200"
                     />
                   ) : (
                     <div className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center border-2 border-gray-300">
                       <span className="text-2xl font-semibold text-gray-500">
-                        {profile.user?.username.charAt(0).toUpperCase()}
+                        {user?.username.charAt(0).toUpperCase()}
                       </span>
                     </div>
                   )}
@@ -376,16 +376,16 @@ export default function ProfilePage() {
                 <div className="flex gap-2 mt-3">
                   <Button
                     onClick={triggerFileInput}
-                    disabled={isAvatarUploading || isAvatarDeleting}
+                    disabled={isAvatarUploading || isAvatarDeleting || isLoading}
                     variant="outline"
                     size="sm"
                   >
                     {isAvatarUploading ? t('Uploading') : t('Change Avatar')}
                   </Button>
-                  {profile.user?.avatar_url && (
+                  {user?.avatar_url && (
                     <Button
                       onClick={handleAvatarDelete}
-                      disabled={isAvatarUploading || isAvatarDeleting}
+                      disabled={isAvatarUploading || isAvatarDeleting || isLoading}
                       variant="destructive"
                       size="sm"
                     >
@@ -406,15 +406,15 @@ export default function ProfilePage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="text-sm font-medium text-muted-foreground">{t('Username')}</label>
-                <p className="text-lg">{profile.user?.username}</p>
+                <p className="text-lg">{user?.username}</p>
               </div>
               <div>
                 <label className="text-sm font-medium text-muted-foreground">{t('Email')}</label>
-                <p className="text-lg">{profile.user?.email}</p>
+                <p className="text-lg">{user?.email}</p>
               </div>
               <div>
                 <label className="text-sm font-medium text-muted-foreground">{t('User ID')}</label>
-                <p className="text-lg">{profile.user?.id}</p>
+                <p className="text-lg">{user?.id}</p>
               </div>
             </div>
             <Separator />
@@ -471,8 +471,8 @@ export default function ProfilePage() {
                         >
                           {t('Cancel')}
                         </Button>
-                        <Button type="submit" disabled={form.formState.isSubmitting}>
-                          {form.formState.isSubmitting ? t('Changing') : t('Confirm Change')}
+                        <Button type="submit" disabled={form.formState.isSubmitting || isLoading}>
+                          {(form.formState.isSubmitting || isLoading) ? t('Changing') : t('Confirm Change')}
                         </Button>
                       </div>
                     </form>

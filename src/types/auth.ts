@@ -64,3 +64,9 @@ export interface AvatarUploadResponse {
 export interface AvatarDeleteResponse {
   message: string
 }
+
+export interface VerifyTokenResponse {
+  user: User
+  subscription: Subscription
+  usage: Usage
+}

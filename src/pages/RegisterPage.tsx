@@ -1,7 +1,6 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { RegisterFormData } from "../types/auth";
 import { Input } from "../components/ui/input";
 import { Toast } from "../components/ToastCompat";
 import type { Route } from "./+types/RegisterPage";
@@ -15,14 +14,19 @@ import {
   FormLabel,
   FormMessage,
 } from '~/components/ui/form';
-import { alovaInstance, getErrorMessage, isStandardizedError } from "~/utils/request";
+import { getErrorMessage, isStandardizedError } from "~/utils/request";
 import { useNavigate } from "react-router";
-import { User } from "./LoginPage";
 import { HydrateFallbackTemplate } from "~/components/HydrateFallbackTemplate";
 import { useTranslation } from 'react-i18next';
+import { useAuthActions, useIsLoading } from '~/store/auth'
+import {
+  ErrCodeUsernameExists,
+  ErrCodeEmailExists,
+  ErrCodePasswordTooWeak,
+  ErrCodeUserCreationFailed
+} from '~/types/errors'
 
 interface RegisterPageProps {
-  onRegister: (data: RegisterFormData) => void;
   onSwitchToLogin: () => void;
 }
 
@@ -46,6 +50,8 @@ export function meta({}: Route.MetaArgs) {
 
 export default function RegisterPage({}: RegisterPageProps) {
   const { t } = useTranslation();
+  const { register } = useAuthActions();
+  const isLoading = useIsLoading();
   const navigate = useNavigate()
   const form = useForm<z.infer<typeof registerSchema>>({
     resolver: zodResolver(registerSchema),
@@ -59,16 +65,7 @@ export default function RegisterPage({}: RegisterPageProps) {
 
   const onSubmit = async (data: z.infer<typeof registerSchema>) => {
     try {
-      const res = await alovaInstance.Post<{token?: string, user?: User}>("/api/auth/register", {
-        username: data.username,
-        email: data.email,
-        password: data.password,
-        confirmPassword: data.confirmPassword
-      });
-      if(!res.token) {
-        throw Error('注册失败')
-      }
-      localStorage.setItem('Authorization', `Bearer ${res.token}`)
+      await register(data.username, data.email, data.password);
       navigate('/')
     } catch (error) {
       console.log('Registration error:', error);
@@ -77,16 +74,16 @@ export default function RegisterPage({}: RegisterPageProps) {
       if (isStandardizedError(error)) {
         // You can use error.code to show specific error messages
         switch (error.code) {
-          case 1401: // ErrCodeUsernameExists
+          case ErrCodeUsernameExists:
             Toast.error(t('Username already exists'));
             break;
-          case 1402: // ErrCodeEmailExists
+          case ErrCodeEmailExists:
             Toast.error(t('Email address already registered'));
             break;
-          case 1404: // ErrCodePasswordTooWeak
+          case ErrCodePasswordTooWeak:
             Toast.error(t('Password does not meet security requirements'));
             break;
-          case 1405: // ErrCodeUserCreationFailed
+          case ErrCodeUserCreationFailed:
             Toast.error(t('Failed to create user account'));
             break;
           default:
@@ -184,9 +181,9 @@ export default function RegisterPage({}: RegisterPageProps) {
               <Button
                 type="submit"
                 className="w-full"
-                disabled={form.formState.isSubmitting}
+                disabled={form.formState.isSubmitting || isLoading}
               >
-                {form.formState.isSubmitting ? t('Registering...') : t('Register')}
+                {(form.formState.isSubmitting || isLoading) ? t('Registering...') : t('Register')}
               </Button>
             </form>
           </Form>
