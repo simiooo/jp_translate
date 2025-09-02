@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router'
 import { useRequest } from 'ahooks'
 
 import { UserProfile, AvatarUploadResponse } from '../types/auth'
-import { alovaInstance } from '../utils/request'
+import { alovaInstance, getErrorMessage, isStandardizedError } from '../utils/request'
 import { Toast } from '../components/ToastCompat'
 
 import { Button } from '~/components/ui/button'
@@ -99,8 +99,18 @@ export default function ProfilePage() {
         return data
       } catch (error) {
         console.error('Failed to fetch profile:', error)
-        // If unauthorized, redirect to login
-        if (error instanceof Error && error.message.includes('401')) {
+        
+        // Handle standardized error format
+        if (isStandardizedError(error)) {
+          console.log('Profile fetch error code:', error.code, 'Message:', error.message);
+          
+          // If unauthorized, redirect to login
+          if (error.code === 1006 || error.code === 1003 || error.code === 1004) { // Authentication errors
+            localStorage.removeItem('Authorization')
+            navigate('/login')
+          }
+        } else if (error instanceof Error && error.message.includes('401')) {
+          // Fallback for non-standardized errors
           localStorage.removeItem('Authorization')
           navigate('/login')
         }
@@ -127,7 +137,22 @@ export default function ProfilePage() {
       form.reset()
     } catch (error) {
       console.error('Failed to change password:', error)
-      Toast.error(t('Password change failed, please try again'))
+      
+      // Handle standardized error format
+      if (isStandardizedError(error)) {
+        switch (error.code) {
+          case 1406: // ErrCodeInvalidOldPassword
+            Toast.error(t('Current password is incorrect'));
+            break;
+          case 1404: // ErrCodePasswordTooWeak
+            Toast.error(t('New password does not meet security requirements'));
+            break;
+          default:
+            Toast.error(getErrorMessage(error) || t('Password change failed, please try again'));
+        }
+      } else {
+        Toast.error(t('Password change failed, please try again'));
+      }
     }
   }
 
@@ -137,6 +162,11 @@ export default function ProfilePage() {
       await alovaInstance.Post('/api/auth/logout')
     } catch (error) {
       console.error('Logout API call failed:', error)
+      
+      // Handle standardized error format for logging
+      if (isStandardizedError(error)) {
+        console.log('Logout error code:', error.code, 'Message:', error.message);
+      }
     } finally {
       localStorage.removeItem('Authorization')
       navigate('/login')
@@ -183,7 +213,28 @@ export default function ProfilePage() {
       Toast.success(t('Avatar uploaded successfully'))
     } catch (error) {
       console.error('Failed to upload avatar:', error)
-      Toast.error(t('Avatar upload failed, please try again'))
+      
+      // Handle standardized error format
+      if (isStandardizedError(error)) {
+        switch (error.code) {
+          case 1502: // ErrCodeFileTooLarge
+          case 1510: // ErrCodeFileSizeExceeded
+            Toast.error(t('Image size cannot exceed 2MB'));
+            break;
+          case 1503: // ErrCodeUnsupportedFileType
+          case 1511: // ErrCodeInvalidFileType
+            Toast.error(t('Please select JPEG, PNG, GIF or WebP format images'));
+            break;
+          case 1512: // ErrCodeFileProcessingError
+          case 1513: // ErrCodeImageProcessingError
+            Toast.error(t('Failed to process image'));
+            break;
+          default:
+            Toast.error(getErrorMessage(error) || t('Avatar upload failed, please try again'));
+        }
+      } else {
+        Toast.error(t('Avatar upload failed, please try again'));
+      }
     } finally {
       setIsAvatarUploading(false)
       // Reset file input
@@ -213,7 +264,22 @@ export default function ProfilePage() {
       Toast.success(t('Avatar deleted successfully'))
     } catch (error) {
       console.error('Failed to delete avatar:', error)
-      Toast.error(t('Avatar deletion failed, please try again'))
+      
+      // Handle standardized error format
+      if (isStandardizedError(error)) {
+        switch (error.code) {
+          case 1507: // ErrCodeAvatarNotFound
+            Toast.error(t('Avatar not found'));
+            break;
+          case 1506: // ErrCodeFileDeleteFailed
+            Toast.error(t('Failed to delete avatar file'));
+            break;
+          default:
+            Toast.error(getErrorMessage(error) || t('Avatar deletion failed, please try again'));
+        }
+      } else {
+        Toast.error(t('Avatar deletion failed, please try again'));
+      }
     } finally {
       setIsAvatarDeleting(false)
     }

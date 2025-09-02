@@ -2,7 +2,7 @@ import { useState, useCallback, useRef } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { useRequest } from 'ahooks';
 import { toast } from 'sonner';
-import { alovaInstance } from '~/utils/request';
+import { alovaInstance, getErrorMessage, isStandardizedError } from '~/utils/request';
 import { FileRecord } from '~/types/file';
 import humps from 'humps'
 import { useTranslation } from 'react-i18next';
@@ -44,7 +44,7 @@ export interface UseFileUploadOptions {
   // 上传成功回调
   onUploadSuccess?: (file: FileRecord, fileItem: UploadFileItem) => void;
   // 上传失败回调
-  onUploadError?: (error: any, fileItem: UploadFileItem) => void;
+  onUploadError?: (error: unknown, fileItem: UploadFileItem) => void;
   // 文件添加前的验证函数
   beforeUpload?: (file: File) => boolean | Promise<boolean>;
 }
@@ -65,8 +65,31 @@ export interface UseFileUploadReturn {
 const defaultUploadFunction: CustomUploadFunction = async (file: File) => {
   const formData = new FormData();
   formData.append('file', file);
-  const response = await alovaInstance.Post<{file: FileRecord}>('/api/files/upload', formData);
-  return response.file;
+  try {
+    const response = await alovaInstance.Post<{file: FileRecord}>('/api/files/upload', formData);
+    return response.file;
+  } catch (error) {
+    console.error('File upload error:', error);
+    
+    // Handle standardized error format
+    if (isStandardizedError(error)) {
+      switch (error.code) {
+        case 1502: // ErrCodeFileTooLarge
+        case 1510: // ErrCodeFileSizeExceeded
+          throw new Error('File size exceeds the maximum allowed limit');
+        case 1503: // ErrCodeUnsupportedFileType
+        case 1511: // ErrCodeInvalidFileType
+          throw new Error('Unsupported file type');
+        case 1504: // ErrCodeFileUploadFailed
+          throw new Error('File upload failed');
+        case 1512: // ErrCodeFileProcessingError
+          throw new Error('Failed to process file');
+        default:
+          throw new Error(getErrorMessage(error) || 'File upload failed');
+      }
+    }
+    throw error;
+  }
 };
 
 export const useFileUpload = (options: UseFileUploadOptions = {}): UseFileUploadReturn => {
@@ -157,7 +180,7 @@ export const useFileUpload = (options: UseFileUploadOptions = {}): UseFileUpload
   );
 
   // 错误信息提取函数
-  const getErrorMessage = (error: any): string => {
+  const getErrorMessage = (error: unknown): string => {
     if (error instanceof Error) {
       return error.message;
     } else if (typeof error === 'object' && error !== null) {

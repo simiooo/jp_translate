@@ -5,7 +5,7 @@ import { Badge } from './ui/badge';
 import { Progress } from './ui/progress';
 import { toast } from 'sonner';
 import { showImagePreview } from './ImgPreview';
-import { alovaInstance } from '../utils/request';
+import { alovaInstance, getErrorMessage, isStandardizedError } from '../utils/request';
 import { Upload, X, Check, AlertCircle } from 'lucide-react';
 import { cn } from '~/lib/utils';
 import { v4 as uuidv4 } from 'uuid';
@@ -76,8 +76,30 @@ export const ImageUploader = forwardRef<ImageUploaderRef, ImageUploaderProps>(({
     async ({fileToUpload, params}: {fileToUpload:File, params: {uid: string; name: string} }) => {
       const formData = new FormData();
       formData.append('file', fileToUpload);
-      const response = await alovaInstance.Post<{file: FileRecord}>('/api/files/upload', formData);
-      return {file: response.file, params} // Assuming response.file contains the FileRecord
+      try {
+        const response = await alovaInstance.Post<{file: FileRecord}>('/api/files/upload', formData);
+        return {file: response.file, params} // Assuming response.file contains the FileRecord
+      } catch (error) {
+        console.error('Image upload error:', error);
+        
+        // Handle standardized error format
+        if (isStandardizedError(error)) {
+          switch (error.code) {
+            case 1502: // ErrCodeFileTooLarge
+            case 1510: // ErrCodeFileSizeExceeded
+              throw new Error('Image size cannot exceed 2MB');
+            case 1503: // ErrCodeUnsupportedFileType
+            case 1511: // ErrCodeInvalidFileType
+              throw new Error('Please select JPEG, PNG, GIF or WebP format images');
+            case 1512: // ErrCodeFileProcessingError
+            case 1513: // ErrCodeImageProcessingError
+              throw new Error('Failed to process image');
+            default:
+              throw new Error(getErrorMessage(error) || 'Image upload failed');
+          }
+        }
+        throw error;
+      }
     },
     {
       manual: true, // We will trigger it manually

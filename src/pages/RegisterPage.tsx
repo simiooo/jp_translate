@@ -15,7 +15,7 @@ import {
   FormLabel,
   FormMessage,
 } from '~/components/ui/form';
-import { alovaInstance } from "~/utils/request";
+import { alovaInstance, getErrorMessage, isStandardizedError } from "~/utils/request";
 import { useNavigate } from "react-router";
 import { User } from "./LoginPage";
 import { HydrateFallbackTemplate } from "~/components/HydrateFallbackTemplate";
@@ -71,8 +71,30 @@ export default function RegisterPage({}: RegisterPageProps) {
       localStorage.setItem('Authorization', `Bearer ${res.token}`)
       navigate('/')
     } catch (error) {
-      Toast.error(t('Registration failed, please try again'));
-      console.log(error);
+      console.log('Registration error:', error);
+      
+      // Handle standardized error format
+      if (isStandardizedError(error)) {
+        // You can use error.code to show specific error messages
+        switch (error.code) {
+          case 1401: // ErrCodeUsernameExists
+            Toast.error(t('Username already exists'));
+            break;
+          case 1402: // ErrCodeEmailExists
+            Toast.error(t('Email address already registered'));
+            break;
+          case 1404: // ErrCodePasswordTooWeak
+            Toast.error(t('Password does not meet security requirements'));
+            break;
+          case 1405: // ErrCodeUserCreationFailed
+            Toast.error(t('Failed to create user account'));
+            break;
+          default:
+            Toast.error(getErrorMessage(error) || t('Registration failed, please try again'));
+        }
+      } else {
+        Toast.error(t('Registration failed, please try again'));
+      }
     }
   };
 

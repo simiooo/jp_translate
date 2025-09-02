@@ -16,7 +16,7 @@ import {
   FormMessage,
 } from '~/components/ui/form';
 import { useNavigate } from 'react-router';
-import { alovaInstance } from '~/utils/request';
+import { alovaInstance, getErrorMessage, isStandardizedError } from '~/utils/request';
 import { useRequest } from 'ahooks';
 import { HydrateFallbackTemplate } from '~/components/HydrateFallbackTemplate'
 import { useTranslation } from 'react-i18next'
@@ -70,9 +70,29 @@ export default function LoginPage({ }: LoginPageProps) {
       localStorage.setItem('Authorization', `Bearer ${res.token}`)
       navigate('/')
     } catch (error) {
-      console.log(error);
-      Toast.error(t('Login failed, please try again'))
-      console.log(error);
+      console.log('Login error:', error);
+      
+      // Handle standardized error format
+      if (isStandardizedError(error)) {
+        // You can use error.code to show specific error messages
+        switch (error.code) {
+          case 1003: // ErrCodeInvalidToken
+          case 1004: // ErrCodeTokenExpired
+          case 1006: // ErrCodeUserNotAuthenticated
+            Toast.error(t('Authentication failed, please login again'));
+            break;
+          case 1403: // ErrCodeInvalidCredentials
+            Toast.error(t('Invalid email or password'));
+            break;
+          case 1303: // ErrCodeDailyLimitExceeded
+            Toast.error(t('Daily usage limit exceeded'));
+            break;
+          default:
+            Toast.error(getErrorMessage(error) || t('Login failed, please try again'));
+        }
+      } else {
+        Toast.error(t('Login failed, please try again'));
+      }
     }
   }
 
@@ -85,7 +105,13 @@ export default function LoginPage({ }: LoginPageProps) {
       }
       navigate('/')
     } catch (error) {
-      console.error(error)
+      console.error('Auto login error:', error);
+      
+      // Handle standardized error format for auto login
+      if (isStandardizedError(error)) {
+        console.log('Error code:', error.code, 'Message:', error.message);
+      }
+      
       localStorage.removeItem("Authorization")
     }
   },

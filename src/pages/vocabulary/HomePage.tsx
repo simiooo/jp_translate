@@ -3,14 +3,12 @@ import { Token } from "~/types/jp_ast";
 import { useAntdTable } from "ahooks";
 import { PaginatedResponse } from "~/types/history";
 import { alovaInstance } from "~/utils/request";
-import { useNavigate } from "react-router";
 import Spinner from "~/components/Spinner";
 import { VList, VListHandle } from "virtua";
 import { HydrateFallbackTemplate } from "~/components/HydrateFallbackTemplate";
 import { useTranslation } from 'react-i18next'
 
 // Components
-import VocabularySidebar from "~/components/VocabularySidebar";
 import WordTweet from "~/components/WordTweet";
 import VocabularyRightSidebar from "~/components/VocabularyRightSidebar";
 import WordPostForm from "~/components/WordPostForm";
@@ -22,7 +20,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 const HomePage: React.FC = () => {
   const { t } = useTranslation()
-  const navigate = useNavigate();
   const listContainerRef = useRef<VListHandle>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [vlistKey] = useState(0);

@@ -1,6 +1,48 @@
 import { createAlova } from "alova";
 import adapterFetch from "alova/fetch";
 import { isElectron } from '~/utils/electron';
+
+// Define standardized error interface to match Go backend
+export interface StandardizedError extends Error {
+  code?: number;
+  details?: unknown;
+  timestamp?: string;
+  requestId?: string;
+}
+
+/**
+ * Check if an error is a standardized error from Go backend
+ */
+export function isStandardizedError(error: unknown): error is StandardizedError {
+  return error !== null &&
+         typeof error === 'object' &&
+         'code' in error &&
+         typeof error.code === 'number' &&
+         'message' in error;
+}
+
+/**
+ * Extract error message from any error, handling standardized format
+ */
+export function getErrorMessage(error: unknown): string {
+  if (isStandardizedError(error)) {
+    return error.message || 'Request failed';
+  }
+  if (error instanceof Error) {
+    return error.message;
+  }
+  return String(error);
+}
+
+/**
+ * Extract error code from any error, handling standardized format
+ */
+export function getErrorCode(error: unknown): number | undefined {
+  if (isStandardizedError(error)) {
+    return error.code;
+  }
+  return undefined;
+}
 // Helper function to get base URL dynamically (avoids SSR issues)
 const getBaseURL = (): string | undefined => {
   if (typeof window === 'undefined') {
