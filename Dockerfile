@@ -1,5 +1,5 @@
 # Build stage
-FROM node:22-alpine AS build
+FROM node:24-alpine AS build
 
 WORKDIR /app
 
@@ -13,7 +13,7 @@ RUN npm install -g pnpm && pnpm install
 COPY . .
 RUN pnpm run build
 # Production stage with Nginx
-FROM node:22-alpine
+FROM node:24-alpine
 
 WORKDIR /app
 
