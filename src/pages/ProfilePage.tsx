@@ -1,7 +1,7 @@
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router'
 import { useRequest } from 'ahooks'
 
@@ -108,7 +108,7 @@ export default function ProfilePage() {
   })
 
   // Fetch user profile data
-  const { loading: profileLoading, error: profileError } = useRequest(
+  const { loading: profileLoading, error: profileError, run: fetchProfileData } = useRequest(
     async () => {
       try {
         await fetchProfile()
@@ -135,8 +135,17 @@ export default function ProfilePage() {
         Toast.error(t('Failed to fetch user information'))
         console.error(error)
       },
+      // Only run once when component mounts
+      ready: true,
     }
   )
+
+  // Fetch profile data only once when component mounts
+  useEffect(() => {
+    if (!profile && !profileLoading && !profileError) {
+      fetchProfileData()
+    }
+  }, []) // Empty dependency array ensures this runs only once on mount
 
   // Handle password change
   const onPasswordSubmit = async (data: z.infer<typeof changePasswordSchema>) => {
