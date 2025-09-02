@@ -1,16 +1,17 @@
 /// <reference types="vitest/config" />
 import { defineConfig } from "vite";
+// import { reactRouterHonoServer } from "react-router-hono-server/dev"; // add this
 import { reactRouter } from "@react-router/dev/vite";
-// import { reactRouterHonoServer } from "react-router-hono-server/dev";
 import tsconfigPaths from "vite-tsconfig-paths";
 import tailwindcss from "@tailwindcss/vite";
-import path from "path"
+import path from "path";
 
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
     // reactRouterHonoServer(),
     tailwindcss(),
+    
     reactRouter(),
     tsconfigPaths(),
     // basicSsl({
@@ -27,10 +28,9 @@ export default defineConfig({
       "/api": "http://127.0.0.1:8080",
     },
   },
-resolve: {
+  resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
-      'react-dom/server': 'react-dom/server.node',
     },
   },
 });

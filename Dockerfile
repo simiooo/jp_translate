@@ -12,7 +12,6 @@ RUN npm install -g pnpm && pnpm install
 # Copy source code and build the application
 COPY . .
 RUN pnpm run build
-CMD ["bun", "run", "start"]
 # Production stage with Nginx
 FROM node:22-alpine
 
@@ -22,6 +21,7 @@ WORKDIR /app
 COPY --from=build /app/build ./build
 COPY --from=build /app/package*.json ./
 COPY --from=build /app/*.env ./
+COPY --from=build /app/server ./server
 RUN npm install -g pnpm && pnpm install
 # Expose port for SSR server
 EXPOSE 3000

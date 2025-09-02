@@ -188,7 +188,6 @@ export default function ProfilePage() {
   const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     
     const file = event.target.files?.[0]
-    console.log(file);
 
     if (!file) return
 

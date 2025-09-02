@@ -3,6 +3,7 @@ import { persist } from 'zustand/middleware'
 import { User, UserProfile, VerifyTokenResponse } from '~/types/auth'
 import { alovaInstance, isStandardizedError } from '~/utils/request'
 import { isErrorInCategory } from '~/types/errors'
+import { useShallow } from 'zustand/shallow';
 
 interface AuthState {
   user: User | null
@@ -200,7 +201,7 @@ export const useUser = () => useAuthStore((state) => state.user)
 export const useProfile = () => useAuthStore((state) => state.profile)
 export const useIsAuthenticated = () => useAuthStore((state) => state.isAuthenticated)
 export const useIsLoading = () => useAuthStore((state) => state.isLoading)
-export const useAuthActions = () => useAuthStore((state) => ({
+export const useAuthActions = () => useAuthStore(useShallow((state) => ({
   login: state.login,
   logout: state.logout,
   register: state.register,
@@ -208,4 +209,4 @@ export const useAuthActions = () => useAuthStore((state) => ({
   verifyToken: state.verifyToken,
   setToken: state.setToken,
   clearAuth: state.clearAuth
-}))
+})))
