@@ -136,7 +136,7 @@ export default function ProfilePage() {
         console.error(error)
       },
       // Only run once when component mounts
-      ready: true,
+      manual: true
     }
   )
 
