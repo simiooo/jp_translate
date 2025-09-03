@@ -452,13 +452,15 @@ function App() {
                             <Tooltip>
                               <TooltipTrigger asChild>
                                 <Button
-                                  variant="outline"
+                                  variant="ghost"
                                   size="icon"
                                   disabled={ttsLoading || !form.getValues("text")}
-                                  onClick={() => handleTTS(form.getValues("text"))}
+                                  onClick={(e) => {
+                                    e.preventDefault()
+                                    e.stopPropagation()
+                                    handleTTS(form.getValues("text"))}}
                                 >
                                   <MdVolumeUp />
-                                  {ttsLoading && <Cursor />}
                                 </Button>
                               </TooltipTrigger>
                               <TooltipContent side="bottom">
