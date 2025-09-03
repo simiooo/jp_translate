@@ -452,6 +452,23 @@ function App() {
                             <Tooltip>
                               <TooltipTrigger asChild>
                                 <Button
+                                  variant="outline"
+                                  size="icon"
+                                  disabled={ttsLoading || !form.getValues("text")}
+                                  onClick={() => handleTTS(form.getValues("text"))}
+                                >
+                                  <MdVolumeUp />
+                                  {ttsLoading && <Cursor />}
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent side="bottom">
+                                {t("Text-to-Speech")}
+                              </TooltipContent>
+                            </Tooltip>
+                            <div className="p-1"></div>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
                                   key="submit"
                                   ref={submitRef}
                                   // variant={'ghost'}
@@ -468,23 +485,7 @@ function App() {
                                 {t("Press Alt + Enter to submit")}
                               </TooltipContent>
                             </Tooltip>
-                            <div className="p-1"></div>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button
-                                  variant="outline"
-                                  size="icon"
-                                  disabled={ttsLoading || !form.getValues("text")}
-                                  onClick={() => handleTTS(form.getValues("text"))}
-                                >
-                                  <MdVolumeUp />
-                                  {ttsLoading && <Cursor />}
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent side="bottom">
-                                {t("Text-to-Speech")}
-                              </TooltipContent>
-                            </Tooltip>
+                            
                           </div>
                           <div className="p-1"></div>
                           <div
