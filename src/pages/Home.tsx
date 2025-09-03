@@ -8,6 +8,7 @@ import {
   translationFormSchema,
 } from "../schemas/translation";
 import { Toast } from "../components/ToastCompat";
+import { MdAutoFixHigh } from "react-icons/md";
 import { useAntdTable, useKeyPress, useRequest, useResponsive, useThrottle } from "ahooks";
 import { Cursor } from "../components/Cursor";
 import { AstTokens } from "../components/AstTokens";
@@ -453,13 +454,14 @@ function App() {
                             <Tooltip>
                               <TooltipTrigger asChild>
                                 <Button
+                                size="icon"
                                 variant={'ghost'}
                               onClick={(e) => {
                                 e.preventDefault()
                                 const text = normanizeText(form.getValues("text"))
                                 form.setValue("text",text ?? "")
                               }}
-                              ></Button>
+                              ><MdAutoFixHigh /></Button>
                               </TooltipTrigger>
                               <TooltipContent side="bottom">
                                 {t("Format Text")}
