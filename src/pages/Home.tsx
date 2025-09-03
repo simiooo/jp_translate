@@ -15,7 +15,7 @@ import { IoImageOutline } from "react-icons/io5";
 import { createPortal } from "react-dom";
 import type { Route } from "./+types/Home";
 import Markdown from "react-markdown";
-import { alovaInstance, createSSEStream, EventData } from "~/utils/request";
+import { alovaInstance, alovaBlobInstance, createSSEStream, EventData } from "~/utils/request";
 import { PaginatedResponse, TranslationRecord } from "~/types/history";
 import { HistorySidebar } from "../components/HistorySidebar";
 import { Button } from "~/components/ui/button";
@@ -45,7 +45,7 @@ import {
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
 import { Input } from "~/components/ui/input";
-import { MdDelete, MdOutlineTranslate } from "react-icons/md";
+import { MdDelete, MdOutlineTranslate, MdVolumeUp } from "react-icons/md";
 import { UploadFileItem, useFileUpload } from "~/hooks/useFileUpload";
 import { toast } from "sonner";
 import {
@@ -316,31 +316,27 @@ function App() {
     }
   );
 
-  // TTS functionality - currently not used
-  /*
-  const { runAsync: _handleTTS, loading: _ttsLoading } = useRequest(
-    async (text: string, lang: string) => {
-      if (!text || _ttsLoading) return;
+  // TTS functionality
+  const { runAsync: handleTTS, loading: ttsLoading } = useRequest(
+    async (text: string) => {
+      if (!text || ttsLoading) return;
 
       try {
         const audioBlob = await alovaBlobInstance.Post<Blob>("/api/tts", {
           text,
-          lang,
         });
-
         const audioUrl = URL.createObjectURL(audioBlob);
         const audio = new Audio(audioUrl);
         await audio.play();
       } catch (error) {
         console.error("TTS error:", error);
-        Toast.error("语音合成失败，请重试");
+        Toast.error(t("TTS failed, please try again"));
       }
     },
     {
       manual: true,
     }
   );
-  */
 
   return (
     <div>
@@ -470,6 +466,23 @@ function App() {
                               </TooltipTrigger>
                               <TooltipContent side="bottom">
                                 {t("Press Alt + Enter to submit")}
+                              </TooltipContent>
+                            </Tooltip>
+                            <div className="p-1"></div>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  size="icon"
+                                  disabled={ttsLoading || !form.getValues("text")}
+                                  onClick={() => handleTTS(form.getValues("text"))}
+                                >
+                                  <MdVolumeUp />
+                                  {ttsLoading && <Cursor />}
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent side="bottom">
+                                {t("Text-to-Speech")}
                               </TooltipContent>
                             </Tooltip>
                           </div>

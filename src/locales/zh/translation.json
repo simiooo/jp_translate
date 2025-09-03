@@ -187,5 +187,7 @@
   "File {{name}} uploaded successfully!": "文件 {{name}} 上传成功！",
   "File {{name}} upload failed: {{error}}": "文件 {{name}} 上传失败: {{error}}",
   "File removed from list": "文件已从列表中移除",
-  "File not found for retry": "找不到要重试的文件"
+  "File not found for retry": "找不到要重试的文件",
+  "TTS failed, please try again": "语音合成失败，请重试",
+  "Text-to-Speech": "语音合成"
 }

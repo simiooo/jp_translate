@@ -187,5 +187,7 @@
   "File {{name}} uploaded successfully!": "ファイル {{name}} のアップロードに成功しました！",
   "File {{name}} upload failed: {{error}}": "ファイル {{name}} のアップロードに失敗しました: {{error}}",
   "File removed from list": "ファイルがリストから削除されました",
-  "File not found for retry": "再試行するファイルが見つかりません"
+  "File not found for retry": "再試行するファイルが見つかりません",
+  "TTS failed, please try again": "音声合成に失敗しました、もう一度お試しください",
+  "Text-to-Speech": "音声合成"
 }
