@@ -112,7 +112,9 @@ function App() {
   });
 
   const uploadBtnRef = useRef<HTMLInputElement>(null);
-
+  const normanizeText = (text?:string) => {
+    return text?.replaceAll(/[\s\n]+/g, '')
+  }
   const {
     fileList,
     addFiles,
@@ -448,7 +450,21 @@ function App() {
                                 </FormItem>
                               )}
                             />
-                            <div className="p-1"></div>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                variant={'ghost'}
+                              onClick={(e) => {
+                                e.preventDefault()
+                                const text = normanizeText(form.getValues("text"))
+                                form.setValue("text",text ?? "")
+                              }}
+                              ></Button>
+                              </TooltipTrigger>
+                              <TooltipContent side="bottom">
+                                {t("Format Text")}
+                              </TooltipContent>
+                            </Tooltip>
                             <Tooltip>
                               <TooltipTrigger asChild>
                                 <Button
