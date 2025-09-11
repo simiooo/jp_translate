@@ -29,6 +29,7 @@ import { Input } from '~/components/ui/input'
 import { Progress } from '~/components/ui/progress'
 import { Badge } from '~/components/ui/badge'
 import { Separator } from '~/components/ui/separator'
+import { Avatar, AvatarImage, AvatarFallback } from '~/components/ui/avatar'
 import {
   Form,
   FormControl,
@@ -355,19 +356,18 @@ export default function ProfilePage() {
             <div className="flex items-center gap-6">
               <div className="flex flex-col items-center">
                 <div className="relative">
-                  {user?.avatar_url ? (
-                    <img
-                      src={`${user?.avatar_url}?authorization=${localStorage?.getItem('Authorization')}`}
-                      alt="Avatar"
-                      className="w-24 h-24 rounded-full object-cover border-2 border-gray-200"
-                    />
-                  ) : (
-                    <div className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center border-2 border-gray-300">
-                      <span className="text-2xl font-semibold text-gray-500">
+                  <Avatar className="w-24 h-24">
+                    {user?.avatar_url ? (
+                      <AvatarImage
+                        src={`${user?.avatar_url}?authorization=${localStorage?.getItem('Authorization')}`}
+                        alt="Avatar"
+                      />
+                    ) : (
+                      <AvatarFallback className="text-2xl font-semibold">
                         {user?.username.charAt(0).toUpperCase()}
-                      </span>
-                    </div>
-                  )}
+                      </AvatarFallback>
+                    )}
+                  </Avatar>
                   {isAvatarUploading && (
                     <div className="absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center">
                       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>

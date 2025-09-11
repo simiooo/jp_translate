@@ -25,25 +25,25 @@ type Pages = {
   "/recognize": {
     params: {};
   };
-  "/vocabulary": {
+  "/social": {
     params: {};
   };
-  "/vocabulary/my-vocabulary": {
+  "/social/my-posts": {
     params: {};
   };
-  "/vocabulary/recommended": {
+  "/social/recommended": {
     params: {};
   };
-  "/vocabulary/notifications": {
+  "/social/notifications": {
     params: {};
   };
-  "/vocabulary/following": {
+  "/social/following": {
     params: {};
   };
-  "/vocabulary/followers": {
+  "/social/followers": {
     params: {};
   };
-  "/vocabulary/trends": {
+  "/social/trends": {
     params: {};
   };
 };
@@ -51,11 +51,11 @@ type Pages = {
 type RouteFiles = {
   "root.tsx": {
     id: "root";
-    page: "/" | "/login" | "/register" | "/profile" | "/recognize" | "/vocabulary" | "/vocabulary/my-vocabulary" | "/vocabulary/recommended" | "/vocabulary/notifications" | "/vocabulary/following" | "/vocabulary/followers" | "/vocabulary/trends";
+    page: "/" | "/login" | "/register" | "/profile" | "/recognize" | "/social" | "/social/my-posts" | "/social/recommended" | "/social/notifications" | "/social/following" | "/social/followers" | "/social/trends";
   };
   "./layout/rootLayout.tsx": {
     id: "layout/rootLayout";
-    page: "/" | "/login" | "/register" | "/profile" | "/recognize" | "/vocabulary" | "/vocabulary/my-vocabulary" | "/vocabulary/recommended" | "/vocabulary/notifications" | "/vocabulary/following" | "/vocabulary/followers" | "/vocabulary/trends";
+    page: "/" | "/login" | "/register" | "/profile" | "/recognize" | "/social" | "/social/my-posts" | "/social/recommended" | "/social/notifications" | "/social/following" | "/social/followers" | "/social/trends";
   };
   "./pages/Home.tsx": {
     id: "pages/Home";
@@ -77,36 +77,36 @@ type RouteFiles = {
     id: "pages/Recognize";
     page: "/recognize";
   };
-  "./layout/vocabularyLayout.tsx": {
-    id: "layout/vocabularyLayout";
-    page: "/vocabulary" | "/vocabulary/my-vocabulary" | "/vocabulary/recommended" | "/vocabulary/notifications" | "/vocabulary/following" | "/vocabulary/followers" | "/vocabulary/trends";
+  "./layout/socialLayout.tsx": {
+    id: "layout/socialLayout";
+    page: "/social" | "/social/my-posts" | "/social/recommended" | "/social/notifications" | "/social/following" | "/social/followers" | "/social/trends";
   };
-  "./pages/vocabulary/HomePage.tsx": {
-    id: "pages/vocabulary/HomePage";
-    page: "/vocabulary";
+  "./pages/social/HomePage.tsx": {
+    id: "pages/social/HomePage";
+    page: "/social";
   };
-  "./pages/vocabulary/MyVocabularyPage.tsx": {
-    id: "pages/vocabulary/MyVocabularyPage";
-    page: "/vocabulary/my-vocabulary";
+  "./pages/social/MyPostsPage.tsx": {
+    id: "pages/social/MyPostsPage";
+    page: "/social/my-posts";
   };
-  "./pages/vocabulary/RecommendedPage.tsx": {
-    id: "pages/vocabulary/RecommendedPage";
-    page: "/vocabulary/recommended";
+  "./pages/social/RecommendedPage.tsx": {
+    id: "pages/social/RecommendedPage";
+    page: "/social/recommended";
   };
-  "./pages/vocabulary/NotificationsPage.tsx": {
-    id: "pages/vocabulary/NotificationsPage";
-    page: "/vocabulary/notifications";
+  "./pages/social/NotificationsPage.tsx": {
+    id: "pages/social/NotificationsPage";
+    page: "/social/notifications";
   };
-  "./pages/vocabulary/FollowingPage.tsx": {
-    id: "pages/vocabulary/FollowingPage";
-    page: "/vocabulary/following";
+  "./pages/social/FollowingPage.tsx": {
+    id: "pages/social/FollowingPage";
+    page: "/social/following";
   };
-  "./pages/vocabulary/FollowersPage.tsx": {
-    id: "pages/vocabulary/FollowersPage";
-    page: "/vocabulary/followers";
+  "./pages/social/FollowersPage.tsx": {
+    id: "pages/social/FollowersPage";
+    page: "/social/followers";
   };
-  "./pages/vocabulary/TrendsPage.tsx": {
-    id: "pages/vocabulary/TrendsPage";
-    page: "/vocabulary/trends";
+  "./pages/social/TrendsPage.tsx": {
+    id: "pages/social/TrendsPage";
+    page: "/social/trends";
   };
 };

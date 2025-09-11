@@ -13,12 +13,12 @@ import {
 } from "react-icons/fa";
 import { useTranslation } from 'react-i18next';
 
-interface VocabularySidebarProps {
+interface SocialSidebarProps {
   activeTab?: string;
   onTabChange?: (tab: string) => void;
 }
 
-const VocabularySidebar: React.FC<VocabularySidebarProps> = ({
+const SocialSidebar: React.FC<SocialSidebarProps> = ({
   activeTab
 }) => {
   const { t } = useTranslation();
@@ -27,34 +27,34 @@ const VocabularySidebar: React.FC<VocabularySidebarProps> = ({
   // If activeTab is not provided, determine it from the current path
   const currentActiveTab = activeTab || (() => {
     const path = location.pathname;
-    if (path === "/vocabulary") return "home";
-    if (path.startsWith("/vocabulary/my-vocabulary")) return "my-vocabulary";
-    if (path.startsWith("/vocabulary/recommended")) return "recommended";
-    if (path.startsWith("/vocabulary/notifications")) return "notifications";
-    if (path.startsWith("/vocabulary/following")) return "following";
-    if (path.startsWith("/vocabulary/followers")) return "followers";
-    if (path.startsWith("/vocabulary/trends")) return "trends";
+    if (path === "/social") return "home";
+    if (path.startsWith("/social/my-posts")) return "my-posts";
+    if (path.startsWith("/social/recommended")) return "recommended";
+    if (path.startsWith("/social/notifications")) return "notifications";
+    if (path.startsWith("/social/following")) return "following";
+    if (path.startsWith("/social/followers")) return "followers";
+    if (path.startsWith("/social/trends")) return "trends";
     return "home";
   })();
   const menuItems = [
     { id: 'home', label: t('Home'), icon: FaHome },
-    { id: 'my-vocabulary', label: t('My Vocabulary'), icon: FaBook },
-    { id: 'recommended', label: t('Recommended Vocabulary'), icon: FaStar },
+    { id: 'my-posts', label: t('My Posts'), icon: FaBook },
+    { id: 'recommended', label: t('Recommended'), icon: FaStar },
     { id: 'notifications', label: t('Notifications'), icon: FaBell },
-    { id: 'following', label: t('Following List'), icon: FaUserFriends },
-    { id: 'followers', label: t('Followers List'), icon: FaUserPlus },
-    { id: 'trends', label: t('Current Trends'), icon: FaHashtag },
+    { id: 'following', label: t('Following'), icon: FaUserFriends },
+    { id: 'followers', label: t('Followers'), icon: FaUserPlus },
+    { id: 'trends', label: t('Trends'), icon: FaHashtag },
   ];
 
   return (
     <div className="w-64 h-full bg-background border-r">
       <div className="p-4">
-        <h2 className="text-xl font-bold mb-6">{t('Vocabulary Community')}</h2>
+        <h2 className="text-xl font-bold mb-6">{t('Social')}</h2>
         
         <nav className="space-y-2">
           {menuItems.map((item) => {
             const Icon = item.icon;
-            const to = item.id === 'home' ? '/vocabulary' : `/vocabulary/${item.id}`;
+            const to = item.id === 'home' ? '/social' : `/social/${item.id}`;
             return (
               <Button
                 key={item.id}
@@ -90,4 +90,4 @@ const VocabularySidebar: React.FC<VocabularySidebarProps> = ({
   );
 };
 
-export default VocabularySidebar;
+export default SocialSidebar;

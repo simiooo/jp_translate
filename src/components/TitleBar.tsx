@@ -64,14 +64,14 @@ export default function TitleBar({ }: TitleBarProps) {
           </Button>
           <Button
             onClick={() => {
-              navigate("/vocabulary");
+              navigate("/social");
             }}
             size="sm"
-            variant={location.pathname === "/vocabulary" ? "outline" : "ghost"}
+            variant={location.pathname === "/social" ? "outline" : "ghost"}
           >
             <FaUserFriends />
           </Button>
-          <Button
+          {/* <Button
             onClick={() => {
               navigate("/recognize");
             }}
@@ -79,7 +79,7 @@ export default function TitleBar({ }: TitleBarProps) {
             variant={location.pathname === "/recognize" ? "outline" : "ghost"}
           >
             <FaCameraRetro className="" />
-          </Button>
+          </Button> */}
           <Button
             onClick={() => {
               navigate("/profile");

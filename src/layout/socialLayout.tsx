@@ -1,10 +1,10 @@
 import { Outlet } from "react-router";
-import VocabularySidebar from "~/components/VocabularySidebar";
+import SocialSidebar from "~/components/SocialSidebar";
 
-export default function VocabularyLayout() {
+export default function SocialLayout() {
   return (
     <div className="flex h-full">
-      <VocabularySidebar />
+      <SocialSidebar />
       <main className="flex-1 overflow-auto">
         <Outlet />
       </main>
