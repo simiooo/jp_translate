@@ -9,14 +9,26 @@ import {
 } from "../schemas/translation";
 import { Toast } from "../components/ToastCompat";
 import { MdAutoFixHigh } from "react-icons/md";
-import { useAntdTable, useKeyPress, useRequest, useResponsive, useThrottle } from "ahooks";
+import {
+  useAntdTable,
+  useDebounceFn,
+  useKeyPress,
+  useRequest,
+  useResponsive,
+  useThrottle,
+} from "ahooks";
 import { Cursor } from "../components/Cursor";
 import { AstTokens } from "../components/AstTokens";
 import { IoImageOutline } from "react-icons/io5";
 import { createPortal } from "react-dom";
 import type { Route } from "./+types/Home";
 import Markdown from "react-markdown";
-import { alovaInstance, alovaBlobInstance, createSSEStream, EventData } from "~/utils/request";
+import {
+  alovaInstance,
+  alovaBlobInstance,
+  createSSEStream,
+  EventData,
+} from "~/utils/request";
 import { PaginatedResponse, TranslationRecord } from "~/types/history";
 import { HistorySidebar } from "../components/HistorySidebar";
 import { Button } from "~/components/ui/button";
@@ -56,14 +68,11 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "~/components/ui/carousel";
-import {
-  Card,
-  CardContent,
-} from "~/components/ui/card";
+import { Card, CardContent } from "~/components/ui/card";
 import { Badge } from "~/components/ui/badge";
 import { isBrowser } from "~/utils/ssr";
 import { HydrateFallbackTemplate } from "~/components/HydrateFallbackTemplate";
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from "react-i18next";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -73,6 +82,13 @@ export function meta({}: Route.MetaArgs) {
       content: "Welcome to apanese Learning By Translate!",
     },
   ];
+}
+
+function shouldRemoveWSCharacter(text?: string): boolean {
+  if (!text) return false;
+  if (text.length < 5) return false;
+  const breakCharacterLength = text.split('').filter(c => c === '\n').length
+  return breakCharacterLength / text.length > 1 / 4;
 }
 
 function App() {
@@ -88,14 +104,17 @@ function App() {
   const [isHistoryCollapsed, setIsHistoryCollapsed] = useState(false);
   const [bufferedTranslation, setBufferedTranslation] =
     useState<TranslationResult | null>(null);
-  const responsiveInfo = useResponsive()
+  const responsiveInfo = useResponsive();
   useEffect(() => {
-    if((responsiveInfo["xs"] || responsiveInfo["sm"] && responsiveInfo["md"]) && !responsiveInfo["lg"] ) {
-        setIsHistoryCollapsed(true)
+    if (
+      (responsiveInfo["xs"] ||
+        (responsiveInfo["sm"] && responsiveInfo["md"])) &&
+      !responsiveInfo["lg"]
+    ) {
+      setIsHistoryCollapsed(true);
     }
-    
-  }, [responsiveInfo])
-  
+  }, [responsiveInfo]);
+
   // 高亮状态
   const [highlightPosition, setHighlightPosition] = useState<{
     start: number;
@@ -113,9 +132,9 @@ function App() {
   });
 
   const uploadBtnRef = useRef<HTMLInputElement>(null);
-  const normanizeText = (text?:string) => {
-    return text?.replaceAll(/[\s\n]+/g, '')
-  }
+  const normanizeText = (text?: string) => {
+    return text?.replaceAll(/[\s\n]+/g, "");
+  };
   const {
     fileList,
     addFiles,
@@ -127,7 +146,12 @@ function App() {
   });
   useEffect(() => {
     const [file] = fileList;
-    form.setValue("imgURL", file?.ObjectKey ? `${location.origin}/api/files/${file?.ObjectKey}` : undefined);
+    form.setValue(
+      "imgURL",
+      file?.ObjectKey
+        ? `${location.origin}/api/files/${file?.ObjectKey}`
+        : undefined
+    );
   }, [fileList]);
   const {
     tableProps: history,
@@ -159,9 +183,9 @@ function App() {
         }
         return {
           total: data.pagination?.total ?? 0,
-          list: (
-            // Only reset data when it's an initial load (search or first page)
-            // For pagination, always concatenate with existing data
+          list: // Only reset data when it's an initial load (search or first page)
+          // For pagination, always concatenate with existing data
+          (
             (params?.init && current === 1
               ? []
               : (history?.dataSource as TranslationRecord[])) ?? []
@@ -203,7 +227,6 @@ function App() {
       debounceLeading: false,
       defaultPageSize: PAGE_SIZE,
       defaultCurrent: 1,
-
     }
   );
 
@@ -224,7 +247,31 @@ function App() {
   });
 
   const imgRef = useRef<ImageUploaderRef>(null);
+  const pending_translate_text = form.watch("text");
+  
+  const { run: checkWhitespaceDebounced } = useDebounceFn(
+    (text: string) => {
+      if (shouldRemoveWSCharacter(text)) {
+        toast(t("Whitespace detected"), {
+          description: t("Your text contains excessive whitespace"),
+          position:"top-center",
+          action: {
+            label: t("Format now"),
+            onClick: () => {
+              const normalizedText = normanizeText(text);
+              form.setValue("text", normalizedText ?? "");
+              toast.success(t("Text formatted successfully"));
+            },
+          },
+        });
+      }
+    },
+    { wait: 1000 }
+  );
 
+  useEffect(() => {
+    checkWhitespaceDebounced(pending_translate_text);
+  }, [pending_translate_text, checkWhitespaceDebounced]);
   const onSubmit = async (data: TranslationFormData) => {
     try {
       let fullResponse = "";
@@ -276,7 +323,10 @@ function App() {
                 break;
               case "complete":
                 historyRefresh();
-                historyLoad({ current: 1, pageSize: PAGE_SIZE }, { init: true });
+                historyLoad(
+                  { current: 1, pageSize: PAGE_SIZE },
+                  { init: true }
+                );
                 setLoading(false);
                 break;
             }
@@ -304,7 +354,7 @@ function App() {
         const res = await alovaInstance.Post<{
           [key: string]: string | number | undefined;
           code?: number;
-        }>("/api/words", {...word, pos: word?.pos?.join});
+        }>("/api/words", { ...word, pos: word?.pos?.join });
         if (res.code) {
           throw Error(res.message?.toString() || "保存单词失败");
         }
@@ -365,7 +415,10 @@ function App() {
           }}
           onLoadMore={async () => {
             const nextPage = (history?.pagination?.current ?? 0) + 1;
-            await historyLoad({ current: nextPage, pageSize: PAGE_SIZE }, undefined);
+            await historyLoad(
+              { current: nextPage, pageSize: PAGE_SIZE },
+              undefined
+            );
           }}
         />
 
@@ -376,14 +429,23 @@ function App() {
             onClick={() => setShowHistory(false)}
           ></div>
         )}
-  
+
         {/* 主要内容区域 */}
         <div className="flex-1 min-w-0">
           <Form {...form}>
             <form className="h-full" onSubmit={form.handleSubmit(onSubmit)}>
               <div className="container mx-auto px-4 py-6 h-full">
                 <div className="h-full">
-                  <ResizablePanelGroup className="" direction={((responsiveInfo?.["xs"] || responsiveInfo?.["sm"] && responsiveInfo?.["md"]) && !responsiveInfo["lg"] ) ? "vertical" :"horizontal"}>
+                  <ResizablePanelGroup
+                    className=""
+                    direction={
+                      (responsiveInfo?.["xs"] ||
+                        (responsiveInfo?.["sm"] && responsiveInfo?.["md"])) &&
+                      !responsiveInfo["lg"]
+                        ? "vertical"
+                        : "horizontal"
+                    }
+                  >
                     <ResizablePanel className="">
                       <div className="">
                         <div className="p-4">
@@ -454,14 +516,18 @@ function App() {
                             <Tooltip>
                               <TooltipTrigger asChild>
                                 <Button
-                                size="icon"
-                                variant={'ghost'}
-                              onClick={(e) => {
-                                e.preventDefault()
-                                const text = normanizeText(form.getValues("text"))
-                                form.setValue("text",text ?? "")
-                              }}
-                              ><MdAutoFixHigh /></Button>
+                                  size="icon"
+                                  variant={"ghost"}
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    const text = normanizeText(
+                                      form.getValues("text")
+                                    );
+                                    form.setValue("text", text ?? "");
+                                  }}
+                                >
+                                  <MdAutoFixHigh />
+                                </Button>
                               </TooltipTrigger>
                               <TooltipContent side="bottom">
                                 {t("Format Text")}
@@ -472,11 +538,14 @@ function App() {
                                 <Button
                                   variant="ghost"
                                   size="icon"
-                                  disabled={ttsLoading || !form.getValues("text")}
+                                  disabled={
+                                    ttsLoading || !form.getValues("text")
+                                  }
                                   onClick={(e) => {
-                                    e.preventDefault()
-                                    e.stopPropagation()
-                                    handleTTS(form.getValues("text"))}}
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    handleTTS(form.getValues("text"));
+                                  }}
                                 >
                                   <MdVolumeUp />
                                 </Button>
@@ -498,19 +567,18 @@ function App() {
                                   }
                                 >
                                   <MdOutlineTranslate />
-                                  {loading ? t("Loading") + "..." : t("Translate")}
+                                  {loading
+                                    ? t("Loading") + "..."
+                                    : t("Translate")}
                                 </Button>
                               </TooltipTrigger>
                               <TooltipContent side="bottom">
                                 {t("Press Alt + Enter to submit")}
                               </TooltipContent>
                             </Tooltip>
-                            
                           </div>
                           <div className="p-1"></div>
-                          <div
-                          className="relative"
-                          >
+                          <div className="relative">
                             <FormField
                               control={form.control}
                               name="text"
@@ -521,9 +589,9 @@ function App() {
                                     <Textarea
                                       {...field}
                                       className="h-60 text-base 2xl:text-lg"
-                                      placeholder={
-                                        t("Enter Japanese text here\nExample: こんにちは、元気ですか？\nAlt + Q to focus input")
-                                      }
+                                      placeholder={t(
+                                        "Enter Japanese text here\nExample: こんにちは、元気ですか？\nAlt + Q to focus input"
+                                      )}
                                     />
                                   </FormControl>
                                   <FormMessage />
@@ -531,17 +599,16 @@ function App() {
                               )}
                             />
                             {/* 高亮遮罩层 */}
-                          {highlightPosition && (
-                            <div className="absolute left-0 top-0 inset-0 pointer-events-none z-20">
-                              <TextHighlightMask
-                                text={form.getValues("text") || ""}
-                                position={highlightPosition}
-                              />
-                            </div>
-                          )}
+                            {highlightPosition && (
+                              <div className="absolute left-0 top-0 inset-0 pointer-events-none z-20">
+                                <TextHighlightMask
+                                  text={form.getValues("text") || ""}
+                                  position={highlightPosition}
+                                />
+                              </div>
+                            )}
                           </div>
 
-                          
                           {fileList?.length > 0 && (
                             <div className="px-12 py-8">
                               <Carousel>
@@ -587,7 +654,7 @@ function App() {
                           )}
                         </div>
                       </div>
-                    </ResizablePanel >
+                    </ResizablePanel>
                     <ResizableHandle withHandle />
                     <ResizablePanel>
                       <div className="">
@@ -603,10 +670,10 @@ function App() {
                                 <div className="p-4  max-h-[40%] overflow-auto">
                                   <div className="flex justify-between items-start">
                                     {translation?.error && (
-                                        <div className="bg-amber-50 border-amber-800 border-2 rounded-2xl p-1 pl-2 pr-2 text-amber-800 2xl:text-base">
-                                          {translation?.error}
-                                        </div>
-                                      )}
+                                      <div className="bg-amber-50 border-amber-800 border-2 rounded-2xl p-1 pl-2 pr-2 text-amber-800 2xl:text-base">
+                                        {translation?.error}
+                                      </div>
+                                    )}
                                     <div className="inline-flex gap-2 text-foreground 2xl:text-lg">
                                       <Markdown>
                                         {translation?.translation ?? ""}
@@ -637,7 +704,9 @@ function App() {
                               </>
                             ) : (
                               <div className="h-full flex items-center justify-center text-muted-foreground 2xl:text-lg">
-                                {t("Translation results will be displayed here")}
+                                {t(
+                                  "Translation results will be displayed here"
+                                )}
                               </div>
                             )}
                           </div>
@@ -647,10 +716,11 @@ function App() {
                   </ResizablePanelGroup>
                 </div>
 
-                {isBrowser() && createPortal(
-                  loading && (
-                    <div
-                      className="
+                {isBrowser() &&
+                  createPortal(
+                    loading && (
+                      <div
+                        className="
           absolute
           left-1/2
           top-1/2
@@ -658,10 +728,10 @@ function App() {
           -translate-x-1/2
           -translate-y-1/2
           "
-                    ></div>
-                  ),
-                   document.documentElement
-                )}
+                      ></div>
+                    ),
+                    document.documentElement
+                  )}
               </div>
             </form>
           </Form>
@@ -732,7 +802,9 @@ const TextHighlightMask = ({
           <div className="relative w-full h-full text-base  md:text-sm">
             <div className="absolute inset-0 p-0 whitespace-pre-wrap break-words leading-normal">
               {/* 前面的文本 */}
-              <span className="text-transparent inset-0 p-0 text-base  md:text-sm">{beforeText}</span>
+              <span className="text-transparent inset-0 p-0 text-base  md:text-sm">
+                {beforeText}
+              </span>
 
               {/* 高亮部分 */}
               <motion.span
@@ -745,7 +817,9 @@ const TextHighlightMask = ({
               </motion.span>
 
               {/* 后面的文本 */}
-              <span className="text-transparent inset-0 p-0 text-base  md:text-sm">{afterText}</span>
+              <span className="text-transparent inset-0 p-0 text-base  md:text-sm">
+                {afterText}
+              </span>
             </div>
           </div>
         </div>
@@ -753,5 +827,5 @@ const TextHighlightMask = ({
     </div>
   );
 };
-export const HydrateFallback = HydrateFallbackTemplate
+export const HydrateFallback = HydrateFallbackTemplate;
 export default App;

@@ -231,5 +231,10 @@
   "Add a comment...": "Add a comment...",
   "Quoting": "Quoting",
   "Text": "Text",
-  "Image": "Image"
+  "Image": "Image",
+  "Whitespace detected": "Whitespace detected",
+  "Your text contains excessive whitespace": "Your text contains excessive whitespace",
+  "Format now": "Format now",
+  "Text formatted successfully": "Text formatted successfully",
+  "Format Text": "Format Text"
 }

@@ -189,5 +189,10 @@
   "File removed from list": "ファイルがリストから削除されました",
   "File not found for retry": "再試行するファイルが見つかりません",
   "TTS failed, please try again": "音声合成に失敗しました、もう一度お試しください",
-  "Text-to-Speech": "音声合成"
+  "Text-to-Speech": "音声合成",
+  "Whitespace detected": "空白文字が検出されました",
+  "Your text contains excessive whitespace": "テキストに過剰な空白文字が含まれています",
+  "Format now": "今すぐフォーマット",
+  "Text formatted successfully": "テキストのフォーマットに成功しました",
+  "Format Text": "テキストをフォーマット"
 }

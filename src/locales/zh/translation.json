@@ -189,5 +189,10 @@
   "File removed from list": "文件已从列表中移除",
   "File not found for retry": "找不到要重试的文件",
   "TTS failed, please try again": "语音合成失败，请重试",
-  "Text-to-Speech": "语音合成"
+  "Text-to-Speech": "语音合成",
+  "Whitespace detected": "检测到空白字符",
+  "Your text contains excessive whitespace": "您的文本包含过多空白字符",
+  "Format now": "立即格式化",
+  "Text formatted successfully": "文本格式化成功",
+  "Format Text": "格式化文本"
 }
