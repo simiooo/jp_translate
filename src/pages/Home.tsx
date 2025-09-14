@@ -233,7 +233,7 @@ function App() {
   const translation = useThrottle<TranslationResult | null>(
     bufferedTranslation,
     {
-      wait: 300,
+      wait: 1000,
     }
   );
   useKeyPress("alt.enter", () => {
