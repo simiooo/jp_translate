@@ -347,14 +347,31 @@ function App() {
     }
   };
 
+  // Convert compressed token keys back to original format for API compatibility
+  const convertTokenToOriginalFormat = (token: Token) => {
+    return {
+      word: token.w,
+      pos: token.p,
+      meaning: token.m,
+      kana: token.k,
+      lemma: token.l,
+      inflection: token.i,
+      position: token.po ? {
+        start: token.po.s,
+        end: token.po.e
+      } : undefined
+    };
+  };
+
   const { runAsync: handleWordCreate, loading: wordCreateLoading } = useRequest(
     async (word: Token) => {
       if (!translation) return;
       try {
+        const originalFormatWord = convertTokenToOriginalFormat(word);
         const res = await alovaInstance.Post<{
           [key: string]: string | number | undefined;
           code?: number;
-        }>("/api/words", { ...word, p: word?.p?.join });
+        }>("/api/words", { ...originalFormatWord, pos: originalFormatWord?.pos?.join });
         if (res.code) {
           throw Error(res.message?.toString() || "保存单词失败");
         }
