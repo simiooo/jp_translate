@@ -117,8 +117,8 @@ function App() {
 
   // 高亮状态
   const [highlightPosition, setHighlightPosition] = useState<{
-    start: number;
-    end: number;
+    s: number;
+    e: number;
   } | null>(null);
 
   const submitRef = useRef<HTMLButtonElement>(null);
@@ -354,7 +354,7 @@ function App() {
         const res = await alovaInstance.Post<{
           [key: string]: string | number | undefined;
           code?: number;
-        }>("/api/words", { ...word, pos: word?.pos?.join });
+        }>("/api/words", { ...word, p: word?.p?.join });
         if (res.code) {
           throw Error(res.message?.toString() || "保存单词失败");
         }
@@ -676,7 +676,7 @@ function App() {
                                     )}
                                     <div className="inline-flex gap-2 text-foreground 2xl:text-lg">
                                       <Markdown>
-                                        {translation?.translation ?? ""}
+                                        {translation?.t ?? ""}
                                       </Markdown>
                                       <div className="inline-flex items-center gap-2">
                                         {loading && <Cursor />}
@@ -687,7 +687,7 @@ function App() {
 
                                 <div className="flex-1 p-4 overflow-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-gray-100 dark:scrollbar-track-gray-800 hover:scrollbar-thumb-gray-400 dark:hover:scrollbar-thumb-gray-500">
                                   <AstTokens
-                                    ast={translation?.ast}
+                                    ast={translation?.a}
                                     loading={loading}
                                     onAddToken={(token) => {
                                       if (!token) return;
@@ -766,18 +766,18 @@ const TextHighlightMask = ({
   position,
 }: {
   text: string;
-  position: { start: number; end: number } | null;
+  position: { s: number; e: number } | null;
 }) => {
   if (!text || !position) return null;
 
   // 获取指定位置的字符
-  const highlightedText = text.substring(position.start, position.end);
+  const highlightedText = text.substring(position.s, position.e);
 
   // 计算前面的文本
-  const beforeText = text.substring(0, position.start);
+  const beforeText = text.substring(0, position.s);
 
   // 计算后面的文本
-  const afterText = text.substring(position.end);
+  const afterText = text.substring(position.e);
 
   return (
     <div className="w-full h-full p-0">

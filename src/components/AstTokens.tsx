@@ -13,7 +13,7 @@ interface AstTokensProps {
   onClick?: (ast?: Token) => void;
   onTokenClick?: (token?: Token) => void;
   onAddToken?: (token?: Token) => void;
-  onTokenHover?: (position?: { start: number; end: number }) => void;
+  onTokenHover?: (position?: { s: number; e: number }) => void;
   onTokenLeave?: () => void;
 }
 
@@ -33,7 +33,7 @@ export const AstToken: React.FC<{
   token: Token;
   onClick?: (ast?: Token) => void;
   onAdd?: (token?: Token) => void;
-  onHover?: (position?: { start: number; end: number }) => void;
+  onHover?: (position?: { s: number; e: number }) => void;
   onLeave?: () => void;
 }> = ({ token, onClick, onAdd, onHover, onLeave }) => {
  const { t } = useTranslation();
@@ -41,15 +41,15 @@ export const AstToken: React.FC<{
     <div className="inline-flex flex-col">
       <div
         onClick={() => onClick?.(token)}
-        onMouseEnter={() => token.position && onHover?.(token.position)}
+        onMouseEnter={() => token.po && onHover?.(token.po)}
         onMouseLeave={() => onLeave?.()}
         className="bg-"
-        aria-label={`Token: ${token.word}`}
+        aria-label={`Token: ${token.w}`}
       >
         {/* Token word */}
         <div className="flex-shrink-0 mr-4">
           <h6 className="text-gray-800 dark:text-gray-100 font-semibold text-base select-text">
-            {token.word}
+            {token.w}
           </h6>
         </div>
         <div
@@ -57,31 +57,31 @@ export const AstToken: React.FC<{
         ></div>
         {/* Token badges */}
         <div className="flex flex-wrap gap-2 gap-y-1 items-center flex-1">
-          {token.lemma && (
+          {token.l && (
             <Badge
-              key={`lemma-${token.lemma}`}
+              key={`lemma-${token.l}`}
               variant="outline"
               className={cn(
                 "text-xs font-medium px-2.5 py-1 rounded-full transition-all duration-200 hover:scale-105",
                 getBadgeColorClass('lemma')
               )}
             >
-              <TypewriterText text={t('Lemma: {{lemma}}', { lemma: token.lemma })} />
+              <TypewriterText text={t('Lemma: {{lemma}}', { lemma: token.l })} />
             </Badge>
           )}
-          {token.inflection && (
+          {token.i && (
             <Badge
-              key={`inflection-${token.inflection}`}
+              key={`inflection-${token.i}`}
               variant="outline"
               className={cn(
                 "text-xs font-medium px-2.5 py-1 rounded-full transition-all duration-200 hover:scale-105",
                 getBadgeColorClass('inflection')
               )}
             >
-              <TypewriterText text={`${token.inflection}`} />
+              <TypewriterText text={`${token.i}`} />
             </Badge>
           )}
-          {(token.pos ?? []).map((pos) => (
+          {(token.p ?? []).map((pos) => (
             <Badge
               key={pos}
               variant="outline"
@@ -93,28 +93,28 @@ export const AstToken: React.FC<{
               <TypewriterText text={pos} />
             </Badge>
           ))}
-          {token.meaning && (
+          {token.m && (
             <Badge
-              key={`meaning-${token.meaning}`}
+              key={`meaning-${token.m}`}
               variant="outline"
               className={cn(
                 "text-xs font-medium px-2.5 py-1 rounded-full transition-all duration-200 hover:scale-105",
                 getBadgeColorClass('meaning')
               )}
             >
-              <TypewriterText text={t('Meaning: {{meaning}}', { meaning: token.meaning })} />
+              <TypewriterText text={t('Meaning: {{meaning}}', { meaning: token.m })} />
             </Badge>
           )}
-          {token.kana && (
+          {token.k && (
             <Badge
-              key={`kana-${token.kana}`}
+              key={`kana-${token.k}`}
               variant="outline"
               className={cn(
                 "text-xs font-medium px-2.5 py-1 rounded-full transition-all duration-200 hover:scale-105",
                 getBadgeColorClass('kana')
               )}
             >
-              <TypewriterText text={t('Kana: {{kana}}', { kana: token.kana })} />
+              <TypewriterText text={t('Kana: {{kana}}', { kana: token.k })} />
             </Badge>
           )}
           <Button 
@@ -151,13 +151,13 @@ export const AstTokens: React.FC<AstTokensProps> = ({
   return (
     <div className="flex flex-col gap-4 p-1">
       {/* Display current level tokens */}
-      {ast.tokens && (
+      {ast.tk && (
         <div className="flex flex-wrap gap-4 items-start justify-start">
-          {ast.tokens.map((token, index) => (<div
+          {ast.tk.map((token, index) => (<div
           className="py-2"
           >
           <AstToken
-              key={token.word ?? index}
+              key={token.w ?? index}
               onClick={(token) => {
                 onTokenClick?.(token);
                 onClick?.(token);
@@ -176,9 +176,9 @@ export const AstTokens: React.FC<AstTokensProps> = ({
       )}
 
       {/* Recursively display child nodes */}
-      {ast.children && ast.children.length > 0 && (
+      {ast.c && ast.c.length > 0 && (
         <div className="flex flex-col ml-8 pl-6 border-l-2 border-gray-200 dark:border-gray-700 space-y-6">
-          {ast.children.map((child, index) => (
+          {ast.c.map((child, index) => (
             <div key={index} className="flex flex-col">
               <AstTokens
                 ast={child}
@@ -189,7 +189,7 @@ export const AstTokens: React.FC<AstTokensProps> = ({
                 onTokenLeave={onTokenLeave}
               />
               {/* Add separator between child nodes */}
-              {index < (ast.children ?? []).length - 1 && (
+              {index < (ast.c ?? []).length - 1 && (
                 <div className="my-6">
                   <Separator className="bg-gray-200 dark:bg-gray-700" />
                 </div>
