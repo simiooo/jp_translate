@@ -56,7 +56,7 @@ jobs:
                 await github.rest.actions.createWorkflowDispatch({
                     owner: 'simiooo',
                     repo: 'jp-translate-ops',
-                    workflow_id: 'frontend.yml',
+                    workflow_id: 'frontend-k8s-deploy.yml',
                     ref: 'main',
                     inputs: {
                         frontend_image_tag: '${{ github.sha }}'
