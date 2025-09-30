@@ -37,7 +37,7 @@ export const AstToken: React.FC<{
 }> = ({ token, onClick, onAdd, onHover, onLeave }) => {
  const { t } = useTranslation();
  return (
-   <div className="flex flex-col p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 shadow-sm hover:shadow-md transition-shadow duration-200">
+   <div className="flex flex-col p-4 rounded-lg  shadow-sm hover:shadow-md">
      <div
        onClick={() => onClick?.(token)}
        onMouseEnter={() => token.po && onHover?.(token.po)}
