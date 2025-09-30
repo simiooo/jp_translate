@@ -3,7 +3,6 @@ import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
 import { Separator } from "./ui/separator";
 import { Cursor } from "./Cursor";
-import { TypewriterText } from "./TypewriterText";
 import { cn } from "@/lib/utils";
 import { useTranslation } from 'react-i18next';
 
@@ -38,102 +37,100 @@ export const AstToken: React.FC<{
 }> = ({ token, onClick, onAdd, onHover, onLeave }) => {
  const { t } = useTranslation();
  return (
-    <div className="inline-flex flex-col">
-      <div
-        onClick={() => onClick?.(token)}
-        onMouseEnter={() => token.po && onHover?.(token.po)}
-        onMouseLeave={() => onLeave?.()}
-        className="bg-"
-        aria-label={`Token: ${token.w}`}
-      >
-        {/* Token word */}
-        <div className="flex-shrink-0 mr-4">
-          <h6 className="text-gray-800 dark:text-gray-100 font-semibold text-base select-text">
-            {token.w}
-          </h6>
-        </div>
-        <div
-        className="p-1"
-        ></div>
-        {/* Token badges */}
-        <div className="flex flex-wrap gap-2 gap-y-1 items-center flex-1">
-          {token.l && (
-            <Badge
-              key={`lemma-${token.l}`}
-              variant="outline"
-              className={cn(
-                "text-xs font-medium px-2.5 py-1 rounded-full transition-all duration-200 hover:scale-105",
-                getBadgeColorClass('lemma')
-              )}
-            >
-              <TypewriterText text={t('Lemma: {{lemma}}', { lemma: token.l })} />
-            </Badge>
-          )}
-          {token.i && (
-            <Badge
-              key={`inflection-${token.i}`}
-              variant="outline"
-              className={cn(
-                "text-xs font-medium px-2.5 py-1 rounded-full transition-all duration-200 hover:scale-105",
-                getBadgeColorClass('inflection')
-              )}
-            >
-              <TypewriterText text={`${token.i}`} />
-            </Badge>
-          )}
-          {(token.p ?? []).map((pos) => (
-            <Badge
-              key={pos}
-              variant="outline"
-              className={cn(
-                "text-xs font-medium px-2.5 py-1 rounded-full transition-all duration-200 hover:scale-105",
-                getBadgeColorClass('pos')
-              )}
-            >
-              <TypewriterText text={pos} />
-            </Badge>
-          ))}
-          {token.m && (
-            <Badge
-              key={`meaning-${token.m}`}
-              variant="outline"
-              className={cn(
-                "text-xs font-medium px-2.5 py-1 rounded-full transition-all duration-200 hover:scale-105",
-                getBadgeColorClass('meaning')
-              )}
-            >
-              <TypewriterText text={t('Meaning: {{meaning}}', { meaning: token.m })} />
-            </Badge>
-          )}
-          {token.k && (
-            <Badge
-              key={`kana-${token.k}`}
-              variant="outline"
-              className={cn(
-                "text-xs font-medium px-2.5 py-1 rounded-full transition-all duration-200 hover:scale-105",
-                getBadgeColorClass('kana')
-              )}
-            >
-              <TypewriterText text={t('Kana: {{kana}}', { kana: token.k })} />
-            </Badge>
-          )}
-          <Button 
-            onClick={(e) => {
-              e.stopPropagation();
-              e.preventDefault()
-              onAdd?.(token);
-            }} 
-            variant="ghost" 
-            size="sm"
-            className=""
-            aria-label={t('Add token to vocabulary')}
-          >
-            <span className="text-sm font-bold">+</span>
-          </Button>
-        </div>
-      </div>
-    </div>
-  );
+   <div className="flex flex-col p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 shadow-sm hover:shadow-md transition-shadow duration-200">
+     <div
+       onClick={() => onClick?.(token)}
+       onMouseEnter={() => token.po && onHover?.(token.po)}
+       onMouseLeave={() => onLeave?.()}
+       className="cursor-pointer"
+       aria-label={`Token: ${token.w}`}
+     >
+       {/* Token word */}
+       <div className="mb-3">
+         <h6 className="text-gray-800 dark:text-gray-100 font-semibold text-lg select-text">
+           {token.w}
+         </h6>
+       </div>
+       
+       {/* Token badges */}
+       <div className="flex flex-wrap gap-2 items-center">
+         {token.l && (
+           <Badge
+             key={`lemma-${token.l}`}
+             variant="outline"
+             className={cn(
+               "text-xs font-medium px-2.5 py-1 rounded-full transition-all duration-200 hover:scale-105",
+               getBadgeColorClass('lemma')
+             )}
+           >
+             {t('Lemma: {{lemma}}', { lemma: token.l })}
+           </Badge>
+         )}
+         {token.i && (
+           <Badge
+             key={`inflection-${token.i}`}
+             variant="outline"
+             className={cn(
+               "text-xs font-medium px-2.5 py-1 rounded-full transition-all duration-200 hover:scale-105",
+               getBadgeColorClass('inflection')
+             )}
+           >
+             {`${token.i}`}
+           </Badge>
+         )}
+         {(token.p ?? []).map((pos) => (
+           <Badge
+             key={pos}
+             variant="outline"
+             className={cn(
+               "text-xs font-medium px-2.5 py-1 rounded-full transition-all duration-200 hover:scale-105",
+               getBadgeColorClass('pos')
+             )}
+           >
+             {pos}
+           </Badge>
+         ))}
+         {token.m && (
+           <Badge
+             key={`meaning-${token.m}`}
+             variant="outline"
+             className={cn(
+               "text-xs font-medium px-2.5 py-1 rounded-full transition-all duration-200 hover:scale-105",
+               getBadgeColorClass('meaning')
+             )}
+           >
+             {t('Meaning: {{meaning}}', { meaning: token.m })}
+           </Badge>
+         )}
+         {token.k && (
+           <Badge
+             key={`kana-${token.k}`}
+             variant="outline"
+             className={cn(
+               "text-xs font-medium px-2.5 py-1 rounded-full transition-all duration-200 hover:scale-105",
+               getBadgeColorClass('kana')
+             )}
+           >
+             {t('Kana: {{kana}}', { kana: token.k })}
+           </Badge>
+         )}
+         <Button
+           onClick={(e: React.MouseEvent) => {
+             e.stopPropagation();
+             e.preventDefault();
+             onAdd?.(token);
+           }}
+           variant="ghost"
+           size="sm"
+           className="ml-auto"
+           aria-label={t('Add token to vocabulary')}
+         >
+           <span className="text-sm font-bold">+</span>
+         </Button>
+       </div>
+     </div>
+   </div>
+ );
 };
 
 export const AstTokens: React.FC<AstTokensProps> = ({
@@ -152,27 +149,22 @@ export const AstTokens: React.FC<AstTokensProps> = ({
     <div className="flex flex-col gap-4 p-1">
       {/* Display current level tokens */}
       {ast.tk && (
-        <div className="flex flex-wrap gap-4 items-start justify-start">
-          {ast.tk.map((token, index) => (<div
-          className="py-2"
-          >
-          <AstToken
-              key={token.w ?? index}
-              onClick={(token) => {
-                onTokenClick?.(token);
-                onClick?.(token);
-              }}
-              onAdd={(token) => {
-                onAddToken?.(token);
-              }}
-              onHover={onTokenHover}
-              onLeave={onTokenLeave}
-              token={token}
-            />
-          </div>
-            
-          ))}
-        </div>
+          ast.tk.map((token, index) => (
+            <div key={token.w ?? index} className="mb-3">
+              <AstToken
+                onClick={(token) => {
+                  onTokenClick?.(token);
+                  onClick?.(token);
+                }}
+                onAdd={(token) => {
+                  onAddToken?.(token);
+                }}
+                onHover={onTokenHover}
+                onLeave={onTokenLeave}
+                token={token}
+              />
+            </div>
+          ))
       )}
 
       {/* Recursively display child nodes */}
