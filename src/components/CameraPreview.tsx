@@ -13,7 +13,7 @@ export default function CameraPreview({
 }: CameraPreviewProps) {
   return (
     <div
-      className={`overflow-hidden rounded-lg ${className}`}
+      className={`overflow-hidden ${className}`}
 
       {...props}
     >

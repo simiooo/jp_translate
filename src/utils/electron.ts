@@ -15,11 +15,13 @@ declare global {
 }
 
 export const isElectron = (): boolean => {
-  
-  console.log(window.electronAPI?.isElectron());
+  // Check if we're in a browser environment (not SSR)
+  if (typeof window === 'undefined') {
+    return false;
+  }
   
   // Check if the electronAPI is available in the window object
-  return !!window.electronAPI?.isElectron();
+  return !!window?.electronAPI?.isElectron();
 };
 
 // Type-safe wrapper for Electron API calls
@@ -28,5 +30,5 @@ export const electronAPI = (): ElectronAPI | null => {
     return null;
   }
 
-  return window.electronAPI || null;
+  return window?.electronAPI || null;
 };

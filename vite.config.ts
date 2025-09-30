@@ -1,14 +1,17 @@
+/// <reference types="vitest/config" />
 import { defineConfig } from "vite";
+// import { reactRouterHonoServer } from "react-router-hono-server/dev"; // add this
 import { reactRouter } from "@react-router/dev/vite";
-// import react from '@vitejs/plugin-react-swc'
 import tsconfigPaths from "vite-tsconfig-paths";
 import tailwindcss from "@tailwindcss/vite";
-import basicSsl from "@vitejs/plugin-basic-ssl";
+import path from "path";
 
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
+    // reactRouterHonoServer(),
     tailwindcss(),
+    
     reactRouter(),
     tsconfigPaths(),
     // basicSsl({
@@ -22,7 +25,12 @@ export default defineConfig({
   ],
   server: {
     proxy: {
-      "/api": "https://risureader.top",
+      "/api": "http://127.0.0.1:8080",
+    },
+  },
+  resolve: {
+    alias: {
+      "@": path.resolve(__dirname, "./src"),
     },
   },
 });

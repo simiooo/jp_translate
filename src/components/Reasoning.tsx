@@ -1,4 +1,5 @@
 import { ForwardedRef, forwardRef } from "react";
+import { useTranslation } from 'react-i18next';
 
 interface ReasoningProps {
   thinking?: string;
@@ -7,6 +8,7 @@ interface ReasoningProps {
 
 export const Reasoning = forwardRef(
   ({ thinking }: ReasoningProps, ref: ForwardedRef<HTMLDivElement>) => {
+    const { t } = useTranslation();
     if (!thinking) return null;
 
     return (
@@ -21,7 +23,7 @@ export const Reasoning = forwardRef(
       "
       >
         <h3 className="text-sm font-semibold text-black-800 dark:text-gray-200 mb-2">
-            思考……
+            {t('Thinking...')}
           </h3>
         <div
         ref={ref}

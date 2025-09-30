@@ -1,17 +1,45 @@
 import { useForm } from "react-hook-form";
-import { RegisterFormData } from "../types/auth";
-import { Input } from "../components/Input";
-import { Toast } from "../components/Toast";
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { Input } from "../components/ui/input";
+import { Toast } from "../components/ToastCompat";
 import type { Route } from "./+types/RegisterPage";
-import { Button } from "~/components/Button";
-import { alovaInstance } from "~/utils/request";
+import { Button } from "~/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '~/components/ui/form';
+import { getErrorMessage, isStandardizedError } from "~/utils/request";
 import { useNavigate } from "react-router";
-import { User } from "./LoginPage";
+import { HydrateFallbackTemplate } from "~/components/HydrateFallbackTemplate";
+import { useTranslation } from 'react-i18next';
+import { useAuthActions, useIsLoading } from '~/store/auth'
+import {
+  ErrCodeUsernameExists,
+  ErrCodeEmailExists,
+  ErrCodePasswordTooWeak,
+  ErrCodeUserCreationFailed
+} from '~/types/errors'
 
 interface RegisterPageProps {
-  onRegister: (data: RegisterFormData) => void;
   onSwitchToLogin: () => void;
 }
+
+// Zod validation schema
+const registerSchema = z.object({
+  username: z.string().min(2, 'Username must be 2-20 characters').max(20, 'Username must be 2-20 characters'),
+  email: z.string().email('Please enter a valid email address'),
+  password: z.string().min(6, 'Password must be at least 6 characters'),
+  confirmPassword: z.string().min(6, 'Please enter password again'),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords do not match",
+  path: ["confirmPassword"],
+});
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -21,32 +49,49 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export default function RegisterPage({}: RegisterPageProps) {
+  const { t } = useTranslation();
+  const { register } = useAuthActions();
+  const isLoading = useIsLoading();
   const navigate = useNavigate()
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    watch,
-  } = useForm<RegisterFormData>({
-    mode: "onBlur",
+  const form = useForm<z.infer<typeof registerSchema>>({
+    resolver: zodResolver(registerSchema),
+    defaultValues: {
+      username: '',
+      email: '',
+      password: '',
+      confirmPassword: '',
+    },
   });
 
-  const onSubmit = async (data: RegisterFormData) => {
+  const onSubmit = async (data: z.infer<typeof registerSchema>) => {
     try {
-      const res = await alovaInstance.Post<{token?: string, user?: User}>("/api/auth/register", {
-        username: data.username,
-        email: data.email,
-        password: data.password,
-        confirmPassword: data.confirmPassword
-      });
-      if(!res.token) {
-        throw Error('注册失败')
-      }
-      localStorage.setItem('Authorization', `Bearer ${res.token}`)
+      await register(data.username, data.email, data.password);
       navigate('/')
     } catch (error) {
-      Toast.error("注册失败，请重试");
-      console.log(error);
+      console.log('Registration error:', error);
+      
+      // Handle standardized error format
+      if (isStandardizedError(error)) {
+        // You can use error.code to show specific error messages
+        switch (error.code) {
+          case ErrCodeUsernameExists:
+            Toast.error(t('Username already exists'));
+            break;
+          case ErrCodeEmailExists:
+            Toast.error(t('Email address already registered'));
+            break;
+          case ErrCodePasswordTooWeak:
+            Toast.error(t('Password does not meet security requirements'));
+            break;
+          case ErrCodeUserCreationFailed:
+            Toast.error(t('Failed to create user account'));
+            break;
+          default:
+            Toast.error(getErrorMessage(error) || t('Registration failed, please try again'));
+        }
+      } else {
+        Toast.error(t('Registration failed, please try again'));
+      }
     }
   };
 
@@ -56,69 +101,107 @@ export default function RegisterPage({}: RegisterPageProps) {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8 bg-white dark:bg-gray-800 p-8 rounded-xl shadow-md">
-        <div className="text-center">
-          <h2 className="mt-6 text-3xl font-extrabold text-gray-900 dark:text-gray-100">
-            用户注册
-          </h2>
-        </div>
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit(onSubmit)}>
-          <div className=" space-y-4">
-            <Input
-              label="用户名"
-              name="username"
-              register={register}
-              error={errors.username}
-              required="请输入用户名"
-              placeholder="2-20位字符"
-            />
-            <Input
-              label="邮箱"
-              name="email"
-              type="email"
-              register={register}
-              error={errors.email}
-              required="请输入邮箱"
-              placeholder="example@example.com"
-            />
-            <Input
-              label="密码"
-              name="password"
-              type="password"
-              register={register}
-              error={errors.password}
-              required="请输入密码"
-              placeholder="至少6位字符"
-            />
-            <Input
-              label="确认密码"
-              name="confirmPassword"
-              type="password"
-              register={register}
-              error={errors.confirmPassword}
-              required="请再次输入密码"
-              placeholder="再次输入密码"
-              validate={(value) =>
-                value === watch("password") || "两次输入的密码不一致"
-              }
-            />
-          </div>
+      <Card className="w-full max-w-md">
+        <CardHeader className="text-center">
+          <CardTitle className="text-3xl font-extrabold">{t('User Registration')}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <div className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="username"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t('Username')}</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder={t('2-20 characters')}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t('Email')}</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="email"
+                            placeholder="example@example.com"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="password"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t('Password')}</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="password"
+                            placeholder={t('At least 6 characters')}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="confirmPassword"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t('Confirm Password')}</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="password"
+                            placeholder={t('Enter password again')}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+              </div>
 
-          <div>
-            <Button type="submit">注册</Button>
-          </div>
-        </form>
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={form.formState.isSubmitting || isLoading}
+              >
+                {(form.formState.isSubmitting || isLoading) ? t('Registering...') : t('Register')}
+              </Button>
+            </form>
+          </Form>
 
-        <div className="text-center text-sm text-gray-600 dark:text-gray-400">
-          <span>已有账号？</span>
-          <button
-            onClick={onSwitchToLogin}
-            className="font-medium text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300 focus:outline-none"
-          >
-            立即登录
-          </button>
-        </div>
-      </div>
+          <div className="mt-6 text-center text-sm text-muted-foreground">
+            <span>{t('Already have an account?')}</span>
+            <Button
+              variant="link"
+              onClick={onSwitchToLogin}
+              className="p-0 h-auto font-medium ml-1"
+            >
+              {t('Login now')}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
+
+export const HydrateFallback = HydrateFallbackTemplate

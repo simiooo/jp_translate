@@ -1,12 +1,17 @@
 import React, { forwardRef, useImperativeHandle, useRef, useState } from 'react';
-import Spinner from './Spinner';
-import { Toast } from './Toast';
+import { Button } from './ui/button';
+import { Card, CardContent } from './ui/card';
+import { Badge } from './ui/badge';
+import { Progress } from './ui/progress';
+import { toast } from 'sonner';
 import { showImagePreview } from './ImgPreview';
-import { alovaInstance } from '../utils/request';
-import { motion, AnimatePresence } from 'framer-motion';
+import { alovaInstance, getErrorMessage, isStandardizedError } from '../utils/request';
+import { Upload, X, Check, AlertCircle } from 'lucide-react';
+import { cn } from '~/lib/utils';
 import { v4 as uuidv4 } from 'uuid';
 import { useRequest } from 'ahooks';
-import { FileRecord } from '../types/file'; // Import FileRecord
+import { FileRecord } from '../types/file';
+import { useTranslation } from 'react-i18next';
 
 export interface UploadFile extends FileRecord {
   uid: string;
@@ -34,9 +39,10 @@ export const ImageUploader = forwardRef<ImageUploaderRef, ImageUploaderProps>(({
   value, // Destructure new prop
   onChange, // Destructure new prop
 }, ref) => {
-  const [uploadedFiles, setUploadedFiles] = useState<UploadFile[]>([]);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const [isDragOver, setIsDragOver] = useState(false);
+ const { t } = useTranslation();
+ const [uploadedFiles, setUploadedFiles] = useState<UploadFile[]>([]);
+ const fileInputRef = useRef<HTMLInputElement>(null);
+ const [isDragOver, setIsDragOver] = useState(false);
 
   useImperativeHandle(ref, () => ({
     getUploadedFiles: () => uploadedFiles.filter(f => f.status === 'done'),
@@ -70,8 +76,30 @@ export const ImageUploader = forwardRef<ImageUploaderRef, ImageUploaderProps>(({
     async ({fileToUpload, params}: {fileToUpload:File, params: {uid: string; name: string} }) => {
       const formData = new FormData();
       formData.append('file', fileToUpload);
-      const response = await alovaInstance.Post<{file: FileRecord}>('/api/files/upload', formData);
-      return {file: response.file, params} // Assuming response.file contains the FileRecord
+      try {
+        const response = await alovaInstance.Post<{file: FileRecord}>('/api/files/upload', formData);
+        return {file: response.file, params} // Assuming response.file contains the FileRecord
+      } catch (error) {
+        console.error('Image upload error:', error);
+        
+        // Handle standardized error format
+        if (isStandardizedError(error)) {
+          switch (error.code) {
+            case 1502: // ErrCodeFileTooLarge
+            case 1510: // ErrCodeFileSizeExceeded
+              throw new Error('Image size cannot exceed 2MB');
+            case 1503: // ErrCodeUnsupportedFileType
+            case 1511: // ErrCodeInvalidFileType
+              throw new Error('Please select JPEG, PNG, GIF or WebP format images');
+            case 1512: // ErrCodeFileProcessingError
+            case 1513: // ErrCodeImageProcessingError
+              throw new Error('Failed to process image');
+            default:
+              throw new Error(getErrorMessage(error) || 'Image upload failed');
+          }
+        }
+        throw error;
+      }
     },
     {
       manual: true, // We will trigger it manually
@@ -95,7 +123,7 @@ export const ImageUploader = forwardRef<ImageUploaderRef, ImageUploaderProps>(({
           return updatedFiles;
         });
         onUploadSuccess?.(fileRecord);
-        Toast.success(`文件 ${params.name} 上传成功！`);
+        toast.success(t('File {{name}} uploaded successfully!', { name: params.name }));
       },
       onError: (error, params) => {
         
@@ -121,7 +149,10 @@ export const ImageUploader = forwardRef<ImageUploaderRef, ImageUploaderProps>(({
             errorMessage = customError.message;
           }
         }
-        Toast.error(`文件 ${params[0].params.name} 上传失败: ${errorMessage}`);
+        toast.error(t('File {{name}} upload failed: {{error}}', {
+          name: params[0].params.name,
+          error: errorMessage
+        }));
         console.error('Upload error:', error);
       },
     }
@@ -153,12 +184,6 @@ export const ImageUploader = forwardRef<ImageUploaderRef, ImageUploaderProps>(({
     }
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (files && files.length > 0) {
-      Array.from(files).forEach(file => handleUploadFile(file));
-    }
-  };
 
   const handleDragEnter = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -204,8 +229,12 @@ export const ImageUploader = forwardRef<ImageUploaderRef, ImageUploaderProps>(({
   };
 
   const handleRemove = (uid: string) => {
-    setUploadedFiles(prev => prev.filter(file => file.uid !== uid));
-    Toast.info('文件已从列表中移除');
+    setUploadedFiles(prev => {
+      const newFiles = prev.filter(file => file.uid !== uid);
+      onChange?.(newFiles.filter(f => f.status === 'done'));
+      return newFiles;
+    });
+    toast.info(t('File removed from list'));
   };
 
   const handlePreviewClick = (file: UploadFile) => {
@@ -219,8 +248,13 @@ export const ImageUploader = forwardRef<ImageUploaderRef, ImageUploaderProps>(({
   const hasImages = uploadedFiles.length > 0;
 
   return (
-    <div
-      className={`flex flex-col items-center p-4 border rounded-lg shadow-sm bg-white dark:bg-gray-800 transition-all duration-300 ${isDragOver ? 'border-blue-500 ring-4 ring-blue-200 dark:ring-blue-800' : 'border-gray-300 dark:border-gray-700'} focus:outline-none focus:ring-4 focus:ring-blue-200 dark:focus:ring-blue-800 focus:border-blue-500`}
+    <Card
+      className={cn(
+        "transition-all duration-300",
+        isDragOver 
+          ? "border-primary ring-4 ring-primary/20" 
+          : "border-input hover:border-primary/50"
+      )}
       onDragEnter={handleDragEnter}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
@@ -228,107 +262,126 @@ export const ImageUploader = forwardRef<ImageUploaderRef, ImageUploaderProps>(({
       onPaste={handlePaste}
       tabIndex={0}
     >
-      <input
-        type="file"
-        ref={fileInputRef}
-        accept="image/*"
-        onChange={handleFileChange}
-        className="hidden"
-        id="image-upload-input"
-        multiple
-      />
+      <CardContent className="p-4">
+        
 
-      {!hasImages && (
-        <label
-          htmlFor="image-upload-input"
-          className="cursor-pointer px-4 py-2 mb-4 text-sm font-medium text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900 rounded-md hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors duration-200"
-        >
-          {isDragOver ? '松开即可上传' : '选择图片或拖拽、粘贴到此处'}
-        </label>
-      )}
-
-      <AnimatePresence>
-        {hasImages && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.3 }}
-            className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 w-full"
-          >
-            {uploadedFiles.map((file) => (
-              <motion.div
-                key={file.uid}
-                className="relative w-24 h-24 flex items-center justify-center border border-gray-200 dark:border-gray-600 rounded-2xl overflow-hidden group"
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.8 }}
-                transition={{ duration: 0.2 }}
-              >
-                <img
-                  src={file.URL || (file.originFileObj ? URL.createObjectURL(file.originFileObj) : '')}
-                  alt={file.FileName}
-                  className="max-w-full max-h-full object-contain cursor-pointer"
-                />
-
-                <div 
-                  onClick={() => handlePreviewClick(file)}
-                
-                className="absolute inset-0 bg-black bg-opacity-50 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 p-1">
-                  <span className="text-white text-xs text-center break-all mb-1">{file.FileName}</span>
-                  {file.status === 'uploading' && (
-                    <>
-                      <Spinner loading={true} />
-                      <span className="text-white text-xs mt-1">{file.percent}%</span>
-                      <div className="w-full bg-gray-200 rounded-full h-1 dark:bg-gray-700 mt-1">
-                        <div
-                          className="bg-blue-600 h-1 rounded-full"
-                          style={{ width: `${file.percent}%` }}
-                        ></div>
-                      </div>
-                    </>
-                  )}
-                  {file.status === 'done' && (
-                    <svg className="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                  )}
-                  {file.status === 'error' && (
-                    <svg className="w-6 h-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                  )}
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleRemove(file.uid);
-                    }}
-                    className="absolute top-1 right-1 text-white bg-red-500 rounded-full p-0.5 hover:bg-red-600 transition-colors duration-200"
-                    title="移除"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                  </button>
-                </div>
-              </motion.div>
-            ))}
-            <motion.label
-              htmlFor="image-upload-input"
-              className="w-24 h-24 flex flex-col items-center justify-center border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-2xl cursor-pointer text-gray-500 dark:text-gray-400 hover:border-blue-500 hover:text-blue-500 transition-colors duration-200"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+        {!hasImages && (
+          <div className="flex flex-col items-center justify-center py-8">
+            <Upload className="h-12 w-12 text-muted-foreground mb-4" />
+            <Button
+              variant="outline"
+              onClick={() => fileInputRef.current?.click()}
+              className="mb-2"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-              </svg>
-              <span className="text-xs mt-1">{isDragOver ? '松开即可上传' : '添加图片'}</span>
-            </motion.label>
-          </motion.div>
+              {isDragOver ? t('Release to upload') : t('Select image')}
+            </Button>
+            <p className="text-sm text-muted-foreground text-center">
+              {t('Or drag, drop, or paste images here')}
+            </p>
+          </div>
         )}
-      </AnimatePresence>
-    </div>
+
+        {hasImages && (
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+              {uploadedFiles.map((file) => (
+                <Card
+                  key={file.uid}
+                  className="relative group overflow-hidden"
+                >
+                  <CardContent className="p-0">
+                    <div className="aspect-square relative">
+                      <img
+                        src={file.URL || (file.originFileObj ? URL.createObjectURL(file.originFileObj) : '')}
+                        alt={file.FileName}
+                        className="w-full h-full object-cover cursor-pointer"
+                        onClick={() => handlePreviewClick(file)}
+                      />
+                      
+                      {/* Status overlay */}
+                      <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        {file.status === 'uploading' && (
+                          <div className="text-center text-white">
+                            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white mx-auto mb-2" />
+                            <p className="text-xs">{file.percent || 0}%</p>
+                          </div>
+                        )}
+                        {file.status === 'done' && (
+                          <Check className="h-6 w-6 text-green-400" />
+                        )}
+                        {file.status === 'error' && (
+                          <AlertCircle className="h-6 w-6 text-red-400" />
+                        )}
+                      </div>
+
+                      {/* Remove button */}
+                      <Button
+                        variant="destructive"
+                        size="icon"
+                        className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleRemove(file.uid);
+                        }}
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+
+                      {/* Status badge */}
+                      <div className="absolute bottom-1 left-1">
+                        {file.status === 'uploading' && (
+                          <Badge variant="secondary" className="text-xs">
+                            {t('Uploading')}
+                          </Badge>
+                        )}
+                        {file.status === 'done' && (
+                          <Badge variant="default" className="text-xs">
+                            {t('Completed')}
+                          </Badge>
+                        )}
+                        {file.status === 'error' && (
+                          <Badge variant="destructive" className="text-xs">
+                            {t('Failed')}
+                          </Badge>
+                        )}
+                      </div>
+
+                      {/* Progress bar */}
+                      {file.status === 'uploading' && file.percent !== undefined && (
+                        <div className="absolute bottom-0 left-0 right-0 bg-background/80 p-1">
+                          <Progress value={file.percent} className="h-1" />
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="p-2">
+                      <p className="text-xs text-muted-foreground truncate" title={file.FileName}>
+                        {file.FileName}
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+              
+              {/* Add more button */}
+              <Card 
+                className="border-dashed cursor-pointer hover:border-primary transition-colors"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <CardContent className="p-0">
+                  <div className="aspect-square flex flex-col items-center justify-center">
+                    <Upload className="h-6 w-6 text-muted-foreground mb-2" />
+                    <p className="text-xs text-muted-foreground text-center">
+                      {isDragOver ? t('Release to upload more') : t('Add image')}
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 });
 

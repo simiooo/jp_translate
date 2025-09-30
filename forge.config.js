@@ -14,7 +14,7 @@ export default {
         "dir": "./dist-electron",
         override: true,
         ignore: [
-            /(?!package\.json|node_modules|dist-electron|build)/
+            // /(?!package\.json|node_modules|dist-electron|build)/
         ],
         "prune": true,
         "extraResource": [

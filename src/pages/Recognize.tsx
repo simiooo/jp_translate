@@ -1,13 +1,16 @@
 // src/pages/Recognize.tsx
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Button } from "~/components/Button";
+import { Button } from "~/components/ui/button";
 import CameraPreview from "~/components/CameraPreview";
 import { RiCameraLensFill } from "react-icons/ri";
 import { MdOutlineFlipCameraAndroid } from "react-icons/md";
 import { useRequest } from "ahooks";
-import { Modal, useModal } from "~/components/Modal";
+import { Modal, useModal } from "~/components/ModalCompat";
+import { HydrateFallbackTemplate } from "~/components/HydrateFallbackTemplate";
+import { useTranslation } from 'react-i18next';
 
 export default function Recognize() {
+  const { t } = useTranslation();
   const videoRef = useRef<HTMLVideoElement>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [facingMode, setFacingMode] = useState<"user" | "environment">(
@@ -46,7 +49,7 @@ export default function Recognize() {
           setStream(stream);
         }
       } catch (err) {
-        setError(`无法访问相机${err}`);
+        setError(`${t('Unable to access camera')}${err}`);
         console.error(err);
       }
     };
@@ -126,7 +129,7 @@ export default function Recognize() {
           ></RiCameraLensFill>
         </Button>
         <Button
-          variant="text"
+          variant="ghost"
           onClick={() => {
             setFacingMode(facingMode === "user" ? "environment" : "user");
           }}
@@ -147,3 +150,5 @@ export default function Recognize() {
     </div>
   );
 }
+
+export const HydrateFallback = HydrateFallbackTemplate

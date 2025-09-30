@@ -19,10 +19,31 @@ type Pages = {
   "/register": {
     params: {};
   };
-  "/vocabulary": {
+  "/profile": {
     params: {};
   };
   "/recognize": {
+    params: {};
+  };
+  "/social": {
+    params: {};
+  };
+  "/social/my-posts": {
+    params: {};
+  };
+  "/social/recommended": {
+    params: {};
+  };
+  "/social/notifications": {
+    params: {};
+  };
+  "/social/following": {
+    params: {};
+  };
+  "/social/followers": {
+    params: {};
+  };
+  "/social/trends": {
     params: {};
   };
 };
@@ -30,11 +51,11 @@ type Pages = {
 type RouteFiles = {
   "root.tsx": {
     id: "root";
-    page: "/" | "/login" | "/register" | "/vocabulary" | "/recognize";
+    page: "/" | "/login" | "/register" | "/profile" | "/recognize" | "/social" | "/social/my-posts" | "/social/recommended" | "/social/notifications" | "/social/following" | "/social/followers" | "/social/trends";
   };
   "./layout/rootLayout.tsx": {
     id: "layout/rootLayout";
-    page: "/" | "/login" | "/register" | "/vocabulary" | "/recognize";
+    page: "/" | "/login" | "/register" | "/profile" | "/recognize" | "/social" | "/social/my-posts" | "/social/recommended" | "/social/notifications" | "/social/following" | "/social/followers" | "/social/trends";
   };
   "./pages/Home.tsx": {
     id: "pages/Home";
@@ -48,12 +69,44 @@ type RouteFiles = {
     id: "pages/RegisterPage";
     page: "/register";
   };
-  "./pages/Vocabulary.tsx": {
-    id: "pages/Vocabulary";
-    page: "/vocabulary";
+  "./pages/ProfilePage.tsx": {
+    id: "pages/ProfilePage";
+    page: "/profile";
   };
   "./pages/Recognize.tsx": {
     id: "pages/Recognize";
     page: "/recognize";
+  };
+  "./layout/socialLayout.tsx": {
+    id: "layout/socialLayout";
+    page: "/social" | "/social/my-posts" | "/social/recommended" | "/social/notifications" | "/social/following" | "/social/followers" | "/social/trends";
+  };
+  "./pages/social/HomePage.tsx": {
+    id: "pages/social/HomePage";
+    page: "/social";
+  };
+  "./pages/social/MyPostsPage.tsx": {
+    id: "pages/social/MyPostsPage";
+    page: "/social/my-posts";
+  };
+  "./pages/social/RecommendedPage.tsx": {
+    id: "pages/social/RecommendedPage";
+    page: "/social/recommended";
+  };
+  "./pages/social/NotificationsPage.tsx": {
+    id: "pages/social/NotificationsPage";
+    page: "/social/notifications";
+  };
+  "./pages/social/FollowingPage.tsx": {
+    id: "pages/social/FollowingPage";
+    page: "/social/following";
+  };
+  "./pages/social/FollowersPage.tsx": {
+    id: "pages/social/FollowersPage";
+    page: "/social/followers";
+  };
+  "./pages/social/TrendsPage.tsx": {
+    id: "pages/social/TrendsPage";
+    page: "/social/trends";
   };
 };
