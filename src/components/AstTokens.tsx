@@ -122,7 +122,6 @@ export const AstToken: React.FC<{
            }}
            variant="ghost"
            size="sm"
-           className="ml-auto"
            aria-label={t('Add token to vocabulary')}
          >
            <span className="text-sm font-bold">+</span>
