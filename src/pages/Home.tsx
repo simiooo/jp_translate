@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import type { Token, TranslationResult } from "../types/jp_ast";
+import type { Token, TranslationResult, AST } from "../types/jp_ast";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { jsonrepair } from "jsonrepair";
@@ -34,6 +34,7 @@ import { HistorySidebar } from "../components/HistorySidebar";
 import { Button } from "~/components/ui/button";
 import { Textarea } from "~/components/ui/textarea";
 import { Skeleton } from "~/components/ui/skeleton";
+import TextHighlightMask from "~/components/TextHighlightMask";
 const PAGE_SIZE = 50;
 import {
   Form,
@@ -51,7 +52,6 @@ import {
 import { Modal, useModal } from "~/components/ModalCompat";
 import { isElectron } from "~/utils/electron";
 import { ImageUploaderRef } from "~/components/ImageUploader";
-import { motion } from "framer-motion";
 import {
   ResizableHandle,
   ResizablePanel,
@@ -272,6 +272,52 @@ function App() {
   useEffect(() => {
     checkWhitespaceDebounced(pending_translate_text);
   }, [pending_translate_text, checkWhitespaceDebounced]);
+  // 生成位置信息的函数
+  const generatePositionInfo = (
+    sourceText: string,
+    ast?: AST
+  ): AST | undefined => {
+    if (!ast || !sourceText) return ast;
+
+    // 递归处理 AST 节点
+    const processNode = (node: AST): AST => {
+      const processedNode: AST = { ...node };
+
+      // 处理当前节点的 tokens
+      if (node.tk && node.tk.length > 0) {
+        processedNode.tk = node.tk.map((token: Token, index: number, tokens: Token[]) => {
+          const processedToken: Token = { ...token };
+          
+          // 获取当前 token 的文本
+          const tokenText = token.w;
+          if (tokenText) {
+            // 计算前面所有 token 的总长度
+            const previousTokensLength = tokens.slice(0, index).reduce((sum, prevToken) => {
+              return sum + (prevToken.w?.length || 0);
+            }, 0);
+            
+            // 设置位置信息
+            processedToken.po = {
+              s: previousTokensLength,
+              e: previousTokensLength + tokenText.length
+            };
+          }
+          
+          return processedToken;
+        });
+      }
+
+      // 递归处理子节点
+      if (node.c && node.c.length > 0) {
+        processedNode.c = node.c.map((childNode: AST) => processNode(childNode));
+      }
+
+      return processedNode;
+    };
+
+    return processNode(ast);
+  };
+
   const onSubmit = async (data: TranslationFormData) => {
     try {
       let fullResponse = "";
@@ -301,6 +347,15 @@ function App() {
                     const translationData = JSON.parse(
                       jsonrepair(fullResponse)
                     ) as TranslationResult;
+                    
+                    // 生成位置信息
+                    if (translationData.a) {
+                      translationData.a = generatePositionInfo(
+                        form.getValues("text") || "",
+                        translationData.a
+                      );
+                    }
+                    
                     setBufferedTranslation(() => {
                       return translationData;
                     });
@@ -777,72 +832,5 @@ function App() {
   );
 }
 
-// 文本高亮遮罩组件
-const TextHighlightMask = ({
-  text,
-  position,
-}: {
-  text: string;
-  position: { s: number; e: number } | null;
-}) => {
-  if (!text || !position) return null;
-
-  // 获取指定位置的字符
-  const highlightedText = text.substring(position.s, position.e);
-
-  // 计算前面的文本
-  const beforeText = text.substring(0, position.s);
-
-  // 计算后面的文本
-  const afterText = text.substring(position.e);
-
-  return (
-    <div className="w-full h-full p-0">
-      <div className="w-full h-full bg-transparent">
-        {/* 使用绝对定位来覆盖textarea */}
-        <div className="absolute inset-0 py-1.5 px-3 pointer-events-none">
-          {/* 隐藏的textarea用于测量尺寸 */}
-          <Textarea
-            readOnly
-            value={text}
-            className="absolute inset-0 bg-transparent opacity-0 whitespace-pre-wrap break-words resize-none pointer-events-none"
-            style={{
-              fontFamily: "inherit",
-              fontSize: "inherit",
-              lineHeight: "inherit",
-              width: "100%",
-              height: "100%",
-            }}
-          />
-
-          {/* 高亮遮罩 */}
-          <div className="relative w-full h-full text-base  md:text-sm">
-            <div className="absolute inset-0 p-0 whitespace-pre-wrap break-words leading-normal">
-              {/* 前面的文本 */}
-              <span className="text-transparent inset-0 p-0 text-base  md:text-sm">
-                {beforeText}
-              </span>
-
-              {/* 高亮部分 */}
-              <motion.span
-                className="bg-red-100 text-red-800 text-base md:text-sm 2xl:text-base border-none bg-opacity-50 rounded px-0 py-0 inline-block align-baseline"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.3 }}
-              >
-                {highlightedText}
-              </motion.span>
-
-              {/* 后面的文本 */}
-              <span className="text-transparent inset-0 p-0 text-base  md:text-sm">
-                {afterText}
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
 export const HydrateFallback = HydrateFallbackTemplate;
 export default App;
