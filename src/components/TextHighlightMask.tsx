@@ -30,7 +30,7 @@ const TextHighlightMask = ({
           <Textarea
             readOnly
             value={text}
-            className="absolute inset-0 bg-transparent opacity-0 whitespace-pre-wrap break-words resize-none pointer-events-none h-60 text-base 2xl:text-lg"
+            className="absolute inset-0 bg-transparent opacity-0 whitespace-pre-wrap break-words resize-none pointer-events-none"
             style={{
               fontFamily: "inherit",
               fontSize: "inherit",
@@ -41,16 +41,16 @@ const TextHighlightMask = ({
           />
 
           {/* 高亮遮罩 */}
-          <div className="relative w-full h-full text-base 2xl:text-lg">
-            <div className="absolute inset-0 p-0 whitespace-pre-wrap break-words leading-normal">
+          <div className="relative w-full h-full text-bas md:text-sm 2xl:text-lg">
+            <div className="absolute inset-0 p-0 whitespace-pre-wrap break-words">
               {/* 前面的文本 */}
-              <span className="text-transparent inset-0 p-0 text-base 2xl:text-lg">
+              <span className="text-transparent inset-0 p-0 text-base md:text-sm 2xl:text-lg">
                 {beforeText}
               </span>
 
               {/* 高亮部分 */}
               <motion.span
-                className="bg-red-100 text-red-800 text-base 2xl:text-lg border-none bg-opacity-50 rounded px-0 py-0 inline-block align-baseline"
+                className="bg-red-100 text-red-800 text-base md:text-sm 2xl:text-lg border-none bg-opacity-50 rounded px-0 py-0 inline-block align-baseline"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.3 }}
@@ -59,7 +59,7 @@ const TextHighlightMask = ({
               </motion.span>
 
               {/* 后面的文本 */}
-              <span className="text-transparent inset-0 p-0 text-base 2xl:text-lg">
+              <span className="text-transparent inset-0 p-0 text-base md:text-sm 2xl:text-lg">
                 {afterText}
               </span>
             </div>
