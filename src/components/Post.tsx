@@ -8,7 +8,6 @@ import {
   FaComment,
   FaShare,
   FaBookmark,
-  FaEllipsisH,
   FaRetweet
 } from "react-icons/fa";
 import { useTranslation } from 'react-i18next';
@@ -49,6 +48,7 @@ const Post: React.FC<PostProps> = ({
     setTimeout(() => setLikeCountAnimating(false), 300);
 
     // Notify parent component about the like action
+    // Pass the desired state (opposite of current state)
     if (onLike) {
       onLike(post.id, !post.is_liked);
     }
@@ -76,13 +76,17 @@ const Post: React.FC<PostProps> = ({
         
         {/* Display images if any */}
         {post.image_urls && post.image_urls.length > 0 && (
-          <div className="grid grid-cols-2 gap-2 mt-3">
+          <div className={`grid gap-2 mt-3 ${
+            post.image_urls.length === 1 ? 'grid-cols-1' :
+            post.image_urls.length === 2 ? 'grid-cols-2' :
+            'grid-cols-2 md:grid-cols-3'
+          }`}>
             {post.image_urls.map((url, index) => (
               <img
                 key={index}
                 src={url}
                 alt={`Post image ${index + 1}`}
-                className="rounded-lg object-cover w-full h-48"
+                className="rounded-lg object-cover w-full h-32 md:h-48"
               />
             ))}
           </div>
@@ -95,17 +99,17 @@ const Post: React.FC<PostProps> = ({
   if (post.parent_post && post.content_type === 'quote') {
     return (
       <Card className="border-0 rounded-none border-b hover:bg-muted/50 transition-colors">
-        <CardContent className="p-4">
+        <CardContent className="p-3 md:p-4">
           {/* Header with user info */}
           <div className="flex items-start gap-3 mb-3">
-            <Avatar className="w-12 h-12 bg-primary">
+            <Avatar className="w-10 h-10 md:w-12 md:h-12 bg-primary">
               {post.user.avatar_url ? (
                 <AvatarImage
                   src={post.user.avatar_url}
                   alt={post.user.username}
                 />
               ) : (
-                <AvatarFallback className="text-white font-bold text-lg">
+                <AvatarFallback className="text-white font-bold text-sm md:text-lg">
                   {post.user.username.charAt(0).toUpperCase()}
                 </AvatarFallback>
               )}
@@ -113,10 +117,10 @@ const Post: React.FC<PostProps> = ({
             
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1">
-                <h3 className="font-semibold text-foreground">
+                <h3 className="font-semibold text-foreground text-sm md:text-base">
                   {post.user.username}
                 </h3>
-                <span className="text-muted-foreground text-sm">
+                <span className="text-muted-foreground text-xs md:text-sm">
                   · {formatTimeAgo(post.created_at)}
                 </span>
               </div>
@@ -124,7 +128,7 @@ const Post: React.FC<PostProps> = ({
               {/* Quote content */}
               {post.content && (
                 <div className="mb-3">
-                  <p className="text-foreground">{post.content}</p>
+                  <p className="text-foreground text-sm md:text-base">{post.content}</p>
                 </div>
               )}
               
@@ -132,7 +136,7 @@ const Post: React.FC<PostProps> = ({
               <Card className="border-l-4 border-primary bg-muted/30 mb-3">
                 <CardContent className="p-3">
                   <div className="flex items-start gap-2 mb-2">
-                    <Avatar className="w-8 h-8 bg-primary">
+                    <Avatar className="w-6 h-6 md:w-8 md:h-8 bg-primary">
                       {post.parent_post.user.avatar_url ? (
                         <AvatarImage
                           src={post.parent_post.user.avatar_url}
@@ -145,13 +149,13 @@ const Post: React.FC<PostProps> = ({
                       )}
                     </Avatar>
                     <div>
-                      <h4 className="font-semibold text-sm">{post.parent_post.user.username}</h4>
+                      <h4 className="font-semibold text-xs md:text-sm">{post.parent_post.user.username}</h4>
                       <p className="text-muted-foreground text-xs">
                         {formatTimeAgo(post.parent_post.created_at)}
                       </p>
                     </div>
                   </div>
-                  <div className="text-sm">
+                  <div className="text-xs md:text-sm">
                     {renderPostContent.call({ post: post.parent_post })}
                   </div>
                 </CardContent>
@@ -159,55 +163,54 @@ const Post: React.FC<PostProps> = ({
               
               {/* Action buttons */}
               <div className="flex items-center justify-between">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="rounded-full text-muted-foreground hover:text-blue-500 hover:bg-blue-100"
-                  onClick={onComment}
-                >
-                  <FaComment className="w-4 h-4 mr-1" />
-                  {t('Reply')} {post.comment_count > 0 && `(${post.comment_count})`}
-                </Button>
-                
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className={`${isReposted ? 'text-green-500 hover:text-green-600' : 'text-muted-foreground hover:text-green-500'} hover:bg-green-100`}
-                  onClick={onRepost}
-                >
-                  <FaRetweet className="w-4 h-4 mr-1" />
-                  {t('Quote')} {post.repost_count > 0 && `(${post.repost_count})`}
-                </Button>
-                
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className={`like-button ${post.is_liked ? 'text-red-500 hover:text-red-600 liked' : 'text-muted-foreground hover:text-red-500'} hover:bg-red-100 ${isAnimating ? 'animating' : ''}`}
-                  onClick={handleLike}
-                >
-                  <FaHeart className={`heart-icon w-4 h-4 mr-1 ${post.is_liked ? 'text-red-500' : ''}`} />
-                  <span className={`like-count ${likeCountAnimating ? 'animating' : ''}`}>
-                    {t('Like')} {post.like_count > 0 && `(${post.like_count})`}
-                  </span>
-                </Button>
-                
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className={`${isBookmarked ? 'text-yellow-500 hover:text-yellow-600' : 'text-muted-foreground hover:text-yellow-500'} hover:bg-yellow-100`}
-                  onClick={onBookmark}
-                >
-                  <FaBookmark className="w-4 h-4 mr-1" />
-                  {t('Bookmark')}
-                </Button>
-                
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="text-muted-foreground hover:text-foreground"
-                >
-                  <FaEllipsisH className="w-4 h-4" />
-                </Button>
+                <div className="flex items-center gap-1 sm:gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="rounded-full text-muted-foreground hover:text-blue-500 hover:bg-blue-100 p-2 h-auto"
+                    onClick={onComment}
+                  >
+                    <FaComment className="w-4 h-4" />
+                    {post.comment_count > 0 && (
+                      <span className="ml-1 text-xs">{post.comment_count}</span>
+                    )}
+                  </Button>
+                  
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className={`${isReposted ? 'text-green-500 hover:text-green-600' : 'text-muted-foreground hover:text-green-500'} hover:bg-green-100 p-2 h-auto`}
+                    onClick={onRepost}
+                  >
+                    <FaRetweet className="w-4 h-4" />
+                    {post.repost_count > 0 && (
+                      <span className="ml-1 text-xs">{post.repost_count}</span>
+                    )}
+                  </Button>
+                  
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className={`like-button ${post.is_liked ? 'text-red-500 hover:text-red-600 liked' : 'text-muted-foreground hover:text-red-500'} hover:bg-red-100 ${isAnimating ? 'animating' : ''} p-2 h-auto`}
+                    onClick={handleLike}
+                  >
+                    <FaHeart className={`heart-icon w-4 h-4 ${post.is_liked ? 'text-red-500' : ''}`} />
+                    {post.like_count > 0 && (
+                      <span className={`ml-1 like-count text-xs ${likeCountAnimating ? 'animating' : ''}`}>
+                        {post.like_count}
+                      </span>
+                    )}
+                  </Button>
+                  
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className={`${isBookmarked ? 'text-yellow-500 hover:text-yellow-600' : 'text-muted-foreground hover:text-yellow-500'} hover:bg-yellow-100 p-2 h-auto`}
+                    onClick={onBookmark}
+                  >
+                    <FaBookmark className="w-4 h-4" />
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
@@ -219,17 +222,17 @@ const Post: React.FC<PostProps> = ({
   // Regular post
   return (
     <Card className="border-0 rounded-none border-b hover:bg-muted/50 transition-colors">
-      <CardContent className="px-4">
+      <CardContent className="px-3 md:px-4 py-3">
         {/* Header with user info */}
         <div className="flex items-start gap-3 mb-3">
-          <Avatar className="w-12 h-12 bg-primary">
+          <Avatar className="w-10 h-10 md:w-12 md:h-12 bg-primary">
             {post.user.avatar_url ? (
               <AvatarImage
                 src={post.user.avatar_url}
                 alt={post.user.username}
               />
             ) : (
-              <AvatarFallback className="text-white font-bold text-lg">
+              <AvatarFallback className="text-white font-bold text-sm md:text-lg">
                 {post.user.username.charAt(0).toUpperCase()}
               </AvatarFallback>
             )}
@@ -237,10 +240,10 @@ const Post: React.FC<PostProps> = ({
           
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
-              <h3 className="font-semibold text-foreground">
+              <h3 className="font-semibold text-foreground text-sm md:text-base">
                 {post.user.username}
               </h3>
-              <span className="text-muted-foreground text-sm">
+              <span className="text-muted-foreground text-xs md:text-sm">
                 · {formatTimeAgo(post.created_at)}
               </span>
             </div>
@@ -249,56 +252,55 @@ const Post: React.FC<PostProps> = ({
             {renderPostContent()}
             
             {/* Action buttons */}
-            <div className="flex items-center justify-start gap-6 -translate-x-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-muted-foreground hover:text-blue-500 hover:bg-blue-50"
-                onClick={onComment}
-              >
-                <FaComment className="w-4 h-4 mr-1" />
-                {post.comment_count > 0 && `${post.comment_count}`}
-              </Button>
-              
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-muted-foreground hover:text-green-500 hover:bg-green-50"
-                onClick={onRepost}
-              >
-                <FaShare className="w-4 h-4 mr-1" />
-                {post.repost_count > 0 && `${post.repost_count}`}
-              </Button>
-              
-              <Button
-                variant="ghost"
-                size="sm"
-                className={`inline-flex like-button ${post.is_liked ? 'text-red-500 hover:text-red-600 liked' : 'text-muted-foreground hover:text-red-500'} hover:bg-red-50 ${isAnimating ? 'animating' : ''}`}
-                onClick={handleLike}
-              >
-                <FaHeart className={`heart-icon w-4 h-4 mr-1 ${post.is_liked ? 'text-red-500' : ''}`} />
-                <span className={`like-count ${likeCountAnimating ? 'animating' : ''}`}>
-                  {post.like_count > 0 && `${post.like_count}`}
-                </span>
-              </Button>
-              
-              <Button
-                variant="ghost"
-                size="sm"
-                className={`${isBookmarked ? 'text-yellow-500 hover:text-yellow-600' : 'text-muted-foreground hover:text-yellow-500'} hover:bg-yellow-50`}
-                onClick={onBookmark}
-              >
-                <FaBookmark className="w-4 h-4 mr-1" />
-                {/* {t('Bookmark')} */}
-              </Button>
-              
-              {/* <Button
-                variant="ghost"
-                size="icon"
-                className="text-muted-foreground hover:text-foreground"
-              >
-                <FaEllipsisH className="w-4 h-4" />
-              </Button> */}
+            <div className="flex items-center justify-between mt-3">
+              <div className="flex items-center gap-1 sm:gap-4 md:gap-6">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-muted-foreground hover:text-blue-500 hover:bg-blue-50 p-2 h-auto"
+                  onClick={onComment}
+                >
+                  <FaComment className="w-4 h-4" />
+                  {post.comment_count > 0 && (
+                    <span className="ml-1 text-xs md:text-sm">{post.comment_count}</span>
+                  )}
+                </Button>
+                
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-muted-foreground hover:text-green-500 hover:bg-green-50 p-2 h-auto"
+                  onClick={onRepost}
+                >
+                  <FaShare className="w-4 h-4" />
+                  {post.repost_count > 0 && (
+                    <span className="ml-1 text-xs md:text-sm">{post.repost_count}</span>
+                  )}
+                </Button>
+                
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className={`inline-flex like-button ${post.is_liked ? 'text-red-500 hover:text-red-600 liked' : 'text-muted-foreground hover:text-red-500'} hover:bg-red-50 ${isAnimating ? 'animating' : ''} p-2 h-auto`}
+                  onClick={handleLike}
+                >
+                  <FaHeart className={`heart-icon w-4 h-4 ${post.is_liked ? 'text-red-500' : ''}`} />
+                  {post.like_count > 0 && (
+                    <span className={`ml-1 like-count text-xs md:text-sm ${likeCountAnimating ? 'animating' : ''}`}>
+                      {post.like_count}
+                    </span>
+                  )}
+                </Button>
+                
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className={`${isBookmarked ? 'text-yellow-500 hover:text-yellow-600' : 'text-muted-foreground hover:text-yellow-500'} hover:bg-yellow-50 p-2 h-auto`}
+                  onClick={onBookmark}
+                >
+                  <FaBookmark className="w-4 h-4" />
+                </Button>
+              </div>
             </div>
           </div>
         </div>

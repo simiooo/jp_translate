@@ -30,8 +30,8 @@ const MyPostsPage: React.FC = () => {
   // Get current user
   const currentUser = useUser();
   
-  // Social store for batch like operations
-  const { addToLikeQueue, updatePostInList } = useSocialStore();
+  // Social store
+  const { } = useSocialStore();
 
   // Use ahooks useRequest for fetching user posts
   const {
@@ -102,19 +102,53 @@ const MyPostsPage: React.FC = () => {
     }
   );
 
-  // Handle post like/unlike with optimistic updates and batch processing
-  const handlePostLike = (postId: number, isLiked: boolean) => {
+  // Handle post like/unlike with optimistic updates
+  const handlePostLike = async (postId: number, isLiked: boolean) => {
     // Find the post in the current posts data
     const post = postsData?.posts.find(p => p.id === postId);
-    if (post) {
-      // Optimistic update - immediately update UI
-      updatePostInList(postId, {
-        is_liked: isLiked,
-        like_count: isLiked ? post.like_count + 1 : Math.max(0, post.like_count - 1)
-      });
+    if (!post) return;
 
-      // Add to batch queue
-      addToLikeQueue(postId, isLiked ? 'like' : 'unlike');
+    // Optimistic update - immediately update UI
+    const newIsLiked = isLiked;
+    const newLikeCount = newIsLiked ? post.like_count + 1 : Math.max(0, post.like_count - 1);
+    
+    // Update the post in the posts data immediately
+    const updatedPostsData = postsData ? {
+      ...postsData,
+      posts: postsData.posts.map(p =>
+        p.id === postId
+          ? { ...p, is_liked: newIsLiked, like_count: newLikeCount }
+          : p
+      )
+    } : undefined;
+
+    // Update the component state to trigger re-render
+    if (updatedPostsData) {
+      // Since we're using useRequest, we need to update the store's posts
+      useSocialStore.setState({ posts: updatedPostsData.posts });
+    }
+
+    try {
+      if (newIsLiked) {
+        await useSocialStore.getState().likePost(postId);
+      } else {
+        await useSocialStore.getState().unlikePost(postId);
+      }
+    } catch (error) {
+      console.error('Failed to toggle like:', error);
+      // Rollback on error
+      const rollbackPostsData = postsData ? {
+        ...postsData,
+        posts: postsData.posts.map(p =>
+          p.id === postId
+            ? { ...p, is_liked: post.is_liked, like_count: post.like_count }
+            : p
+        )
+      } : undefined;
+      
+      if (rollbackPostsData) {
+        useSocialStore.setState({ posts: rollbackPostsData.posts });
+      }
     }
   };
 
@@ -237,8 +271,8 @@ const MyPostsPage: React.FC = () => {
 
         {/* Main Content */}
         <div className="flex-1 min-w-0 border-x">
-          {/* Header */}
-          <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b p-4">
+          {/* Header - 只在非移动端显示 */}
+          <div className="hidden md:block sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b p-4">
             <div className="flex items-center justify-between">
               <h1 className="text-xl font-bold">{t("My Posts")}</h1>
             </div>
@@ -260,7 +294,7 @@ const MyPostsPage: React.FC = () => {
           <PostForm onSubmit={handlePostSubmit} />
 
           {/* Posts list */}
-          <div className="h-[calc(100vh-200px)]">
+          <div className="h-[calc(100vh-200px)] md:h-[calc(100vh-280px)]">
             <>
                 {isLoading ? (
                   <div className="space-y-1">
@@ -341,7 +375,7 @@ const MyPostsPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Right Sidebar */}
+        {/* Right Sidebar - 只在大屏幕显示 */}
         <SocialRightSidebar
           onFollow={handleFollowUser}
           onTrendClick={handleTrendClick}

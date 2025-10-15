@@ -60,19 +60,19 @@ const PostForm: React.FC<PostFormProps> = ({
 
   return (
     <Card className="border-0 rounded-none border-b">
-      <CardContent className="p-4">
+      <CardContent className="p-3 md:p-4">
         <div className="flex gap-3">
           {/* User avatar */}
-          <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center flex-shrink-0">
-            <span className="text-white font-bold text-lg">U</span>
+          <div className="w-10 h-10 md:w-12 md:h-12 bg-primary rounded-full flex items-center justify-center flex-shrink-0">
+            <span className="text-white font-bold text-sm md:text-lg">U</span>
           </div>
 
           {/* Form content */}
           <div className="flex-1 space-y-3">
             {/* Content type and visibility controls */}
-            <div className="flex items-center gap-2">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2">
               <Select value={contentType} onValueChange={setContentType}>
-                <SelectTrigger className="w-32">
+                <SelectTrigger className="w-full sm:w-32">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -83,7 +83,7 @@ const PostForm: React.FC<PostFormProps> = ({
               </Select>
               
               <Select value={visibility} onValueChange={setVisibility}>
-                <SelectTrigger className="w-32">
+                <SelectTrigger className="w-full sm:w-32">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -117,24 +117,28 @@ const PostForm: React.FC<PostFormProps> = ({
               value={content}
               onChange={(e) => setContent(e.target.value)}
               onKeyPress={handleKeyPress}
-              className="min-h-[80px] resize-none"
+              className="min-h-[80px] resize-none text-sm md:text-base"
               maxLength={280}
             />
 
             {/* Image preview */}
             {imageUrls.length > 0 && (
-              <div className="grid grid-cols-2 gap-2">
+              <div className={`grid gap-2 ${
+                imageUrls.length === 1 ? 'grid-cols-1' :
+                imageUrls.length === 2 ? 'grid-cols-2' :
+                'grid-cols-2 sm:grid-cols-3'
+              }`}>
                 {imageUrls.map((url, index) => (
                   <div key={index} className="relative">
                     <img
                       src={url}
                       alt={`Upload ${index + 1}`}
-                      className="w-full h-32 object-cover rounded-lg"
+                      className="w-full h-24 sm:h-32 object-cover rounded-lg"
                     />
                     <Button
                       variant="destructive"
                       size="sm"
-                      className="absolute top-2 right-2"
+                      className="absolute top-2 right-2 h-6 w-6 p-0 text-xs"
                       onClick={() => setImageUrls(imageUrls.filter((_, i) => i !== index))}
                     >
                       ×
@@ -145,11 +149,11 @@ const PostForm: React.FC<PostFormProps> = ({
             )}
 
             {/* Action buttons */}
-            <div className="flex items-center justify-between pt-2">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-2">
               <div className="flex items-center gap-2">
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
+                <Button
+                  variant="ghost"
+                  size="icon"
                   className="text-muted-foreground"
                   onClick={handleImageUpload}
                 >
@@ -163,7 +167,7 @@ const PostForm: React.FC<PostFormProps> = ({
                 </Button>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center justify-between sm:justify-end gap-2">
                 {/* Character count */}
                 <span className={`text-xs ${content.length > 260 ? 'text-red-500' : 'text-muted-foreground'}`}>
                   {content.length}/280
@@ -174,7 +178,7 @@ const PostForm: React.FC<PostFormProps> = ({
                   disabled={!content.trim()}
                   className="bg-primary hover:bg-primary/90"
                 >
-                  <FaPaperPlane className="w-4 h-4 mr-2" />
+                  <FaPaperPlane className="w-4 h-4 mr-2 hidden sm:inline" />
                   {parentPost ? t('Reply') : t('Publish')}
                 </Button>
               </div>

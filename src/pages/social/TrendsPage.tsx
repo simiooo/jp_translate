@@ -28,8 +28,8 @@ const TrendsPage: React.FC = () => {
     return hashtag ? decodeURIComponent(hashtag) : null;
   });
   
-  // Social store for batch like operations
-  const { addToLikeQueue, updatePostInList } = useSocialStore();
+  // Social store
+  const { } = useSocialStore();
 
   // Use ahooks useRequest for fetching trending hashtags
   const {
@@ -93,19 +93,54 @@ const TrendsPage: React.FC = () => {
     }
   );
 
-  // Handle post like/unlike with optimistic updates and batch processing
-  const handlePostLike = (postId: number, isLiked: boolean) => {
+  // Handle post like/unlike with optimistic updates
+  const handlePostLike = async (postId: number, isLiked: boolean) => {
     // Find the post in the current trending posts
     const post = trendingData?.posts.find(p => p.id === postId);
-    if (post) {
-      // Optimistic update - immediately update UI
-      updatePostInList(postId, {
-        is_liked: isLiked,
-        like_count: isLiked ? post.like_count + 1 : Math.max(0, post.like_count - 1)
-      });
+    if (!post) return;
 
-      // Add to batch queue
-      addToLikeQueue(postId, isLiked ? 'like' : 'unlike');
+    // Optimistic update - immediately update UI
+    const newIsLiked = isLiked;
+    const newLikeCount = newIsLiked ? post.like_count + 1 : Math.max(0, post.like_count - 1);
+    
+    // Update the post in the trending data immediately
+    const updatedTrendingData = trendingData ? {
+      ...trendingData,
+      posts: trendingData.posts.map(p =>
+        p.id === postId
+          ? { ...p, is_liked: newIsLiked, like_count: newLikeCount }
+          : p
+      )
+    } : undefined;
+
+    // Update the component state to trigger re-render
+    if (updatedTrendingData) {
+      // We need to update the component's state, but since we're using useRequest,
+      // we'll update the store's trendingPosts instead
+      useSocialStore.setState({ trendingPosts: updatedTrendingData.posts });
+    }
+
+    try {
+      if (newIsLiked) {
+        await useSocialStore.getState().likePost(postId);
+      } else {
+        await useSocialStore.getState().unlikePost(postId);
+      }
+    } catch (error) {
+      console.error('Failed to toggle like:', error);
+      // Rollback on error
+      const rollbackTrendingData = trendingData ? {
+        ...trendingData,
+        posts: trendingData.posts.map(p =>
+          p.id === postId
+            ? { ...p, is_liked: post.is_liked, like_count: post.like_count }
+            : p
+        )
+      } : undefined;
+      
+      if (rollbackTrendingData) {
+        useSocialStore.setState({ trendingPosts: rollbackTrendingData.posts });
+      }
     }
   };
 
@@ -205,8 +240,8 @@ const TrendsPage: React.FC = () => {
       <div className="flex h-full">
         {/* Main Content */}
         <div className="flex-1 min-w-0 border-x">
-          {/* Header */}
-          <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b p-4">
+          {/* Header - 只在非移动端显示 */}
+          <div className="hidden md:block sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b p-4">
             <div className="max-w-2xl mx-auto">
               <div className="flex items-center gap-3 mb-4">
                 <FaFire className="w-6 h-6 text-red-500" />
@@ -234,7 +269,7 @@ const TrendsPage: React.FC = () => {
               )}
               
               {/* Time range selector */}
-              <div className="flex gap-2">
+              <div className="flex gap-2 flex-wrap">
                 {(['1h', '24h', '7d', '30d'] as const).map((range) => (
                   <Button
                     key={range}
@@ -251,6 +286,47 @@ const TrendsPage: React.FC = () => {
                 ))}
               </div>
             </div>
+          </div>
+
+          {/* 移动端顶部导航 */}
+          <div className="md:hidden sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b p-4">
+            <div className="flex items-center gap-3">
+              <FaFire className="w-5 h-5 text-red-500" />
+              <h1 className="text-lg font-bold">{t("Current Trends")}</h1>
+            </div>
+            
+            {/* 移动端时间范围选择器 */}
+            <div className="mt-3 flex gap-2 overflow-x-auto">
+              {(['1h', '24h', '7d', '30d'] as const).map((range) => (
+                <Button
+                  key={range}
+                  variant={selectedTimeRange === range ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => handleTimeRangeChange(range)}
+                  className="flex-shrink-0"
+                >
+                  {range}
+                </Button>
+              ))}
+            </div>
+            
+            {/* 移动端选中的hashtag */}
+            {selectedHashtag && (
+              <div className="mt-3 p-2 bg-muted rounded-lg flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <FaHashtag className="w-3 h-3 text-primary" />
+                  <span className="text-sm font-medium">{selectedHashtag}</span>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleClearHashtag}
+                  className="h-6 px-2 text-xs"
+                >
+                  {t('Clear')}
+                </Button>
+              </div>
+            )}
           </div>
 
           {/* Error state */}
@@ -329,7 +405,7 @@ const TrendsPage: React.FC = () => {
           </div>
 
           {/* Trending Posts */}
-          <div className="min-h-[calc(100vh-200px)]">
+          <div className="min-h-[calc(100vh-200px)] md:min-h-[calc(100vh-280px)]">
             <div className="p-4 border-b">
               <div className="max-w-2xl mx-auto">
                 <h2 className="text-lg font-semibold flex items-center gap-2">
@@ -398,8 +474,8 @@ const TrendsPage: React.FC = () => {
                 </div>
                 {hasMore && (
                   <div className="p-4 text-center">
-                    <Button 
-                      onClick={loadMore} 
+                    <Button
+                      onClick={loadMore}
                       disabled={trendingLoading}
                       variant="outline"
                     >
@@ -412,8 +488,8 @@ const TrendsPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Right Sidebar - Placeholder for now */}
-        <div className="w-80 h-full bg-background border-l p-4">
+        {/* Right Sidebar - 只在大屏幕显示 */}
+        <div className="hidden lg:block w-80 h-full bg-background border-l p-4">
           <Card className="p-4">
             <div className="flex items-center gap-2 mb-3">
               <FaFire className="w-4 h-4 text-orange-500" />
