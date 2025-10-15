@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import Spinner from "@/components/Spinner";
 import { cn } from "@/lib/utils";
 import { useTranslation } from 'react-i18next';
 
@@ -154,7 +153,7 @@ export const HistorySidebar: React.FC<HistorySidebarProps> = ({
           </div>
         )}
         <CardContent className="flex-1 p-0 overflow-hidden">
-          {historyLoading ? (
+          {historyLoading && translations.length === 0 ? (
             <div className="space-y-4 p-4">
               {Array.from({ length: 5 }).map((_, i) => (
                 <div key={i} className="space-y-2">
@@ -218,8 +217,8 @@ export const HistorySidebar: React.FC<HistorySidebarProps> = ({
                             {record.source_text}
                           </div>
                           <div className="text-sm text-muted-foreground line-clamp-2">
-                            {typeof record.translated_text === 'object' 
-                              ? (record.translated_text as unknown as ParsedTranslation)?.translation 
+                            {typeof record.translated_text === 'object'
+                              ? (record.translated_text as unknown as ParsedTranslation)?.translation
                               : record.translated_text}
                           </div>
                         </div>
@@ -229,8 +228,14 @@ export const HistorySidebar: React.FC<HistorySidebarProps> = ({
                 }}
               </VList>
               {fetching && (
-                <div className="p-4 flex justify-center">
-                  <Spinner loading={true} />
+                <div className="space-y-4 p-4">
+                  {Array.from({ length: 3 }).map((_, i) => (
+                    <div key={i} className="space-y-2">
+                      <Skeleton className="h-4 w-full" />
+                      <Skeleton className="h-4 w-3/4" />
+                      <Skeleton className="h-3 w-1/2" />
+                    </div>
+                  ))}
                 </div>
               )}
               {!hasMore && translations.length > 0 && (
