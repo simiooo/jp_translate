@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useRequest } from "ahooks";
 import { useUser } from "~/store/auth";
-import { useNavigate } from "react-router";
+import { useNavigate } from "@tanstack/react-router";
 import { useTranslation } from 'react-i18next'
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -139,14 +139,14 @@ const NotificationsPage: React.FC = () => {
 
   const handleNotificationClick = (notification: Notification) => {
     if (notification.post) {
-      navigate(`/social/post/${notification.post.id}`);
+      navigate({ to: `/social/post/${notification.post.id}` });
     } else if (notification.user) {
-      navigate(`/profile/${notification.user.id}`);
+      navigate({ to: `/profile/${notification.user.id}` });
     }
   };
 
   const handleUserClick = (userId: number) => {
-    navigate(`/profile/${userId}`);
+    navigate({ to: `/profile/${userId}` });
   };
 
   const loadMore = () => {
@@ -165,7 +165,7 @@ const NotificationsPage: React.FC = () => {
         <div className="text-center">
           <h2 className="text-xl font-semibold mb-4">{t('Please login')}</h2>
           <p className="text-muted-foreground mb-6">{t('You need to login to view notifications')}</p>
-          <Button onClick={() => navigate('/login')}>
+          <Button onClick={() => navigate({ to: '/login' })}>
             {t('Login')}
           </Button>
         </div>
@@ -229,7 +229,7 @@ const NotificationsPage: React.FC = () => {
             <p className="text-muted-foreground mb-6">
               {t("When people interact with your posts, you'll see it here.")}
             </p>
-            <Button onClick={() => navigate('/social')}>
+            <Button onClick={() => navigate({ to: '/social' })}>
               {t("Start Sharing")}
             </Button>
           </Card>

@@ -154,7 +154,7 @@ export class EventSourceStream<T> {
       'Authorization': localStorage.getItem('Authorization') || '',
       ...this.options.headers
     };
-
+    
     fetch(this.url, {
       method: this.options?.method,
       body: this.options?.body,

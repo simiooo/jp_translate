@@ -21,7 +21,6 @@ import { Cursor } from "../components/Cursor";
 import { AstTokens } from "../components/AstTokens";
 import { IoImageOutline } from "react-icons/io5";
 import { createPortal } from "react-dom";
-import type { Route } from "./+types/Home";
 import Markdown from "react-markdown";
 import {
   alovaInstance,
@@ -73,16 +72,6 @@ import { Badge } from "~/components/ui/badge";
 import { isBrowser } from "~/utils/ssr";
 import { HydrateFallbackTemplate } from "~/components/HydrateFallbackTemplate";
 import { useTranslation } from "react-i18next";
-
-export function meta({}: Route.MetaArgs) {
-  return [
-    { title: "Japanese Learning By Translate" },
-    {
-      name: "apanese Learning By Translate",
-      content: "Welcome to apanese Learning By Translate!",
-    },
-  ];
-}
 
 function shouldRemoveWSCharacter(text?: string): boolean {
   if (!text) return false;

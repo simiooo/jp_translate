@@ -3,7 +3,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Input } from "../components/ui/input";
 import { Toast } from "../components/ToastCompat";
-import type { Route } from "./+types/RegisterPage";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card';
 import {
@@ -15,7 +14,7 @@ import {
   FormMessage,
 } from '~/components/ui/form';
 import { getErrorMessage, isStandardizedError } from "~/utils/request";
-import { useNavigate } from "react-router";
+import { useNavigate } from "@tanstack/react-router";
 import { HydrateFallbackTemplate } from "~/components/HydrateFallbackTemplate";
 import { useTranslation } from 'react-i18next';
 import { useAuthActions, useIsLoading } from '~/store/auth'
@@ -41,7 +40,7 @@ const registerSchema = z.object({
   path: ["confirmPassword"],
 });
 
-export function meta({}: Route.MetaArgs) {
+export function meta() {
   return [
     { title: "Register" },
     { name: "Register Page", content: "Welcome to Register Page" },
@@ -66,7 +65,7 @@ export default function RegisterPage({}: RegisterPageProps) {
   const onSubmit = async (data: z.infer<typeof registerSchema>) => {
     try {
       await register(data.username, data.email, data.password);
-      navigate('/')
+      navigate({ to: '/' })
     } catch (error) {
       console.log('Registration error:', error);
       
@@ -96,7 +95,7 @@ export default function RegisterPage({}: RegisterPageProps) {
   };
 
   const onSwitchToLogin =() => {
-    navigate('/login')
+    navigate({ to: '/login' })
   }
 
   return (

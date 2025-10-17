@@ -1,7 +1,7 @@
 import React, { useState, useRef, useCallback, useEffect } from "react";
 import { useRequest } from "ahooks";
 import { useUser } from "~/store/auth";
-import { useNavigate } from "react-router";
+import { useNavigate } from "@tanstack/react-router";
 import Spinner from "~/components/Spinner";
 import { VList, VListHandle } from "virtua";
 import { HydrateFallbackTemplate } from "~/components/HydrateFallbackTemplate";
@@ -252,7 +252,7 @@ const MyPostsPage: React.FC = () => {
           <div className="text-center">
             <h2 className="text-xl font-semibold mb-4">{t('Please login')}</h2>
             <p className="text-muted-foreground mb-6">{t('You need to login to view your posts')}</p>
-            <Button onClick={() => navigate('/login')}>
+            <Button onClick={() => navigate({ to: '/login' })}>
               {t('Login')}
             </Button>
           </div>

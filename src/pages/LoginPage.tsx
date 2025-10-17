@@ -3,7 +3,6 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
 import { Input } from '../components/ui/input'
 import { Toast } from '../components/ToastCompat'
-import type { Route } from "./+types/LoginPage";
 import { Button } from '~/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card';
 import {
@@ -14,7 +13,7 @@ import {
   FormLabel,
   FormMessage,
 } from '~/components/ui/form';
-import { useNavigate } from 'react-router';
+import { useNavigate } from '@tanstack/react-router';
 import { alovaInstance, getErrorMessage, isStandardizedError } from '~/utils/request';
 import { useRequest } from 'ahooks';
 import { HydrateFallbackTemplate } from '~/components/HydrateFallbackTemplate'
@@ -28,14 +27,6 @@ import {
   ErrCodeDailyLimitExceeded
 } from '~/types/errors'
 
-
-
-export function meta({}: Route.MetaArgs) {
-  return [
-    { title: "Login" },
-    { name: "description", content: "Welcome to Login Page!" },
-  ];
-}
 
 // Zod validation schema
 const loginSchema = z.object({
@@ -69,7 +60,7 @@ export default function LoginPage({ }: LoginPageProps) {
   const onSubmit = async (data: z.infer<typeof loginSchema>) => {
     try {
       await login(data.email, data.password);
-      navigate('/')
+      navigate({ to: '/' })
     } catch (error) {
       console.log('Login error:', error);
       
@@ -104,7 +95,7 @@ export default function LoginPage({ }: LoginPageProps) {
       if ("message" in data) {
         throw Error(String(data.message))
       }
-      navigate('/')
+      navigate({ to: '/' })
     } catch (error) {
       console.error('Auto login error:', error);
       
@@ -119,7 +110,7 @@ export default function LoginPage({ }: LoginPageProps) {
   );
 
   const onSwitchToRegister = () => {
-    navigate('/register')
+    navigate({ to: '/register' })
   }
 
   return (

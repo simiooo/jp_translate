@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useRequest } from "ahooks";
-import { useSearchParams } from "react-router";
+import { useSearch, useNavigate } from "@tanstack/react-router";
 import { useTranslation } from 'react-i18next'
 import { alovaInstance } from "~/utils/request";
 import { PostResponse, TrendingHashtagsResponse } from "~/types/social";
@@ -19,12 +19,13 @@ import { FaHashtag, FaFire, FaClock } from "react-icons/fa";
 
 const TrendsPage: React.FC = () => {
   const { t } = useTranslation();
-  const [searchParams, setSearchParams] = useSearchParams();
+  const search = useSearch({ from: '/social/trends' });
+  const navigate = useNavigate();
   const [selectedTimeRange, setSelectedTimeRange] = useState<'1h' | '24h' | '7d' | '30d'>('24h');
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [selectedHashtag, setSelectedHashtag] = useState<string | null>(() => {
-    const hashtag = searchParams.get('hashtag');
+    const hashtag = search.hashtag;
     return hashtag ? decodeURIComponent(hashtag) : null;
   });
   
@@ -183,19 +184,21 @@ const TrendsPage: React.FC = () => {
   const handleTrendClick = (trend: string) => {
     setSelectedHashtag(trend);
     setPage(1);
-    // Update URL parameter
-    const newParams = new URLSearchParams(searchParams);
-    newParams.set('hashtag', encodeURIComponent(trend));
-    setSearchParams(newParams);
+    // Navigate with new search parameter
+    navigate({
+      to: '/social/trends',
+      search: { hashtag: encodeURIComponent(trend) }
+    });
   };
 
   const handleClearHashtag = () => {
     setSelectedHashtag(null);
     setPage(1);
-    // Remove hashtag from URL
-    const newParams = new URLSearchParams(searchParams);
-    newParams.delete('hashtag');
-    setSearchParams(newParams);
+    // Navigate without hashtag parameter
+    navigate({
+      to: '/social/trends',
+      search: {}
+    });
   };
 
   const handleTimeRangeChange = (timeRange: '1h' | '24h' | '7d' | '30d') => {

@@ -6,7 +6,7 @@ import Spinner from "~/components/Spinner";
 import { VList, VListHandle } from "virtua";
 import { HydrateFallbackTemplate } from "~/components/HydrateFallbackTemplate";
 import { useTranslation } from 'react-i18next'
-import { useNavigate } from "react-router";
+import { useNavigate } from "@tanstack/react-router";
 
 // Store
 import { useSocialStore } from "~/store/social";
@@ -209,7 +209,7 @@ const VocabularyHomePage: React.FC = () => {
   };
 
   const handleUserClick = (user: UserResponse) => {
-    navigate(`/profile/${user.id}`);
+    navigate({ to: `/profile/${user.id}` });
   };
 
   const handleFollowUserSidebar = (userId: string) => {

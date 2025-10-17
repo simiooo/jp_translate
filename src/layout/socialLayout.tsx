@@ -1,4 +1,4 @@
-import { Outlet } from "react-router";
+import { Outlet } from "@tanstack/react-router";
 import { useState } from "react";
 import SocialSidebar from "~/components/SocialSidebar";
 import { Button } from "@/components/ui/button";

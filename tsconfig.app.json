@@ -1,19 +1,19 @@
 {
   "compilerOptions": {
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
-    "target": "ES2020",
+    "target": "ES2022",
     "useDefineForClassFields": true,
-    "lib": ["ES2021", "DOM", "DOM.Iterable"],
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "module": "ESNext",
     "skipLibCheck": true,
-    "rootDirs": [".", "./.react-router/types"],
+    "rootDirs": [".", "./src"],
     "paths": {
       "~/*": ["./src/*"],
       "@/*": ["./src/*"]
     },
     "baseUrl": ".",
     /* Bundler mode */
-    "moduleResolution": "bundler",
+    "moduleResolution": "Bundler",
     "allowImportingTsExtensions": true,
     "isolatedModules": true,
     "moduleDetection": "force",
@@ -23,6 +23,7 @@
 
     /* Linting */
     "strict": true,
+    "strictNullChecks": true,
     "noUnusedLocals": false,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
@@ -31,7 +32,6 @@
   "include": [
     "**/*",
     "**/.server/**/*",
-    "**/.client/**/*",
-    ".react-router/types/**/*"
+    "**/.client/**/*"
   ]
 }
