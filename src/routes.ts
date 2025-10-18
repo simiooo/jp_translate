@@ -6,6 +6,9 @@ export default [
     route("login", "./pages/LoginPage.tsx"),
     route("register", "./pages/RegisterPage.tsx"),
     route("profile", "./pages/ProfilePage.tsx"),
+    route("sessions", "./pages/SessionsPage.tsx"),
+    route("devices", "./pages/DevicesPage.tsx"),
+    route("password-reset", "./pages/PasswordResetPage.tsx"),
     route("recognize", "./pages/Recognize.tsx"),
     layout("./layout/socialLayout.tsx", [
       route("social", "./pages/social/HomePage.tsx", { index: true }),

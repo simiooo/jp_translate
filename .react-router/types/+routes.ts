@@ -23,6 +23,15 @@ type Pages = {
   "/profile": {
     params: {};
   };
+  "/sessions": {
+    params: {};
+  };
+  "/devices": {
+    params: {};
+  };
+  "/password-reset": {
+    params: {};
+  };
   "/recognize": {
     params: {};
   };
@@ -52,11 +61,11 @@ type Pages = {
 type RouteFiles = {
   "root.tsx": {
     id: "root";
-    page: "/" | "/login" | "/register" | "/profile" | "/recognize" | "/social" | "/social/my-posts" | "/social/recommended" | "/social/notifications" | "/social/following" | "/social/followers" | "/social/trends";
+    page: "/" | "/login" | "/register" | "/profile" | "/sessions" | "/devices" | "/password-reset" | "/recognize" | "/social" | "/social/my-posts" | "/social/recommended" | "/social/notifications" | "/social/following" | "/social/followers" | "/social/trends";
   };
   "./layout/rootLayout.tsx": {
     id: "layout/rootLayout";
-    page: "/" | "/login" | "/register" | "/profile" | "/recognize" | "/social" | "/social/my-posts" | "/social/recommended" | "/social/notifications" | "/social/following" | "/social/followers" | "/social/trends";
+    page: "/" | "/login" | "/register" | "/profile" | "/sessions" | "/devices" | "/password-reset" | "/recognize" | "/social" | "/social/my-posts" | "/social/recommended" | "/social/notifications" | "/social/following" | "/social/followers" | "/social/trends";
   };
   "./pages/Home.tsx": {
     id: "pages/Home";
@@ -73,6 +82,18 @@ type RouteFiles = {
   "./pages/ProfilePage.tsx": {
     id: "pages/ProfilePage";
     page: "/profile";
+  };
+  "./pages/SessionsPage.tsx": {
+    id: "pages/SessionsPage";
+    page: "/sessions";
+  };
+  "./pages/DevicesPage.tsx": {
+    id: "pages/DevicesPage";
+    page: "/devices";
+  };
+  "./pages/PasswordResetPage.tsx": {
+    id: "pages/PasswordResetPage";
+    page: "/password-reset";
   };
   "./pages/Recognize.tsx": {
     id: "pages/Recognize";
@@ -119,6 +140,9 @@ type RouteModules = {
   "pages/LoginPage": typeof import("./src/./pages/LoginPage.tsx");
   "pages/RegisterPage": typeof import("./src/./pages/RegisterPage.tsx");
   "pages/ProfilePage": typeof import("./src/./pages/ProfilePage.tsx");
+  "pages/SessionsPage": typeof import("./src/./pages/SessionsPage.tsx");
+  "pages/DevicesPage": typeof import("./src/./pages/DevicesPage.tsx");
+  "pages/PasswordResetPage": typeof import("./src/./pages/PasswordResetPage.tsx");
   "pages/Recognize": typeof import("./src/./pages/Recognize.tsx");
   "layout/socialLayout": typeof import("./src/./layout/socialLayout.tsx");
   "pages/social/HomePage": typeof import("./src/./pages/social/HomePage.tsx");

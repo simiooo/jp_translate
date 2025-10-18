@@ -5,7 +5,7 @@ import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router'
 import { useRequest } from 'ahooks'
 
-import { AvatarUploadResponse } from '../types/auth'
+import { AvatarUploadResponse, EmailVerificationStatus } from '../types/auth'
 import { alovaInstance, getErrorMessage, isStandardizedError } from '../utils/request'
 import { Toast } from '../components/ToastCompat'
 import { useUser, useProfile, useAuthActions, useIsLoading } from '~/store/auth'
@@ -93,11 +93,12 @@ export default function ProfilePage() {
   const navigate = useNavigate()
   const user = useUser()
   const profile = useProfile()
-  const { logout, fetchProfile } = useAuthActions()
+  const { logout, fetchProfile, getEmailVerificationStatus, resendVerification } = useAuthActions()
   const isLoading = useIsLoading()
   const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false)
   const [isAvatarUploading, setIsAvatarUploading] = useState(false)
   const [isAvatarDeleting, setIsAvatarDeleting] = useState(false)
+  const [emailVerificationStatus, setEmailVerificationStatus] = useState<EmailVerificationStatus | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const form = useForm<z.infer<typeof changePasswordSchema>>({
@@ -141,12 +142,34 @@ export default function ProfilePage() {
     }
   )
 
-  // Fetch profile data only once when component mounts
+  // Fetch profile data and email verification status
   useEffect(() => {
     if (!profile && !profileLoading && !profileError) {
       fetchProfileData()
     }
+    fetchEmailVerificationStatus()
   }, []) // Empty dependency array ensures this runs only once on mount
+
+  // Fetch email verification status
+  const fetchEmailVerificationStatus = async () => {
+    try {
+      const status = await getEmailVerificationStatus()
+      setEmailVerificationStatus(status)
+    } catch (error) {
+      console.error('Failed to fetch email verification status:', error)
+    }
+  }
+
+  // Handle resend verification email
+  const handleResendVerification = async () => {
+    try {
+      await resendVerification()
+      Toast.success(t('Verification email sent successfully'))
+    } catch (error) {
+      console.error('Failed to resend verification email:', error)
+      Toast.error(t('Failed to send verification email'))
+    }
+  }
 
   // Handle password change
   const onPasswordSubmit = async (data: z.infer<typeof changePasswordSchema>) => {
@@ -418,11 +441,49 @@ export default function ProfilePage() {
               </div>
               <div>
                 <label className="text-sm font-medium text-muted-foreground">{t('Email')}</label>
-                <p className="text-lg">{user?.email}</p>
+                <div className="flex items-center gap-2">
+                  <p className="text-lg">{user?.email}</p>
+                  {emailVerificationStatus && (
+                    <Badge variant={emailVerificationStatus.email_verified ? "default" : "secondary"}>
+                      {emailVerificationStatus.email_verified ? t('Verified') : t('Unverified')}
+                    </Badge>
+                  )}
+                </div>
+                {emailVerificationStatus && !emailVerificationStatus.email_verified && (
+                  <div className="mt-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleResendVerification}
+                      disabled={isLoading}
+                    >
+                      {t('Resend Verification Email')}
+                    </Button>
+                  </div>
+                )}
               </div>
               <div>
                 <label className="text-sm font-medium text-muted-foreground">{t('User ID')}</label>
                 <p className="text-lg">{user?.id}</p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-muted-foreground">{t('Account Management')}</label>
+                <div className="flex gap-2 mt-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => navigate('/sessions')}
+                  >
+                    {t('Manage Sessions')}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => navigate('/devices')}
+                  >
+                    {t('Manage Devices')}
+                  </Button>
+                </div>
               </div>
             </div>
             <Separator />
