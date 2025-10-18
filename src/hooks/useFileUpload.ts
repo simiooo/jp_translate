@@ -6,6 +6,7 @@ import { alovaInstance, getErrorMessage, isStandardizedError } from '~/utils/req
 import { FileRecord } from '~/types/file';
 import humps from 'humps'
 import { useTranslation } from 'react-i18next';
+import { createObjectURLForObject, revokeObjectURLWithUrl } from '~/utils/isomorphic';
 // 文件状态类型
 export type FileStatus = '待上传' | '上传中' | '上传失败' | '上传成功';
 
@@ -252,7 +253,7 @@ export const useFileUpload = (options: UseFileUploadOptions = {}): UseFileUpload
       ObjectKey: '',
       ContentType: file.type,
       FileSize: file.size,
-      URL: URL.createObjectURL(file),
+      URL: createObjectURLForObject(file),
       UploadedAt: new Date().toISOString(),
       uid,
       status: '上传中',
@@ -287,7 +288,7 @@ export const useFileUpload = (options: UseFileUploadOptions = {}): UseFileUpload
       if (fileToRemove) {
         // 清理 blob URL
         if (fileToRemove.URL && fileToRemove.URL.startsWith('blob:')) {
-          URL.revokeObjectURL(fileToRemove.URL);
+          revokeObjectURLWithUrl(fileToRemove.URL);
         }
         
         const removedItem = { ...fileToRemove, status: '待上传' as FileStatus };
@@ -318,7 +319,7 @@ export const useFileUpload = (options: UseFileUploadOptions = {}): UseFileUpload
     // 清理所有 blob URLs
     fileListRef.current.forEach(file => {
       if (file.URL && file.URL.startsWith('blob:')) {
-        URL.revokeObjectURL(file.URL);
+        revokeObjectURLWithUrl(file.URL);
       }
     });
     

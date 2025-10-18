@@ -20,8 +20,12 @@ import {
 import { Cursor } from "../components/Cursor";
 import { AstTokens } from "../components/AstTokens";
 import { IoImageOutline } from "react-icons/io5";
-import { createPortal } from "react-dom";
 import Markdown from "react-markdown";
+import {
+  getLocation,
+  createObjectURLForObject,
+  createAudioWithSrc
+} from "~/utils/isomorphic";
 import {
   alovaInstance,
   alovaBlobInstance,
@@ -69,7 +73,6 @@ import {
 } from "~/components/ui/carousel";
 import { Card, CardContent } from "~/components/ui/card";
 import { Badge } from "~/components/ui/badge";
-import { isBrowser } from "~/utils/ssr";
 import { HydrateFallbackTemplate } from "~/components/HydrateFallbackTemplate";
 import { useTranslation } from "react-i18next";
 
@@ -135,6 +138,7 @@ function App() {
   });
   useEffect(() => {
     const [file] = fileList;
+    const location = getLocation();
     form.setValue(
       "imgURL",
       file?.ObjectKey
@@ -315,7 +319,7 @@ function App() {
       const sse = createSSEStream(
         new URL(
           "/api/translation",
-          isElectron() ? "https://risureader.top" : location.origin
+          isElectron() ? "https://risureader.top" : getLocation().origin
         ).toString(),
         {
           method: "POST",
@@ -439,8 +443,8 @@ function App() {
         const audioBlob = await alovaBlobInstance.Post<Blob>("/api/tts", {
           text,
         });
-        const audioUrl = URL.createObjectURL(audioBlob);
-        const audio = new Audio(audioUrl);
+        const audioUrl = createObjectURLForObject(audioBlob);
+        const audio = createAudioWithSrc(audioUrl);
         await audio.play();
       } catch (error) {
         console.error("TTS error:", error);
@@ -776,23 +780,6 @@ function App() {
                     </ResizablePanel>
                   </ResizablePanelGroup>
                 </div>
-
-                {isBrowser() &&
-                  createPortal(
-                    loading && (
-                      <div
-                        className="
-          absolute
-          left-1/2
-          top-1/2
-          z-30
-          -translate-x-1/2
-          -translate-y-1/2
-          "
-                      ></div>
-                    ),
-                    document.documentElement
-                  )}
               </div>
             </form>
           </Form>
