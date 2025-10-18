@@ -6,6 +6,7 @@ declare module "react-router" {
   interface Register {
     pages: Pages
     routeFiles: RouteFiles
+    routeModules: RouteModules
   }
 }
 
@@ -109,4 +110,22 @@ type RouteFiles = {
     id: "pages/social/TrendsPage";
     page: "/social/trends";
   };
+};
+
+type RouteModules = {
+  "root": typeof import("./src/root.tsx");
+  "layout/rootLayout": typeof import("./src/./layout/rootLayout.tsx");
+  "pages/Home": typeof import("./src/./pages/Home.tsx");
+  "pages/LoginPage": typeof import("./src/./pages/LoginPage.tsx");
+  "pages/RegisterPage": typeof import("./src/./pages/RegisterPage.tsx");
+  "pages/ProfilePage": typeof import("./src/./pages/ProfilePage.tsx");
+  "pages/Recognize": typeof import("./src/./pages/Recognize.tsx");
+  "layout/socialLayout": typeof import("./src/./layout/socialLayout.tsx");
+  "pages/social/HomePage": typeof import("./src/./pages/social/HomePage.tsx");
+  "pages/social/MyPostsPage": typeof import("./src/./pages/social/MyPostsPage.tsx");
+  "pages/social/RecommendedPage": typeof import("./src/./pages/social/RecommendedPage.tsx");
+  "pages/social/NotificationsPage": typeof import("./src/./pages/social/NotificationsPage.tsx");
+  "pages/social/FollowingPage": typeof import("./src/./pages/social/FollowingPage.tsx");
+  "pages/social/FollowersPage": typeof import("./src/./pages/social/FollowersPage.tsx");
+  "pages/social/TrendsPage": typeof import("./src/./pages/social/TrendsPage.tsx");
 };
