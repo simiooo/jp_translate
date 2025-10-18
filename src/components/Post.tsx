@@ -76,13 +76,17 @@ const Post: React.FC<PostProps> = ({
         
         {/* Display images if any */}
         {post.image_urls && post.image_urls.length > 0 && (
-          <div className="grid grid-cols-2 gap-2 mt-3">
+          <div className={`grid gap-2 mt-3 ${
+            post.image_urls.length === 1 ? 'grid-cols-1' :
+            post.image_urls.length === 2 ? 'grid-cols-2' :
+            'grid-cols-2 md:grid-cols-3'
+          }`}>
             {post.image_urls.map((url, index) => (
               <img
                 key={index}
                 src={url}
                 alt={`Post image ${index + 1}`}
-                className="rounded-lg object-cover w-full h-48"
+                className="rounded-lg object-cover w-full h-32 md:h-48"
               />
             ))}
           </div>
@@ -98,7 +102,7 @@ const Post: React.FC<PostProps> = ({
         <CardContent className="p-4">
           {/* Header with user info */}
           <div className="flex items-start gap-3 mb-3">
-            <Avatar className="w-12 h-12 bg-primary">
+            <Avatar className="w-10 h-10 md:w-12 md:h-12 bg-primary">
               {post.user.avatar_url ? (
                 <AvatarImage
                   src={post.user.avatar_url}
@@ -132,7 +136,7 @@ const Post: React.FC<PostProps> = ({
               <Card className="border-l-4 border-primary bg-muted/30 mb-3">
                 <CardContent className="p-3">
                   <div className="flex items-start gap-2 mb-2">
-                    <Avatar className="w-8 h-8 bg-primary">
+                   <Avatar className="w-6 h-6 md:w-8 md:h-8 bg-primary">
                       {post.parent_post.user.avatar_url ? (
                         <AvatarImage
                           src={post.parent_post.user.avatar_url}
@@ -222,7 +226,7 @@ const Post: React.FC<PostProps> = ({
       <CardContent className="px-4">
         {/* Header with user info */}
         <div className="flex items-start gap-3 mb-3">
-          <Avatar className="w-12 h-12 bg-primary">
+          <Avatar className="w-10 h-10 md:w-12 md:h-12 bg-primary">
             {post.user.avatar_url ? (
               <AvatarImage
                 src={post.user.avatar_url}
@@ -249,15 +253,17 @@ const Post: React.FC<PostProps> = ({
             {renderPostContent()}
             
             {/* Action buttons */}
-            <div className="flex items-center justify-start gap-6 -translate-x-2">
+            <div className="flex items-center justify-start gap-2 md:gap-6 -translate-x-2">
               <Button
                 variant="ghost"
                 size="sm"
                 className="text-muted-foreground hover:text-blue-500 hover:bg-blue-50"
                 onClick={onComment}
               >
-                <FaComment className="w-4 h-4 mr-1" />
-                {post.comment_count > 0 && `${post.comment_count}`}
+                <FaComment className="w-4 h-4 md:mr-1" />
+                {post.comment_count > 0 && (
+                  <span className="hidden md:inline">{post.comment_count}</span>
+                )}
               </Button>
               
               <Button
@@ -266,8 +272,10 @@ const Post: React.FC<PostProps> = ({
                 className="text-muted-foreground hover:text-green-500 hover:bg-green-50"
                 onClick={onRepost}
               >
-                <FaShare className="w-4 h-4 mr-1" />
-                {post.repost_count > 0 && `${post.repost_count}`}
+                <FaShare className="w-4 h-4 md:mr-1" />
+                {post.repost_count > 0 && (
+                  <span className="hidden md:inline">{post.repost_count}</span>
+                )}
               </Button>
               
               <Button
@@ -276,8 +284,8 @@ const Post: React.FC<PostProps> = ({
                 className={`inline-flex like-button ${post.is_liked ? 'text-red-500 hover:text-red-600 liked' : 'text-muted-foreground hover:text-red-500'} hover:bg-red-50 ${isAnimating ? 'animating' : ''}`}
                 onClick={handleLike}
               >
-                <FaHeart className={`heart-icon w-4 h-4 mr-1 ${post.is_liked ? 'text-red-500' : ''}`} />
-                <span className={`like-count ${likeCountAnimating ? 'animating' : ''}`}>
+                <FaHeart className={`heart-icon w-4 h-4 md:mr-1 ${post.is_liked ? 'text-red-500' : ''}`} />
+                <span className={`like-count hidden md:inline ${likeCountAnimating ? 'animating' : ''}`}>
                   {post.like_count > 0 && `${post.like_count}`}
                 </span>
               </Button>
@@ -288,17 +296,8 @@ const Post: React.FC<PostProps> = ({
                 className={`${isBookmarked ? 'text-yellow-500 hover:text-yellow-600' : 'text-muted-foreground hover:text-yellow-500'} hover:bg-yellow-50`}
                 onClick={onBookmark}
               >
-                <FaBookmark className="w-4 h-4 mr-1" />
-                {/* {t('Bookmark')} */}
+                <FaBookmark className="w-4 h-4" />
               </Button>
-              
-              {/* <Button
-                variant="ghost"
-                size="icon"
-                className="text-muted-foreground hover:text-foreground"
-              >
-                <FaEllipsisH className="w-4 h-4" />
-              </Button> */}
             </div>
           </div>
         </div>

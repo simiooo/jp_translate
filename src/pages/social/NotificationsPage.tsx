@@ -188,15 +188,15 @@ const NotificationsPage: React.FC = () => {
   }
 
   return (
-    <div className="p-6">
+    <div className="p-4 md:p-6">
       <div className="max-w-2xl mx-auto">
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold flex items-center gap-3">
-            <FaBell className="w-6 h-6" />
+          <h1 className="text-xl md:text-2xl font-bold flex items-center gap-3">
+            <FaBell className="w-5 h-5 md:w-6 md:h-6" />
             {t("Notifications")}
           </h1>
           <div className="flex items-center gap-2 text-muted-foreground">
-            <span>{notifications.filter(n => !n.is_read).length} {t('unread')}</span>
+            <span className="text-sm md:text-base">{notifications.filter(n => !n.is_read).length} {t('unread')}</span>
           </div>
         </div>
 
@@ -204,9 +204,9 @@ const NotificationsPage: React.FC = () => {
           // Loading skeleton
           <div className="space-y-4">
             {Array.from({ length: 5 }).map((_, i) => (
-              <Card key={i} className="p-4">
-                <div className="flex items-start gap-4">
-                  <Skeleton className="w-10 h-10 rounded-full" />
+              <Card key={i} className="p-3 md:p-4">
+                <div className="flex items-start gap-3 md:gap-4">
+                  <Skeleton className="w-8 h-8 md:w-10 md:h-10 rounded-full" />
                   <div className="flex-1 space-y-2">
                     <Skeleton className="h-4 w-3/4" />
                     <Skeleton className="h-3 w-1/2" />
@@ -218,14 +218,14 @@ const NotificationsPage: React.FC = () => {
           </div>
         ) : notifications.length === 0 ? (
           // Empty state
-          <Card className="p-8 text-center">
-            <div className="w-16 h-16 mx-auto mb-4 text-muted-foreground opacity-50">
+          <Card className="p-6 md:p-8 text-center">
+            <div className="w-12 h-12 md:w-16 md:h-16 mx-auto mb-4 text-muted-foreground opacity-50">
               <FaBell className="w-full h-full" />
             </div>
             <h3 className="text-lg font-medium mb-2">
               {t("No notifications yet")}
             </h3>
-            <p className="text-muted-foreground mb-6">
+            <p className="text-muted-foreground mb-6 text-sm md:text-base">
               {t("When people interact with your posts, you'll see it here.")}
             </p>
             <Button onClick={() => navigate('/social')}>
@@ -236,23 +236,23 @@ const NotificationsPage: React.FC = () => {
           // Notifications list
           <div className="space-y-2">
             {notifications.map((notification) => (
-              <Card 
-                key={notification.id} 
-                className={`p-4 hover:bg-muted/50 transition-colors cursor-pointer ${
+              <Card
+                key={notification.id}
+                className={`p-3 md:p-4 hover:bg-muted/50 transition-colors cursor-pointer ${
                   !notification.is_read ? 'border-l-4 border-l-primary' : ''
                 }`}
                 onClick={() => handleNotificationClick(notification)}
               >
-                <div className="flex items-start gap-4">
-                  <div className="mt-1">
+                <div className="flex items-start gap-3 md:gap-4">
+                  <div className="mt-0.5 md:mt-1">
                     {getNotificationIcon(notification.type)}
                   </div>
                   
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-2">
-                      <div className="flex-1">
-                        <p className="text-sm">
-                          <span 
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs md:text-sm">
+                          <span
                             className="font-semibold cursor-pointer hover:underline"
                             onClick={(e) => {
                               e.stopPropagation();
@@ -265,13 +265,13 @@ const NotificationsPage: React.FC = () => {
                         </p>
                         
                         {notification.post && (
-                          <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                          <p className="text-xs md:text-sm text-muted-foreground mt-1 line-clamp-2">
                             "{notification.post.content}"
                           </p>
                         )}
                       </div>
                       
-                      <div className="flex items-center gap-1 text-xs text-muted-foreground whitespace-nowrap">
+                      <div className="flex items-center gap-1 text-xs text-muted-foreground whitespace-nowrap flex-shrink-0 ml-2">
                         <FaClock className="w-3 h-3" />
                         {formatTimeAgo(notification.created_at)}
                       </div>
@@ -283,8 +283,8 @@ const NotificationsPage: React.FC = () => {
             
             {hasMore && (
               <div className="text-center pt-4">
-                <Button 
-                  onClick={loadMore} 
+                <Button
+                  onClick={loadMore}
                   disabled={notificationsLoading}
                   variant="outline"
                 >

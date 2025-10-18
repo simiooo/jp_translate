@@ -74,21 +74,21 @@ const SocialRightSidebar: React.FC<SocialRightSidebarProps> = ({
           <CardContent className="space-y-4">
             {recommendedUsers.map((user) => (
               <div key={user.id} className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 flex-1 min-w-0">
                   <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center flex-shrink-0">
                       <span className="text-white font-bold text-sm">
                         {user.username.charAt(0).toUpperCase()}
                       </span>
                     </div>
-                    <div className="min-w-0">
+                    <div className="min-w-0 flex-1">
                       <p className="font-semibold text-sm truncate">{user.username}</p>
-                      <p className="text-muted-foreground text-xs">@{user.username}</p>
+                      <p className="text-muted-foreground text-xs truncate">@{user.username}</p>
                     </div>
                 </div>
                 <Button
                   variant="outline"
                   size="sm"
-                  className="text-xs"
+                  className="text-xs flex-shrink-0 ml-2"
                   onClick={() => onFollow?.(user.id.toString())}
                 >
                   <FaUserPlus className="w-3 h-3 mr-1" />
@@ -121,7 +121,7 @@ const SocialRightSidebar: React.FC<SocialRightSidebarProps> = ({
                       {index + 1} · 趋势
                     </span>
                   </div>
-                  <p className="font-semibold text-foreground">#{trend.hashtag.name}</p>
+                  <p className="font-semibold text-foreground truncate">#{trend.hashtag.name}</p>
                   <p className="text-muted-foreground text-xs">{trend.post_count} 推文</p>
                 </div>
               ))

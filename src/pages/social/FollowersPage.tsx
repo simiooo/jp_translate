@@ -138,17 +138,17 @@ const FollowersPage: React.FC = () => {
   }
 
   return (
-    <div className="p-6">
+    <div className="p-4 md:p-6">
       <div className="max-w-2xl mx-auto">
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold">
-            {userId && parseInt(userId) !== currentUser?.id 
-              ? t("User's Followers") 
+          <h1 className="text-xl md:text-2xl font-bold">
+            {userId && parseInt(userId) !== currentUser?.id
+              ? t("User's Followers")
               : t("My Followers")}
           </h1>
           <div className="flex items-center gap-2 text-muted-foreground">
             <FaUserFriends className="w-4 h-4" />
-            <span>{followersData?.pagination?.total || 0} {t('followers')}</span>
+            <span className="text-sm md:text-base">{followersData?.pagination?.total || 0} {t('followers')}</span>
           </div>
         </div>
 
@@ -157,27 +157,27 @@ const FollowersPage: React.FC = () => {
           <div className="space-y-4">
             {Array.from({ length: 5 }).map((_, i) => (
               <Card key={i} className="p-4">
-                <div className="flex items-center gap-4">
-                  <Skeleton className="w-12 h-12 rounded-full" />
+                <div className="flex items-center gap-3 md:gap-4">
+                  <Skeleton className="w-10 h-10 md:w-12 md:h-12 rounded-full" />
                   <div className="flex-1 space-y-2">
-                    <Skeleton className="h-4 w-32" />
-                    <Skeleton className="h-3 w-24" />
+                    <Skeleton className="h-4 w-24 md:w-32" />
+                    <Skeleton className="h-3 w-20 md:w-24" />
                   </div>
-                  <Skeleton className="h-8 w-20" />
+                  <Skeleton className="h-8 w-16 md:w-20" />
                 </div>
               </Card>
             ))}
           </div>
         ) : (followers ?? [])?.length === 0 ? (
           // Empty state
-          <Card className="p-8 text-center">
-            <div className="w-16 h-16 mx-auto mb-4 text-muted-foreground opacity-50">
+          <Card className="p-6 md:p-8 text-center">
+            <div className="w-12 h-12 md:w-16 md:h-16 mx-auto mb-4 text-muted-foreground opacity-50">
               <FaUserFriends className="w-full h-full" />
             </div>
             <h3 className="text-lg font-medium mb-2">
               {t("No followers yet")}
             </h3>
-            <p className="text-muted-foreground mb-6">
+            <p className="text-muted-foreground mb-6 text-sm md:text-base">
               {userId && parseInt(userId) !== currentUser?.id
                 ? t("This user doesn't have any followers yet")
                 : t("You don't have any followers yet. Keep sharing great content!")}
@@ -190,16 +190,16 @@ const FollowersPage: React.FC = () => {
           </Card>
         ) : (
           // Followers list
-          <div className="space-y-4">
+          <div className="space-y-3 md:space-y-4">
             {followers.map((relationship) => {
               const follower = relationship.follower;
               const isCurrentUser = follower.id === currentUser?.id;
               
               return (
-                <Card key={relationship.id} className="p-4 hover:bg-muted/50 transition-colors">
-                  <div className="flex items-center gap-4">
+                <Card key={relationship.id} className="p-3 md:p-4 hover:bg-muted/50 transition-colors">
+                  <div className="flex items-center gap-3 md:gap-4">
                     <div
-                      className="cursor-pointer w-12 h-12 bg-primary rounded-full flex items-center justify-center flex-shrink-0"
+                      className="cursor-pointer w-10 h-10 md:w-12 md:h-12 bg-primary rounded-full flex items-center justify-center flex-shrink-0"
                       onClick={() => handleUserClick(follower)}
                     >
                       {follower.avatar_url ? (
@@ -209,18 +209,18 @@ const FollowersPage: React.FC = () => {
                           className="w-full h-full rounded-full object-cover"
                         />
                       ) : (
-                        <span className="text-white font-bold text-lg">
+                        <span className="text-white font-bold text-sm md:text-lg">
                           {follower.username.charAt(0).toUpperCase()}
                         </span>
                       )}
                     </div>
                     
-                    <div 
-                      className="flex-1 cursor-pointer"
+                    <div
+                      className="flex-1 cursor-pointer min-w-0"
                       onClick={() => handleUserClick(follower)}
                     >
-                      <h3 className="font-semibold text-foreground">{follower.username}</h3>
-                      <p className="text-sm text-muted-foreground">
+                      <h3 className="font-semibold text-foreground text-sm md:text-base truncate">{follower.username}</h3>
+                      <p className="text-xs md:text-sm text-muted-foreground truncate">
                         @{follower.username} · {t('Followed you')}
                       </p>
                     </div>
@@ -230,9 +230,11 @@ const FollowersPage: React.FC = () => {
                         variant="outline"
                         size="sm"
                         onClick={() => handleFollow(follower.id)}
+                        className="flex-shrink-0"
                       >
                         <FaUserPlus className="w-3 h-3 mr-1" />
-                        {t('Follow back')}
+                        <span className="hidden sm:inline">{t('Follow back')}</span>
+                        <span className="sm:hidden">{t('Follow')}</span>
                       </Button>
                     )}
                   </div>
@@ -242,8 +244,8 @@ const FollowersPage: React.FC = () => {
             
             {hasMore && (
               <div className="text-center pt-4">
-                <Button 
-                  onClick={loadMore} 
+                <Button
+                  onClick={loadMore}
                   disabled={followersLoading}
                   variant="outline"
                 >

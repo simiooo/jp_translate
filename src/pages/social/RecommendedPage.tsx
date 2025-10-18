@@ -154,7 +154,7 @@ const RecommendedPage: React.FC = () => {
         <div className="flex-1 min-w-0 border-x">
           {/* Header */}
           <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b p-4">
-            <div className="max-w-2xl mx-auto">
+            <div className="max-w-2xl mx-auto px-4 md:px-0">
               <div className="flex items-center gap-3">
                 <FaStar className="w-6 h-6 text-yellow-500" />
                 <h1 className="text-xl font-bold">{t("Recommended")}</h1>
@@ -189,7 +189,7 @@ const RecommendedPage: React.FC = () => {
                 {Array.from({ length: 10 }).map((_, i) => (
                   <div key={i} className="p-4 border-b">
                     <div className="flex gap-3">
-                      <Skeleton className="w-12 h-12 rounded-full" />
+                      <Skeleton className="w-10 h-10 md:w-12 md:h-12 rounded-full" />
                       <div className="flex-1 space-y-2">
                         <div className="flex items-center gap-2">
                           <Skeleton className="h-4 w-20" />
@@ -197,11 +197,11 @@ const RecommendedPage: React.FC = () => {
                         </div>
                         <Skeleton className="h-4 w-3/4" />
                         <Skeleton className="h-4 w-1/2" />
-                        <div className="flex gap-4">
-                          <Skeleton className="h-4 w-12" />
-                          <Skeleton className="h-4 w-12" />
-                          <Skeleton className="h-4 w-12" />
-                          <Skeleton className="h-4 w-12" />
+                        <div className="flex gap-2 md:gap-4">
+                          <Skeleton className="h-4 w-8 md:w-12" />
+                          <Skeleton className="h-4 w-8 md:w-12" />
+                          <Skeleton className="h-4 w-8 md:w-12" />
+                          <Skeleton className="h-4 w-8 md:w-12" />
                         </div>
                       </div>
                     </div>
@@ -257,8 +257,8 @@ const RecommendedPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Right Sidebar - Placeholder for now */}
-        <div className="w-80 h-full bg-background border-l p-4">
+        {/* Right Sidebar - Hidden on mobile */}
+        <div className="hidden lg:block w-80 h-full bg-background border-l p-4">
           <Card className="p-4">
             <div className="flex items-center gap-2 mb-3">
               <FaThumbsUp className="w-4 h-4 text-primary" />

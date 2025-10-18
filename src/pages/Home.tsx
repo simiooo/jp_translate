@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useCallback } from "react";
 import { useThrottle, useKeyPress } from "ahooks";
 import { jsonrepair } from "jsonrepair";
 import { createPortal } from "react-dom";
@@ -73,6 +73,14 @@ function App() {
     historyLoad,
     PAGE_SIZE,
   } = useTranslationHistory();
+
+  // SSR-compatible responsive direction logic
+  const getResizableDirection = useCallback(() => {
+    if (!history?.responsiveInfo) return "horizontal";
+    
+    const { xs, sm, md, lg } = history.responsiveInfo;
+    return ((xs || (sm && md)) && !lg) ? "vertical" : "horizontal";
+  }, [history?.responsiveInfo]);
 
   const {
     isOpen,
@@ -244,13 +252,7 @@ function App() {
         <div className="flex-1 min-w-0">
           <ResizablePanelGroup
             className=""
-            direction={
-              (history?.responsiveInfo?.["xs"] ||
-                (history?.responsiveInfo?.["sm"] && history?.responsiveInfo?.["md"])) &&
-              !history?.responsiveInfo?.["lg"]
-                ? "vertical"
-                : "horizontal"
-            }
+            direction={getResizableDirection()}
           >
             <ResizablePanel className="">
               <TranslationForm

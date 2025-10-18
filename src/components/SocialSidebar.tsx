@@ -49,7 +49,7 @@ const SocialSidebar: React.FC<SocialSidebarProps> = ({
   return (
     <div className="w-64 h-full bg-background border-r">
       <div className="p-4">
-        <h2 className="text-xl font-bold mb-6">{t('Social')}</h2>
+        <h2 className="text-xl font-bold mb-6 hidden md:block">{t('Social')}</h2>
         
         <nav className="space-y-2">
           {menuItems.map((item) => {
@@ -64,7 +64,7 @@ const SocialSidebar: React.FC<SocialSidebarProps> = ({
               >
                 <Link to={to}>
                   <Icon className="w-5 h-5" />
-                  {item.label}
+                  <span className="hidden md:inline">{item.label}</span>
                 </Link>
               </Button>
             );
@@ -72,7 +72,7 @@ const SocialSidebar: React.FC<SocialSidebarProps> = ({
         </nav>
 
         {/* User profile section */}
-        <Card className="mt-8">
+        <Card className="mt-8 hidden md:block">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">

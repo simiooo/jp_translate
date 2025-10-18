@@ -207,7 +207,7 @@ const TrendsPage: React.FC = () => {
         <div className="flex-1 min-w-0 border-x">
           {/* Header */}
           <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b p-4">
-            <div className="max-w-2xl mx-auto">
+            <div className="max-w-2xl mx-auto px-4 md:px-0">
               <div className="flex items-center gap-3 mb-4">
                 <FaFire className="w-6 h-6 text-red-500" />
                 <h1 className="text-xl font-bold">{t("Current Trends")}</h1>
@@ -216,10 +216,10 @@ const TrendsPage: React.FC = () => {
               {/* Selected hashtag filter */}
               {selectedHashtag && (
                 <div className="mb-4 p-3 bg-muted rounded-lg flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <FaHashtag className="w-4 h-4 text-primary" />
-                    <span className="font-medium">{selectedHashtag}</span>
-                    <span className="text-sm text-muted-foreground">
+                  <div className="flex items-center gap-2 flex-1 min-w-0">
+                    <FaHashtag className="w-4 h-4 text-primary flex-shrink-0" />
+                    <span className="font-medium truncate">{selectedHashtag}</span>
+                    <span className="text-sm text-muted-foreground hidden sm:inline">
                       {t('Filtering by hashtag')}
                     </span>
                   </div>
@@ -227,6 +227,7 @@ const TrendsPage: React.FC = () => {
                     variant="ghost"
                     size="sm"
                     onClick={handleClearHashtag}
+                    className="flex-shrink-0 ml-2"
                   >
                     {t('Clear')}
                   </Button>
@@ -234,13 +235,14 @@ const TrendsPage: React.FC = () => {
               )}
               
               {/* Time range selector */}
-              <div className="flex gap-2">
+              <div className="flex gap-2 overflow-x-auto pb-2 -mx-2 px-2">
                 {(['1h', '24h', '7d', '30d'] as const).map((range) => (
                   <Button
                     key={range}
                     variant={selectedTimeRange === range ? "default" : "outline"}
                     size="sm"
                     onClick={() => handleTimeRangeChange(range)}
+                    className="flex-shrink-0"
                   >
                     {range === '1h' && <FaClock className="w-3 h-3 mr-1" />}
                     {range === '24h' && <FaFire className="w-3 h-3 mr-1" />}
@@ -269,7 +271,7 @@ const TrendsPage: React.FC = () => {
 
           {/* Trending Topics Section */}
           <div className="p-4 border-b">
-            <div className="max-w-2xl mx-auto">
+            <div className="max-w-2xl mx-auto px-4 md:px-0">
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -305,18 +307,18 @@ const TrendsPage: React.FC = () => {
                           className="flex items-center justify-between p-3 rounded-lg hover:bg-muted cursor-pointer transition-colors"
                           onClick={() => handleTrendClick(`#${trend.hashtag.name}`)}
                         >
-                          <div className="flex items-center gap-3">
-                            <span className="text-lg font-bold text-muted-foreground w-6">
+                          <div className="flex items-center gap-3 flex-1 min-w-0">
+                            <span className="text-lg font-bold text-muted-foreground w-6 flex-shrink-0">
                               {index + 1}
                             </span>
-                            <div>
-                              <p className="font-semibold">#{trend.hashtag.name}</p>
-                              <p className="text-sm text-muted-foreground">
+                            <div className="min-w-0 flex-1">
+                              <p className="font-semibold truncate">#{trend.hashtag.name}</p>
+                              <p className="text-sm text-muted-foreground truncate">
                                 {trend.post_count} {t('posts')} · {trend.total_engagement} {t('engagement')}
                               </p>
                             </div>
                           </div>
-                          <div className="text-sm text-green-600 font-medium">
+                          <div className="text-sm text-green-600 font-medium flex-shrink-0 ml-2">
                             +{Math.round(trend.total_engagement / Math.max(trend.post_count, 1))}
                           </div>
                         </div>
@@ -331,7 +333,7 @@ const TrendsPage: React.FC = () => {
           {/* Trending Posts */}
           <div className="min-h-[calc(100vh-200px)]">
             <div className="p-4 border-b">
-              <div className="max-w-2xl mx-auto">
+              <div className="max-w-2xl mx-auto px-4 md:px-0">
                 <h2 className="text-lg font-semibold flex items-center gap-2">
                   <FaFire className="w-5 h-5 text-orange-500" />
                   {t("Trending Posts")}
@@ -344,7 +346,7 @@ const TrendsPage: React.FC = () => {
                 {Array.from({ length: 10 }).map((_, i) => (
                   <div key={i} className="p-4 border-b">
                     <div className="flex gap-3">
-                      <Skeleton className="w-12 h-12 rounded-full" />
+                      <Skeleton className="w-10 h-10 md:w-12 md:h-12 rounded-full" />
                       <div className="flex-1 space-y-2">
                         <div className="flex items-center gap-2">
                           <Skeleton className="h-4 w-20" />
@@ -352,11 +354,11 @@ const TrendsPage: React.FC = () => {
                         </div>
                         <Skeleton className="h-4 w-3/4" />
                         <Skeleton className="h-4 w-1/2" />
-                        <div className="flex gap-4">
-                          <Skeleton className="h-4 w-12" />
-                          <Skeleton className="h-4 w-12" />
-                          <Skeleton className="h-4 w-12" />
-                          <Skeleton className="h-4 w-12" />
+                        <div className="flex gap-2 md:gap-4">
+                          <Skeleton className="h-4 w-8 md:w-12" />
+                          <Skeleton className="h-4 w-8 md:w-12" />
+                          <Skeleton className="h-4 w-8 md:w-12" />
+                          <Skeleton className="h-4 w-8 md:w-12" />
                         </div>
                       </div>
                     </div>
@@ -398,8 +400,8 @@ const TrendsPage: React.FC = () => {
                 </div>
                 {hasMore && (
                   <div className="p-4 text-center">
-                    <Button 
-                      onClick={loadMore} 
+                    <Button
+                      onClick={loadMore}
                       disabled={trendingLoading}
                       variant="outline"
                     >
@@ -412,8 +414,8 @@ const TrendsPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Right Sidebar - Placeholder for now */}
-        <div className="w-80 h-full bg-background border-l p-4">
+        {/* Right Sidebar - Hidden on mobile */}
+        <div className="hidden lg:block w-80 h-full bg-background border-l p-4">
           <Card className="p-4">
             <div className="flex items-center gap-2 mb-3">
               <FaFire className="w-4 h-4 text-orange-500" />
