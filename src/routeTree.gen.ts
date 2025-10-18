@@ -11,12 +11,12 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
 import { Route as AuthenticatedVocabularyRouteImport } from './routes/_authenticated/vocabulary'
 import { Route as AuthenticatedSocialRouteImport } from './routes/_authenticated/social'
 import { Route as AuthenticatedRecognizeRouteImport } from './routes/_authenticated/recognize'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
-import { Route as AuthenticatedHomeRouteImport } from './routes/_authenticated/home'
 import { Route as AuthenticatedVocabularyIndexRouteImport } from './routes/_authenticated/vocabulary.index'
 import { Route as AuthenticatedSocialIndexRouteImport } from './routes/_authenticated/social.index'
 import { Route as AuthenticatedSocialTrendsRouteImport } from './routes/_authenticated/social.trends'
@@ -36,35 +36,34 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
-  id: '/_authenticated/',
-  path: '/',
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedVocabularyRoute = AuthenticatedVocabularyRouteImport.update({
-  id: '/_authenticated/vocabulary',
+  id: '/vocabulary',
   path: '/vocabulary',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedSocialRoute = AuthenticatedSocialRouteImport.update({
-  id: '/_authenticated/social',
+  id: '/social',
   path: '/social',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedRecognizeRoute = AuthenticatedRecognizeRouteImport.update({
-  id: '/_authenticated/recognize',
+  id: '/recognize',
   path: '/recognize',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
-  id: '/_authenticated/profile',
+  id: '/profile',
   path: '/profile',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AuthenticatedHomeRoute = AuthenticatedHomeRouteImport.update({
-  id: '/_authenticated/home',
-  path: '/home',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedVocabularyIndexRoute =
   AuthenticatedVocabularyIndexRouteImport.update({
@@ -118,7 +117,6 @@ const AuthenticatedSocialFollowersRoute =
 export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
-  '/home': typeof AuthenticatedHomeRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/recognize': typeof AuthenticatedRecognizeRoute
   '/social': typeof AuthenticatedSocialRouteWithChildren
@@ -136,7 +134,6 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
-  '/home': typeof AuthenticatedHomeRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/recognize': typeof AuthenticatedRecognizeRoute
   '/': typeof AuthenticatedIndexRoute
@@ -151,9 +148,9 @@ export interface FileRoutesByTo {
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
-  '/_authenticated/home': typeof AuthenticatedHomeRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/recognize': typeof AuthenticatedRecognizeRoute
   '/_authenticated/social': typeof AuthenticatedSocialRouteWithChildren
@@ -173,7 +170,6 @@ export interface FileRouteTypes {
   fullPaths:
     | '/login'
     | '/register'
-    | '/home'
     | '/profile'
     | '/recognize'
     | '/social'
@@ -191,7 +187,6 @@ export interface FileRouteTypes {
   to:
     | '/login'
     | '/register'
-    | '/home'
     | '/profile'
     | '/recognize'
     | '/'
@@ -205,9 +200,9 @@ export interface FileRouteTypes {
     | '/vocabulary'
   id:
     | '__root__'
+    | '/_authenticated'
     | '/login'
     | '/register'
-    | '/_authenticated/home'
     | '/_authenticated/profile'
     | '/_authenticated/recognize'
     | '/_authenticated/social'
@@ -224,14 +219,9 @@ export interface FileRouteTypes {
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   LoginRoute: typeof LoginRoute
   RegisterRoute: typeof RegisterRoute
-  AuthenticatedHomeRoute: typeof AuthenticatedHomeRoute
-  AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
-  AuthenticatedRecognizeRoute: typeof AuthenticatedRecognizeRoute
-  AuthenticatedSocialRoute: typeof AuthenticatedSocialRouteWithChildren
-  AuthenticatedVocabularyRoute: typeof AuthenticatedVocabularyRouteWithChildren
-  AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -250,47 +240,47 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/': {
       id: '/_authenticated/'
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof AuthenticatedIndexRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/vocabulary': {
       id: '/_authenticated/vocabulary'
       path: '/vocabulary'
       fullPath: '/vocabulary'
       preLoaderRoute: typeof AuthenticatedVocabularyRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/social': {
       id: '/_authenticated/social'
       path: '/social'
       fullPath: '/social'
       preLoaderRoute: typeof AuthenticatedSocialRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/recognize': {
       id: '/_authenticated/recognize'
       path: '/recognize'
       fullPath: '/recognize'
       preLoaderRoute: typeof AuthenticatedRecognizeRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/profile': {
       id: '/_authenticated/profile'
       path: '/profile'
       fullPath: '/profile'
       preLoaderRoute: typeof AuthenticatedProfileRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_authenticated/home': {
-      id: '/_authenticated/home'
-      path: '/home'
-      fullPath: '/home'
-      preLoaderRoute: typeof AuthenticatedHomeRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/vocabulary/': {
       id: '/_authenticated/vocabulary/'
@@ -388,15 +378,29 @@ const AuthenticatedVocabularyRouteWithChildren =
     AuthenticatedVocabularyRouteChildren,
   )
 
-const rootRouteChildren: RootRouteChildren = {
-  LoginRoute: LoginRoute,
-  RegisterRoute: RegisterRoute,
-  AuthenticatedHomeRoute: AuthenticatedHomeRoute,
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
+  AuthenticatedRecognizeRoute: typeof AuthenticatedRecognizeRoute
+  AuthenticatedSocialRoute: typeof AuthenticatedSocialRouteWithChildren
+  AuthenticatedVocabularyRoute: typeof AuthenticatedVocabularyRouteWithChildren
+  AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedRecognizeRoute: AuthenticatedRecognizeRoute,
   AuthenticatedSocialRoute: AuthenticatedSocialRouteWithChildren,
   AuthenticatedVocabularyRoute: AuthenticatedVocabularyRouteWithChildren,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
+const rootRouteChildren: RootRouteChildren = {
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  LoginRoute: LoginRoute,
+  RegisterRoute: RegisterRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
