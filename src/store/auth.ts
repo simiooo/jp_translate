@@ -5,7 +5,6 @@ import {
   UserProfile,
   VerifyTokenResponse,
   TokenResponse,
-  AuthResponse,
   EmailVerificationStatus,
   EmailVerificationStatusResponse,
   Session,
@@ -78,6 +77,11 @@ export const useAuthStore = create<AuthState & AuthActions>()(
             password
           })
 
+          // Check if response has the expected structure
+          if (!res.access_token) {
+            throw new Error('Access token not found in response')
+          }
+
           const token = `Bearer ${res.access_token}`
           localStorage.setItem('Authorization', token)
           localStorage.setItem('refresh_token', res.refresh_token)
@@ -116,19 +120,24 @@ export const useAuthStore = create<AuthState & AuthActions>()(
       register: async (username: string, email: string, password: string) => {
         set({ isLoading: true })
         try {
-          const res = await alovaInstance.Post<AuthResponse>('/api/auth/register', {
+          const res = await alovaInstance.Post<TokenResponse>('/api/auth/register', {
             username,
             email,
             password
           })
 
-          const token = `Bearer ${res.data.token.access_token}`
+          // Check if response has the expected structure
+          if (!res.access_token) {
+            throw new Error('Access token not found in response')
+          }
+
+          const token = `Bearer ${res.access_token}`
           localStorage.setItem('Authorization', token)
-          localStorage.setItem('refresh_token', res.data.token.refresh_token)
+          localStorage.setItem('refresh_token', res.refresh_token)
 
           set({
-            user: res.data.user || null,
-            token: res.data.token.access_token,
+            user: res.user || null,
+            token: res.access_token,
             isAuthenticated: true,
             isLoading: false
           })

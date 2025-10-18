@@ -58,7 +58,10 @@ export const alovaInstance = createAlova({
   cacheFor: null,
   beforeRequest: (method) => {
     if (typeof window !== 'undefined') {
-      method.config.headers["Authorization"] = localStorage.getItem('Authorization')
+      const token = localStorage.getItem('Authorization')
+      if (token) {
+        method.config.headers["Authorization"] = `Bearer ${token}`
+      }
     }
   }
 });
@@ -68,7 +71,10 @@ export const alovaBlobInstance = createAlova({
   responded: (response) => response.blob(),
   beforeRequest: (method) => {
     if (typeof window !== 'undefined') {
-      method.config.headers["Authorization"] = localStorage.getItem('Authorization')
+      const token = localStorage.getItem('Authorization')
+      if (token) {
+        method.config.headers["Authorization"] = `Bearer ${token}`
+      }
     }
   }
 });
@@ -148,12 +154,16 @@ export class EventSourceStream<T> {
     this.isReading = true;
     this.isClosed = false;
     
-    const headers = {
+    const headers: Record<string, string> = {
       'Accept': 'text/event-stream',
       'Cache-Control': 'no-cache',
-      'Authorization': localStorage.getItem('Authorization') || '',
       ...this.options.headers
     };
+    
+    const token = localStorage.getItem('Authorization')
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`
+    }
 
     fetch(this.url, {
       method: this.options?.method,
