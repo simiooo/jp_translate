@@ -2,7 +2,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
 import { useState, useRef, useEffect } from 'react'
-import { useNavigate } from '@tanstack/react-router'
+import { useNavigate } from 'react-router'
 import { useRequest } from 'ahooks'
 
 import { AvatarUploadResponse } from '../types/auth'
@@ -46,8 +46,16 @@ import {
   DialogTrigger,
 } from '~/components/ui/dialog'
 
+import type { Route } from './+types/Home'
 import { HydrateFallbackTemplate } from '~/components/HydrateFallbackTemplate'
 import { useTranslation } from 'react-i18next'
+
+export function meta({}: Route.MetaArgs) {
+  return [
+    { title: 'Profile' },
+    { name: 'description', content: 'User profile and subscription management' },
+  ]
+}
 
 // Zod validation schema for password change
 const changePasswordSchema = z.object({
@@ -114,11 +122,11 @@ export default function ProfilePage() {
           
           // If unauthorized, redirect to login
           if (error.code === ErrCodeUserNotAuthenticated || error.code === ErrCodeInvalidToken || error.code === ErrCodeTokenExpired) {
-            navigate({ to: '/login' })
+            navigate('/login')
           }
         } else if (error instanceof Error && error.message.includes('401')) {
           // Fallback for non-standardized errors
-          navigate({ to: '/login' })
+          navigate('/login')
         }
         throw error
       }
@@ -175,7 +183,7 @@ export default function ProfilePage() {
   const handleLogout = async () => {
     try {
       await logout()
-      navigate({ to: '/login' })
+      navigate('/login')
     } catch (error) {
       console.error('Logout failed:', error)
       

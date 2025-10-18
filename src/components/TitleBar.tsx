@@ -3,13 +3,15 @@ import {
   FaWindowMaximize,
   FaTimes,
   FaHome,
+  FaBookmark,
+  FaCameraRetro,
   FaUser,
   FaUserFriends,
 } from "react-icons/fa";
 import { Button } from "~/components/ui/button";
 import { isElectron, electronAPI } from "~/utils/electron";
 import { useToggle } from "ahooks";
-import { useNavigate, useLocation } from "@tanstack/react-router";
+import { useNavigate, useLocation } from "react-router";
 import {
 } from "~/components/ui/tooltip";
 import styles from "./TitleBar.module.css";
@@ -55,14 +57,14 @@ export default function TitleBar({ }: TitleBarProps) {
             size="sm"
             variant={location.pathname === "/" ? "outline" : "ghost"}
             onClick={() => {
-              navigate({ to: "/" });
+              navigate("/");
             }}
           >
             <FaHome className="" />
           </Button>
           <Button
             onClick={() => {
-              navigate({ to: "/social" });
+              navigate("/social");
             }}
             size="sm"
             variant={location.pathname === "/social" ? "outline" : "ghost"}
@@ -80,7 +82,7 @@ export default function TitleBar({ }: TitleBarProps) {
           </Button> */}
           <Button
             onClick={() => {
-              navigate({ to: "/profile" });
+              navigate("/profile");
             }}
             size="sm"
             variant={location.pathname === "/profile" ? "outline" : "ghost"}

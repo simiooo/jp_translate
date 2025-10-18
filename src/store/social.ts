@@ -74,7 +74,7 @@ interface SocialState {
     pages: number
   }
   
-  // Batch operations (deprecated - using individual API calls)
+  // Batch operations
   likeQueue: Array<{
     postId: number
     action: 'like' | 'unlike'
@@ -128,7 +128,7 @@ interface SocialActions {
   resetFeed: () => void
   updatePostInList: (postId: number, updates: Partial<PostResponse>) => void
   
-  // Batch operations (deprecated - using individual API calls)
+  // Batch operations
   processLikeQueue: () => Promise<void>
   addToLikeQueue: (postId: number, action: 'like' | 'unlike') => void
 }
@@ -316,19 +316,21 @@ export const useSocialStore = create<SocialState & SocialActions>()(
         }))
 
         try {
-          // Use individual like API endpoint
+          // Use batch API
           await alovaInstance.Post<{
-            like: {
-              id: number;
-              user: {
-                id: number;
-                username: string;
-                avatar_url?: string;
-              };
+            results: Array<{
               post_id: number;
-              created_at: string;
-            };
-          }>(`/api/social/posts/${postId}/like`)
+              action: string;
+              success: boolean;
+              error?: string;
+              like_id?: number;
+            }>;
+            total: number;
+            success: number;
+            failed: number;
+          }>('/api/social/posts/batch/like', {
+            actions: [{ post_id: postId, action: 'like' }]
+          })
         } catch (error) {
           // Rollback on error
           set(state => ({
@@ -359,8 +361,20 @@ export const useSocialStore = create<SocialState & SocialActions>()(
         }))
 
         try {
-          // Use individual unlike API endpoint
-          await alovaInstance.Delete(`/api/social/posts/${postId}/like`)
+          // Use batch API
+          await alovaInstance.Post<{
+            results: Array<{
+              post_id: number;
+              action: string;
+              success: boolean;
+              error?: string;
+            }>;
+            total: number;
+            success: number;
+            failed: number;
+          }>('/api/social/posts/batch/like', {
+            actions: [{ post_id: postId, action: 'unlike' }]
+          })
         } catch (error) {
           // Rollback on error
           set(state => ({
@@ -710,18 +724,20 @@ export const useSocialStore = create<SocialState & SocialActions>()(
         }))
       },
 
-      // Batch operations (deprecated - using individual API calls)
+      // Batch operations
       addToLikeQueue: (postId: number, action: 'like' | 'unlike') => {
-        console.warn('addToLikeQueue is deprecated - using individual API calls instead');
-        // Deprecated function - keeping for compatibility but not using
         set(state => ({
           likeQueue: [...state.likeQueue, { postId, action, timestamp: Date.now() }]
         }))
+        
+        // Process queue if not already processing
+        const { processingBatch } = get()
+        if (!processingBatch) {
+          get().processLikeQueue()
+        }
       },
 
       processLikeQueue: async () => {
-        console.warn('processLikeQueue is deprecated - using individual API calls instead');
-        // Deprecated function - keeping for compatibility but not using
         set({ processingBatch: true })
         
         const { likeQueue } = get()
@@ -731,11 +747,50 @@ export const useSocialStore = create<SocialState & SocialActions>()(
         }
 
         try {
-          // Clear queue since we're not using batch processing
-          set({
-            likeQueue: [],
-            processingBatch: false
+          // Group actions by post to avoid duplicates
+          const actionsMap = new Map<number, 'like' | 'unlike'>()
+          likeQueue.forEach(item => {
+            actionsMap.set(item.postId, item.action)
           })
+
+          const actions = Array.from(actionsMap.entries()).map(([postId, action]) => ({
+            post_id: postId,
+            action
+          }))
+
+          const response = await alovaInstance.Post<{
+            results: Array<{
+              post_id: number;
+              action: string;
+              success: boolean;
+              error?: string;
+              like_id?: number;
+            }>;
+            total: number;
+            success: number;
+            failed: number;
+          }>('/api/social/posts/batch/like', { actions })
+
+          // Handle failed actions
+          const failedActions = response.results.filter(result => !result.success)
+          if (failedActions.length > 0) {
+            console.error('Batch like operations failed:', failedActions)
+            // TODO: Add error handling for failed batch operations
+          }
+
+          // Clear processed queue
+          set(state => ({
+            likeQueue: state.likeQueue.filter(item =>
+              !actionsMap.has(item.postId)
+            ),
+            processingBatch: false
+          }))
+
+          // Process next batch if any
+          if (get().likeQueue.length > 0) {
+            get().processLikeQueue()
+          }
+
         } catch (error) {
           console.error('Failed to process like queue:', error)
           set({ processingBatch: false })

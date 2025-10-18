@@ -14,17 +14,14 @@ declare global {
   }
 }
 
-import { getWindow, getElectronAPI } from './isomorphic';
-
 export const isElectron = (): boolean => {
   // Check if we're in a browser environment (not SSR)
-  const windowObj = getWindow();
-  if (!windowObj) {
+  if (typeof window === 'undefined') {
     return false;
   }
   
   // Check if the electronAPI is available in the window object
-  return !!windowObj?.electronAPI?.isElectron();
+  return !!window?.electronAPI?.isElectron();
 };
 
 // Type-safe wrapper for Electron API calls
@@ -33,5 +30,5 @@ export const electronAPI = (): ElectronAPI | null => {
     return null;
   }
 
-  return getElectronAPI();
+  return window?.electronAPI || null;
 };

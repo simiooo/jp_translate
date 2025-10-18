@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react';
 import { useRequest } from "ahooks";
-import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { FaUserPlus } from "react-icons/fa";
@@ -16,7 +15,6 @@ const SocialRightSidebar: React.FC<SocialRightSidebarProps> = ({
   onFollow,
   onTrendClick
 }) => {
-  const { t } = useTranslation();
   // Use ahooks useRequest for fetching trending hashtags
   const {
     data: trendingData,
@@ -65,13 +63,13 @@ const SocialRightSidebar: React.FC<SocialRightSidebarProps> = ({
   const recommendedUsers = recommendedUsersData?.users || [];
 
   return (
-    <div className="hidden lg:block w-80 h-full bg-background border-l">
+    <div className="w-80 h-full bg-background border-l">
       <div className="p-4 space-y-6">
 
         {/* Recommended Users */}
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-lg">{t("Recommended Users")}</CardTitle>
+            <CardTitle className="text-lg">推荐关注</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             {recommendedUsers.map((user) => (
@@ -94,7 +92,7 @@ const SocialRightSidebar: React.FC<SocialRightSidebarProps> = ({
                   onClick={() => onFollow?.(user.id.toString())}
                 >
                   <FaUserPlus className="w-3 h-3 mr-1" />
-                  {t("Follow")}
+                  关注
                 </Button>
               </div>
             ))}
@@ -104,12 +102,12 @@ const SocialRightSidebar: React.FC<SocialRightSidebarProps> = ({
         {/* Trends */}
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-lg">{t("Current Trends")}</CardTitle>
+            <CardTitle className="text-lg">当前趋势</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             {trendingHashtags.length === 0 ? (
               <div className="text-center py-4 text-muted-foreground text-sm">
-                {t("No trending topics")}
+                暂无热门话题
               </div>
             ) : (
               trendingHashtags.map((trend, index) => (
@@ -120,11 +118,11 @@ const SocialRightSidebar: React.FC<SocialRightSidebarProps> = ({
                 >
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium text-muted-foreground">
-                      {index + 1} · {t("Trend")}
+                      {index + 1} · 趋势
                     </span>
                   </div>
                   <p className="font-semibold text-foreground">#{trend.hashtag.name}</p>
-                  <p className="text-muted-foreground text-xs">{trend.post_count} {t("posts")}</p>
+                  <p className="text-muted-foreground text-xs">{trend.post_count} 推文</p>
                 </div>
               ))
             )}
@@ -134,15 +132,15 @@ const SocialRightSidebar: React.FC<SocialRightSidebarProps> = ({
         {/* Footer links */}
         <div className="text-muted-foreground text-xs space-y-2">
           <div className="flex flex-wrap gap-2">
-            <span className="cursor-pointer hover:underline">{t("Terms of Service")}</span>
-            <span className="cursor-pointer hover:underline">{t("Privacy Policy")}</span>
-            <span className="cursor-pointer hover:underline">{t("Cookie Policy")}</span>
-            <span className="cursor-pointer hover:underline">{t("Accessibility")}</span>
+            <span className="cursor-pointer hover:underline">服务条款</span>
+            <span className="cursor-pointer hover:underline">隐私政策</span>
+            <span className="cursor-pointer hover:underline">Cookie政策</span>
+            <span className="cursor-pointer hover:underline">可访问性</span>
           </div>
           <div className="flex flex-wrap gap-2">
-            <span className="cursor-pointer hover:underline">{t("Ads Info")}</span>
-            <span className="cursor-pointer hover:underline">{t("More")}</span>
-            <span>© {new Date().getFullYear()} {t("Vocabulary Community")}</span>
+            <span className="cursor-pointer hover:underline">广告信息</span>
+            <span className="cursor-pointer hover:underline">更多</span>
+            <span>© {new Date().getFullYear()} 词汇社区</span>
           </div>
         </div>
       </div>

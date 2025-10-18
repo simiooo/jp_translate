@@ -1,7 +1,6 @@
 import { createAlova } from "alova";
 import adapterFetch from "alova/fetch";
 import { isElectron } from '~/utils/electron';
-import { getWindow, getLocalStorageItemWithKey } from './isomorphic';
 
 // Define standardized error interface to match Go backend
 export interface StandardizedError extends Error {
@@ -46,8 +45,7 @@ export function getErrorCode(error: unknown): number | undefined {
 }
 // Helper function to get base URL dynamically (avoids SSR issues)
 const getBaseURL = (): string | undefined => {
-  const windowObj = getWindow();
-  if (!windowObj) {
+  if (typeof window === 'undefined') {
     return undefined; // SSR - no base URL needed
   }
   return isElectron() ? import.meta.env.VITE_CLIENT_FOR_SERVER_PROXY : undefined;
@@ -59,9 +57,8 @@ export const alovaInstance = createAlova({
   responded: (response) => response.json(),
   cacheFor: null,
   beforeRequest: (method) => {
-    const windowObj = getWindow();
-    if (windowObj) {
-      method.config.headers["Authorization"] = getLocalStorageItemWithKey('Authorization')
+    if (typeof window !== 'undefined') {
+      method.config.headers["Authorization"] = localStorage.getItem('Authorization')
     }
   }
 });
@@ -70,9 +67,8 @@ export const alovaBlobInstance = createAlova({
   requestAdapter: adapterFetch(),
   responded: (response) => response.blob(),
   beforeRequest: (method) => {
-    const windowObj = getWindow();
-    if (windowObj) {
-      method.config.headers["Authorization"] = getLocalStorageItemWithKey('Authorization')
+    if (typeof window !== 'undefined') {
+      method.config.headers["Authorization"] = localStorage.getItem('Authorization')
     }
   }
 });
@@ -155,10 +151,10 @@ export class EventSourceStream<T> {
     const headers = {
       'Accept': 'text/event-stream',
       'Cache-Control': 'no-cache',
-      'Authorization': getLocalStorageItemWithKey('Authorization') || '',
+      'Authorization': localStorage.getItem('Authorization') || '',
       ...this.options.headers
     };
-    
+
     fetch(this.url, {
       method: this.options?.method,
       body: this.options?.body,

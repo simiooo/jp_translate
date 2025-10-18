@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useRequest } from "ahooks";
 import { useUser } from "~/store/auth";
-import { useNavigate } from "@tanstack/react-router";
+import { useNavigate } from "react-router";
 import { useTranslation } from 'react-i18next'
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -139,14 +139,14 @@ const NotificationsPage: React.FC = () => {
 
   const handleNotificationClick = (notification: Notification) => {
     if (notification.post) {
-      navigate({ to: `/social/post/${notification.post.id}` });
+      navigate(`/social/post/${notification.post.id}`);
     } else if (notification.user) {
-      navigate({ to: `/profile/${notification.user.id}` });
+      navigate(`/profile/${notification.user.id}`);
     }
   };
 
   const handleUserClick = (userId: number) => {
-    navigate({ to: `/profile/${userId}` });
+    navigate(`/profile/${userId}`);
   };
 
   const loadMore = () => {
@@ -165,7 +165,7 @@ const NotificationsPage: React.FC = () => {
         <div className="text-center">
           <h2 className="text-xl font-semibold mb-4">{t('Please login')}</h2>
           <p className="text-muted-foreground mb-6">{t('You need to login to view notifications')}</p>
-          <Button onClick={() => navigate({ to: '/login' })}>
+          <Button onClick={() => navigate('/login')}>
             {t('Login')}
           </Button>
         </div>
@@ -188,16 +188,15 @@ const NotificationsPage: React.FC = () => {
   }
 
   return (
-    <div className="p-4 md:p-6">
+    <div className="p-6">
       <div className="max-w-2xl mx-auto">
-        {/* Header */}
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-xl md:text-2xl font-bold flex items-center gap-3">
-            <FaBell className="w-5 h-5 md:w-6 md:h-6" />
+          <h1 className="text-2xl font-bold flex items-center gap-3">
+            <FaBell className="w-6 h-6" />
             {t("Notifications")}
           </h1>
           <div className="flex items-center gap-2 text-muted-foreground">
-            <span className="text-sm">{notifications.filter(n => !n.is_read).length} {t('unread')}</span>
+            <span>{notifications.filter(n => !n.is_read).length} {t('unread')}</span>
           </div>
         </div>
 
@@ -219,7 +218,7 @@ const NotificationsPage: React.FC = () => {
           </div>
         ) : notifications.length === 0 ? (
           // Empty state
-          <Card className="p-6 md:p-8 text-center">
+          <Card className="p-8 text-center">
             <div className="w-16 h-16 mx-auto mb-4 text-muted-foreground opacity-50">
               <FaBell className="w-full h-full" />
             </div>
@@ -229,7 +228,7 @@ const NotificationsPage: React.FC = () => {
             <p className="text-muted-foreground mb-6">
               {t("When people interact with your posts, you'll see it here.")}
             </p>
-            <Button onClick={() => navigate({ to: '/social' })}>
+            <Button onClick={() => navigate('/social')}>
               {t("Start Sharing")}
             </Button>
           </Card>
@@ -237,8 +236,8 @@ const NotificationsPage: React.FC = () => {
           // Notifications list
           <div className="space-y-2">
             {notifications.map((notification) => (
-              <Card
-                key={notification.id}
+              <Card 
+                key={notification.id} 
                 className={`p-4 hover:bg-muted/50 transition-colors cursor-pointer ${
                   !notification.is_read ? 'border-l-4 border-l-primary' : ''
                 }`}
@@ -253,7 +252,7 @@ const NotificationsPage: React.FC = () => {
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex-1">
                         <p className="text-sm">
-                          <span
+                          <span 
                             className="font-semibold cursor-pointer hover:underline"
                             onClick={(e) => {
                               e.stopPropagation();
@@ -284,8 +283,8 @@ const NotificationsPage: React.FC = () => {
             
             {hasMore && (
               <div className="text-center pt-4">
-                <Button
-                  onClick={loadMore}
+                <Button 
+                  onClick={loadMore} 
                   disabled={notificationsLoading}
                   variant="outline"
                 >

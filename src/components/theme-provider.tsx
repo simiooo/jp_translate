@@ -1,10 +1,4 @@
 import { createContext, useContext, useEffect, useState } from "react"
-import {
-  getLocalStorageItemWithKey,
-  setLocalStorageItemWithKey,
-  getDocumentElement,
-  getMatchMediaWithQuery
-} from "~/utils/isomorphic"
 
 type Theme = "dark" | "light" | "system"
 
@@ -33,19 +27,25 @@ export function ThemeProvider({
   ...props
 }: ThemeProviderProps) {
   const [theme, setTheme] = useState<Theme>(() => {
-    return (getLocalStorageItemWithKey(storageKey) as Theme) || defaultTheme
+    // Check if we're in a browser environment (not SSR)
+    if (typeof window === 'undefined') {
+      return defaultTheme;
+    }
+    return (localStorage.getItem(storageKey) as Theme) || defaultTheme
   })
-  
+
   useEffect(() => {
-    const root = getDocumentElement()
-    if (!root) return
+    const root = window.document.documentElement
 
     root.classList.remove("light", "dark")
 
     if (theme === "system") {
-      const systemTheme = getMatchMediaWithQuery("(prefers-color-scheme: dark)")
-      const themeToAdd = systemTheme.matches ? "dark" : "light"
-      root.classList.add(themeToAdd)
+      const systemTheme = window.matchMedia("(prefers-color-scheme: dark)")
+        .matches
+        ? "dark"
+        : "light"
+
+      root.classList.add(systemTheme)
       return
     }
 
@@ -54,9 +54,11 @@ export function ThemeProvider({
 
   const value = {
     theme,
-    setTheme: (newTheme: Theme) => {
-      setLocalStorageItemWithKey(storageKey, newTheme)
-      setTheme(newTheme)
+    setTheme: (theme: Theme) => {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(storageKey, theme)
+      }
+      setTheme(theme)
     },
   }
 

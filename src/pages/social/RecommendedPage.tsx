@@ -23,8 +23,8 @@ const RecommendedPage: React.FC = () => {
   const [recommendedPosts, setRecommendedPosts] = useState<PostResponse[]>([]);
   const [hasMore, setHasMore] = useState(true);
   
-  // Social store
-  const { } = useSocialStore();
+  // Social store for batch like operations
+  const { addToLikeQueue, updatePostInList } = useSocialStore();
 
   // Use ahooks useRequest for fetching recommended posts
   const {
@@ -59,41 +59,19 @@ const RecommendedPage: React.FC = () => {
     }
   );
 
-  // Handle post like/unlike with optimistic updates
-  const handlePostLike = async (postId: number, isLiked: boolean) => {
+  // Handle post like/unlike with optimistic updates and batch processing
+  const handlePostLike = (postId: number, isLiked: boolean) => {
     // Find the post in the current recommended posts
     const post = recommendedPosts.find(p => p.id === postId);
-    if (!post) return;
+    if (post) {
+      // Optimistic update - immediately update UI
+      updatePostInList(postId, {
+        is_liked: isLiked,
+        like_count: isLiked ? post.like_count + 1 : Math.max(0, post.like_count - 1)
+      });
 
-    // Optimistic update - immediately update UI
-    const newIsLiked = isLiked;
-    const newLikeCount = newIsLiked ? post.like_count + 1 : Math.max(0, post.like_count - 1);
-    
-    // Update the post in the recommended posts immediately
-    const updatedRecommendedPosts = recommendedPosts.map(p =>
-      p.id === postId
-        ? { ...p, is_liked: newIsLiked, like_count: newLikeCount }
-        : p
-    );
-    
-    // Update the component state to trigger re-render
-    setRecommendedPosts(updatedRecommendedPosts);
-
-    try {
-      if (newIsLiked) {
-        await useSocialStore.getState().likePost(postId);
-      } else {
-        await useSocialStore.getState().unlikePost(postId);
-      }
-    } catch (error) {
-      console.error('Failed to toggle like:', error);
-      // Rollback on error
-      const rollbackRecommendedPosts = recommendedPosts.map(p =>
-        p.id === postId
-          ? { ...p, is_liked: post.is_liked, like_count: post.like_count }
-          : p
-      );
-      setRecommendedPosts(rollbackRecommendedPosts);
+      // Add to batch queue
+      addToLikeQueue(postId, isLiked ? 'like' : 'unlike');
     }
   };
 
@@ -174,8 +152,8 @@ const RecommendedPage: React.FC = () => {
       <div className="flex h-full">
         {/* Main Content */}
         <div className="flex-1 min-w-0 border-x">
-          {/* Header - 只在非移动端显示 */}
-          <div className="hidden md:block sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b p-4">
+          {/* Header */}
+          <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b p-4">
             <div className="max-w-2xl mx-auto">
               <div className="flex items-center gap-3">
                 <FaStar className="w-6 h-6 text-yellow-500" />
@@ -205,7 +183,7 @@ const RecommendedPage: React.FC = () => {
           <PostForm onSubmit={handlePostSubmit} />
 
           {/* Recommended posts list */}
-          <div className="min-h-[calc(100vh-200px)] md:min-h-[calc(100vh-280px)]">
+          <div className="min-h-[calc(100vh-200px)]">
             {isLoading ? (
               <div className="space-y-1">
                 {Array.from({ length: 10 }).map((_, i) => (
@@ -279,8 +257,8 @@ const RecommendedPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Right Sidebar - 只在大屏幕显示 */}
-        <div className="hidden lg:block w-80 h-full bg-background border-l p-4">
+        {/* Right Sidebar - Placeholder for now */}
+        <div className="w-80 h-full bg-background border-l p-4">
           <Card className="p-4">
             <div className="flex items-center gap-2 mb-3">
               <FaThumbsUp className="w-4 h-4 text-primary" />

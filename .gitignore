@@ -14,8 +14,6 @@ dist-ssr
 *.local
 dist-electron
 out
-.output
-.nitro
 
 # Editor directories and files
 .vscode/*

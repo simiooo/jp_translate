@@ -25,8 +25,8 @@ const HomePage: React.FC = () => {
   const [vlistKey] = useState(0);
   const fetchedCountRef = useRef(-1);
   
-  // Social store for feed data
-  const { feed, getFeed } = useSocialStore();
+  // Social store for batch like operations and feed data
+  const { addToLikeQueue, updatePostInList, feed, getFeed } = useSocialStore();
   const feedLoading = useSocialStore((state) => state.feedLoading);
   const feedError = useSocialStore((state) => state.feedError);
 
@@ -56,41 +56,19 @@ const HomePage: React.FC = () => {
     }
   );
 
-  // Handle post like/unlike with optimistic updates
-  const handlePostLike = async (postId: number, isLiked: boolean) => {
+  // Handle post like/unlike with optimistic updates and batch processing
+  const handlePostLike = (postId: number, isLiked: boolean) => {
     // Find the post in the current feed
     const post = feed.find(p => p.id === postId);
-    if (!post) return;
+    if (post) {
+      // Optimistic update - immediately update UI
+      updatePostInList(postId, {
+        is_liked: isLiked,
+        like_count: isLiked ? post.like_count + 1 : Math.max(0, post.like_count - 1)
+      });
 
-    // Optimistic update - immediately update UI
-    const newIsLiked = isLiked;
-    const newLikeCount = newIsLiked ? post.like_count + 1 : Math.max(0, post.like_count - 1);
-    
-    // Update the post in the feed immediately
-    const updatedFeed = feed.map(p =>
-      p.id === postId
-        ? { ...p, is_liked: newIsLiked, like_count: newLikeCount }
-        : p
-    );
-    
-    // Update the store state to trigger re-render
-    useSocialStore.setState({ feed: updatedFeed });
-
-    try {
-      if (newIsLiked) {
-        await useSocialStore.getState().likePost(postId);
-      } else {
-        await useSocialStore.getState().unlikePost(postId);
-      }
-    } catch (error) {
-      console.error('Failed to toggle like:', error);
-      // Rollback on error
-      const rollbackFeed = feed.map(p =>
-        p.id === postId
-          ? { ...p, is_liked: post.is_liked, like_count: post.like_count }
-          : p
-      );
-      useSocialStore.setState({ feed: rollbackFeed });
+      // Add to batch queue
+      addToLikeQueue(postId, isLiked ? 'like' : 'unlike');
     }
   };
 
@@ -203,8 +181,8 @@ const HomePage: React.FC = () => {
 
         {/* Main Content */}
         <div className="flex-1 min-w-0 border-x">
-          {/* Header - 只在非移动端显示 */}
-          <div className="hidden md:block sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b p-4">
+          {/* Header */}
+          <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b p-4">
             <div className="flex items-center justify-between max-w-4xl mx-auto">
               <h1 className="text-xl font-bold">{t("Social Feed")}</h1>
             </div>
@@ -226,7 +204,7 @@ const HomePage: React.FC = () => {
           <PostForm onSubmit={handlePostSubmit} />
 
           {/* Feed */}
-          <div className="h-[calc(100vh-200px)] md:h-[calc(100vh-280px)]">
+          <div className="h-[calc(100vh-200px)]">
             <>
                 {isLoading ? (
                   <div className="space-y-1">
@@ -307,7 +285,7 @@ const HomePage: React.FC = () => {
           </div>
         </div>
 
-        {/* Right Sidebar - 只在大屏幕显示 */}
+        {/* Right Sidebar */}
         <SocialRightSidebar
           onFollow={handleFollowUser}
           onTrendClick={handleTrendClick}

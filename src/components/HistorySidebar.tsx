@@ -7,7 +7,6 @@ import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-import { createIsomorphicFn } from "@tanstack/react-start";
 import { useTranslation } from 'react-i18next';
 
 
@@ -212,12 +211,7 @@ export const HistorySidebar: React.FC<HistorySidebarProps> = ({
                       ) : (
                         <div className="space-y-2">
                           <div className="text-xs text-muted-foreground">
-                            {(() => {
-                              const formatDate = createIsomorphicFn()
-                                .server(() => new Date(record.created_at).toISOString())
-                                .client(() => new Date(record.created_at).toLocaleString())
-                              return formatDate()
-                            })()}
+                            {new Date(record.created_at).toLocaleString()}
                           </div>
                           <div className="text-sm font-medium line-clamp-2">
                             {record.source_text}

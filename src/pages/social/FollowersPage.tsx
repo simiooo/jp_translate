@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useRequest } from "ahooks";
 import { useUser } from "~/store/auth";
-import { useNavigate, useParams } from "@tanstack/react-router";
+import { useNavigate, useParams } from "react-router";
 import { useTranslation } from 'react-i18next'
 import { alovaInstance } from "~/utils/request";
 import { RelationshipResponse, UserResponse } from "~/types/social";
@@ -17,7 +17,7 @@ import { FaUserPlus, FaUserFriends } from "react-icons/fa";
 const FollowersPage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { userId } = useParams({ from: '/social/followers' });
+  const { userId } = useParams<{ userId: string }>();
   const currentUser = useUser();
   const [page, setPage] = useState(1);
   const [followers, setFollowers] = useState<RelationshipResponse[]>([]);
@@ -96,7 +96,7 @@ const FollowersPage: React.FC = () => {
   };
 
   const handleUserClick = (user: UserResponse) => {
-    navigate({ to: `/profile/${user.id}` });
+    navigate(`/profile/${user.id}`);
   };
 
   const loadMore = () => {
@@ -115,7 +115,7 @@ const FollowersPage: React.FC = () => {
         <div className="text-center">
           <h2 className="text-xl font-semibold mb-4">{t('Please login')}</h2>
           <p className="text-muted-foreground mb-6">{t('You need to login to view followers')}</p>
-          <Button onClick={() => navigate({ to: '/login' })}>
+          <Button onClick={() => navigate('/login')}>
             {t('Login')}
           </Button>
         </div>
@@ -183,7 +183,7 @@ const FollowersPage: React.FC = () => {
                 : t("You don't have any followers yet. Keep sharing great content!")}
             </p>
             {!userId && (
-              <Button onClick={() => navigate({ to: '/social' })}>
+              <Button onClick={() => navigate('/social')}>
                 {t("Start Sharing")}
               </Button>
             )}

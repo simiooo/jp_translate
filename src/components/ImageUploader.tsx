@@ -12,7 +12,6 @@ import { v4 as uuidv4 } from 'uuid';
 import { useRequest } from 'ahooks';
 import { FileRecord } from '../types/file';
 import { useTranslation } from 'react-i18next';
-import { createObjectURLForObject } from '~/utils/isomorphic';
 
 export interface UploadFile extends FileRecord {
   uid: string;
@@ -167,7 +166,7 @@ export const ImageUploader = forwardRef<ImageUploaderRef, ImageUploaderProps>(({
       ObjectKey: '',
       ContentType: file.type,
       FileSize: file.size,
-      URL: createObjectURLForObject(file),
+      URL: URL.createObjectURL(file),
       UploadedAt: new Date().toISOString(),
       uid: uid,
       status: 'uploading',
@@ -242,7 +241,7 @@ export const ImageUploader = forwardRef<ImageUploaderRef, ImageUploaderProps>(({
     if (file.status === 'done' && file.URL) {
       showImagePreview({ src: file.URL, alt: file.FileName || '预览图片' });
     } else if (file.originFileObj) {
-      showImagePreview({ src: createObjectURLForObject(file.originFileObj), alt: file.FileName || '预览图片' });
+      showImagePreview({ src: URL.createObjectURL(file.originFileObj), alt: file.FileName || '预览图片' });
     }
   };
 
@@ -293,7 +292,7 @@ export const ImageUploader = forwardRef<ImageUploaderRef, ImageUploaderProps>(({
                   <CardContent className="p-0">
                     <div className="aspect-square relative">
                       <img
-                        src={file.URL || (file.originFileObj ? createObjectURLForObject(file.originFileObj) : '')}
+                        src={file.URL || (file.originFileObj ? URL.createObjectURL(file.originFileObj) : '')}
                         alt={file.FileName}
                         className="w-full h-full object-cover cursor-pointer"
                         onClick={() => handlePreviewClick(file)}

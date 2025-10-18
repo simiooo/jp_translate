@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useRequest } from "ahooks";
 import { useUser } from "~/store/auth";
-import { useNavigate, useParams } from "@tanstack/react-router";
+import { useNavigate, useParams } from "react-router";
 import { useTranslation } from 'react-i18next'
 import { alovaInstance } from "~/utils/request";
 import { RelationshipResponse, UserResponse } from "~/types/social";
@@ -15,7 +15,7 @@ import { FaUserMinus, FaUserFriends } from "react-icons/fa";
 const FollowingPage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { userId } = useParams({ from: '/social/following' });
+  const { userId } = useParams<{ userId: string }>();
   const currentUser = useUser();
   const [page, setPage] = useState(1);
   const [following, setFollowing] = useState<RelationshipResponse[]>([]);
@@ -94,7 +94,7 @@ const FollowingPage: React.FC = () => {
   };
 
   const handleUserClick = (user: UserResponse) => {
-    navigate({ to: `/profile/${user.id}` });
+    navigate(`/profile/${user.id}`);
   };
 
   const loadMore = () => {
@@ -113,7 +113,7 @@ const FollowingPage: React.FC = () => {
         <div className="text-center">
           <h2 className="text-xl font-semibold mb-4">{t('Please login')}</h2>
           <p className="text-muted-foreground mb-6">{t('You need to login to view following list')}</p>
-          <Button onClick={() => navigate({ to: '/login' })}>
+          <Button onClick={() => navigate('/login')}>
             {t('Login')}
           </Button>
         </div>
@@ -181,7 +181,7 @@ const FollowingPage: React.FC = () => {
                 : t("You're not following anyone yet. Discover new users to follow!")}
             </p>
             {!userId && (
-              <Button onClick={() => navigate({ to: '/social/recommended' })}>
+              <Button onClick={() => navigate('/social/recommended')}>
                 {t("Find Users to Follow")}
               </Button>
             )}
