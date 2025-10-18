@@ -138,7 +138,8 @@ export const useAuthStore = create<AuthState & AuthActions>()(
       verifyToken: async (): Promise<boolean> => {
         set({ isLoading: true })
         try {
-          const response = await alovaInstance.Get<VerifyTokenResponse>('/user/verify')
+          // Use API-prefixed path to align with dev proxy and production reverse proxy
+          const response = await alovaInstance.Get<VerifyTokenResponse>('/api/user/verify')
           
           set({
             user: response.user,
@@ -155,17 +156,13 @@ export const useAuthStore = create<AuthState & AuthActions>()(
             if (error.code && isErrorInCategory(error.code, 'AUTHENTICATION')) {
               // Clear auth state for authentication errors
               get().clearAuth()
-              
-              // Redirect to login page if we're not already there
               // Return false to indicate authentication failed, let layout handle navigation
-              return false
               return false
             }
           } else if (error instanceof Error && error.message.includes('401')) {
             // Handle 401 Unauthorized errors
             get().clearAuth()
             // Return false to indicate authentication failed, let layout handle navigation
-            return false
             return false
           }
           

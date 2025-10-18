@@ -13,12 +13,31 @@ export default function RootLayout() {
   const location = useLocation();
   const navigate = useNavigate();
   const { verifyToken, isAuthenticated, isLoading, clearAuth } = useAuthStore();
+  // Zustand persist helpers for hydration (typed, no any)
+  type PersistHelpers = {
+    hasHydrated?: () => boolean;
+    onFinishHydration?: (fn: () => void) => () => void;
+  };
+  type StoreWithPersist = typeof useAuthStore & { persist?: PersistHelpers };
+  const storeWithPersist = useAuthStore as StoreWithPersist;
+ 
   const [isVerifying, setIsVerifying] = useState(false);
+  const [hasHydrated, setHasHydrated] = useState<boolean>(() => storeWithPersist.persist?.hasHydrated?.() ?? false);
   const isNavigating = Boolean(navigation.location);
-
+ 
+  // Hydration guard for persisted auth store
+  useEffect(() => {
+    const unsub = storeWithPersist.persist?.onFinishHydration?.(() => setHasHydrated(true));
+    return () => unsub?.();
+  }, []);
+ 
   // 验证用户token
   useEffect(() => {
     const verifyUser = async () => {
+      // Wait for persisted auth to hydrate before checking
+      if (!hasHydrated) {
+        return;
+      }
       // 如果是公开路由，不需要验证
       if (PUBLIC_ROUTES.includes(location.pathname)) {
         return;
@@ -31,6 +50,7 @@ export default function RootLayout() {
 
       // 检查是否有token
       const token = localStorage.getItem('Authorization');
+
       if (!token) {
         // 没有token，重定向到登录页
         navigate('/login', { replace: true });
@@ -56,7 +76,7 @@ export default function RootLayout() {
     };
 
     verifyUser();
-  }, [location.pathname, isAuthenticated ]);
+  }, [location.pathname, isAuthenticated, hasHydrated ]);
 
   // 对于公开路由，直接渲染内容
   if (PUBLIC_ROUTES.includes(location.pathname)) {
