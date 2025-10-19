@@ -9,6 +9,8 @@ export default [
     route("sessions", "./pages/SessionsPage.tsx"),
     route("devices", "./pages/DevicesPage.tsx"),
     route("password-reset", "./pages/PasswordResetPage.tsx"),
+    route("email-verification", "./pages/EmailVerificationPage.tsx"),
+    route("email-verification-success", "./pages/EmailVerificationSuccessPage.tsx"),
     route("recognize", "./pages/Recognize.tsx"),
     layout("./layout/socialLayout.tsx", [
       route("social", "./pages/social/HomePage.tsx", { index: true }),

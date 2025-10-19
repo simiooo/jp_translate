@@ -32,6 +32,12 @@ type Pages = {
   "/password-reset": {
     params: {};
   };
+  "/email-verification": {
+    params: {};
+  };
+  "/email-verification-success": {
+    params: {};
+  };
   "/recognize": {
     params: {};
   };
@@ -61,11 +67,11 @@ type Pages = {
 type RouteFiles = {
   "root.tsx": {
     id: "root";
-    page: "/" | "/login" | "/register" | "/profile" | "/sessions" | "/devices" | "/password-reset" | "/recognize" | "/social" | "/social/my-posts" | "/social/recommended" | "/social/notifications" | "/social/following" | "/social/followers" | "/social/trends";
+    page: "/" | "/login" | "/register" | "/profile" | "/sessions" | "/devices" | "/password-reset" | "/email-verification" | "/email-verification-success" | "/recognize" | "/social" | "/social/my-posts" | "/social/recommended" | "/social/notifications" | "/social/following" | "/social/followers" | "/social/trends";
   };
   "./layout/rootLayout.tsx": {
     id: "layout/rootLayout";
-    page: "/" | "/login" | "/register" | "/profile" | "/sessions" | "/devices" | "/password-reset" | "/recognize" | "/social" | "/social/my-posts" | "/social/recommended" | "/social/notifications" | "/social/following" | "/social/followers" | "/social/trends";
+    page: "/" | "/login" | "/register" | "/profile" | "/sessions" | "/devices" | "/password-reset" | "/email-verification" | "/email-verification-success" | "/recognize" | "/social" | "/social/my-posts" | "/social/recommended" | "/social/notifications" | "/social/following" | "/social/followers" | "/social/trends";
   };
   "./pages/Home.tsx": {
     id: "pages/Home";
@@ -94,6 +100,14 @@ type RouteFiles = {
   "./pages/PasswordResetPage.tsx": {
     id: "pages/PasswordResetPage";
     page: "/password-reset";
+  };
+  "./pages/EmailVerificationPage.tsx": {
+    id: "pages/EmailVerificationPage";
+    page: "/email-verification";
+  };
+  "./pages/EmailVerificationSuccessPage.tsx": {
+    id: "pages/EmailVerificationSuccessPage";
+    page: "/email-verification-success";
   };
   "./pages/Recognize.tsx": {
     id: "pages/Recognize";
@@ -143,6 +157,8 @@ type RouteModules = {
   "pages/SessionsPage": typeof import("./src/./pages/SessionsPage.tsx");
   "pages/DevicesPage": typeof import("./src/./pages/DevicesPage.tsx");
   "pages/PasswordResetPage": typeof import("./src/./pages/PasswordResetPage.tsx");
+  "pages/EmailVerificationPage": typeof import("./src/./pages/EmailVerificationPage.tsx");
+  "pages/EmailVerificationSuccessPage": typeof import("./src/./pages/EmailVerificationSuccessPage.tsx");
   "pages/Recognize": typeof import("./src/./pages/Recognize.tsx");
   "layout/socialLayout": typeof import("./src/./layout/socialLayout.tsx");
   "pages/social/HomePage": typeof import("./src/./pages/social/HomePage.tsx");

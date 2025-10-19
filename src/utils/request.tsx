@@ -60,7 +60,7 @@ export const alovaInstance = createAlova({
     if (typeof window !== 'undefined') {
       const token = localStorage.getItem('Authorization')
       if (token) {
-        method.config.headers["Authorization"] = `Bearer ${token}`
+        method.config.headers["Authorization"] = token
       }
     }
   }
@@ -73,7 +73,7 @@ export const alovaBlobInstance = createAlova({
     if (typeof window !== 'undefined') {
       const token = localStorage.getItem('Authorization')
       if (token) {
-        method.config.headers["Authorization"] = `Bearer ${token}`
+        method.config.headers["Authorization"] = token
       }
     }
   }
@@ -162,7 +162,7 @@ export class EventSourceStream<T> {
     
     const token = localStorage.getItem('Authorization')
     if (token) {
-      headers['Authorization'] = `Bearer ${token}`
+      headers['Authorization'] = token
     }
 
     fetch(this.url, {

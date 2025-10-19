@@ -182,6 +182,15 @@ export interface PasswordResetFormData {
   new_password: string
 }
 
+export interface PasswordResetResponse {
+  success: boolean
+  message: string
+}
+
+export interface PasswordResetValidateRequest {
+  token: string
+}
+
 // Audit Log Types
 export interface AuditLog {
   id: number

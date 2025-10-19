@@ -66,7 +66,7 @@ export default function RegisterPage({}: RegisterPageProps) {
   const onSubmit = async (data: z.infer<typeof registerSchema>) => {
     try {
       await register(data.username, data.email, data.password);
-      navigate('/')
+      navigate('/email-verification')
     } catch (error) {
       console.log('Registration error:', error);
       

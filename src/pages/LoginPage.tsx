@@ -122,6 +122,10 @@ export default function LoginPage({ }: LoginPageProps) {
     navigate('/register')
   }
 
+  const onForgotPassword = () => {
+    navigate('/password-reset')
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
       <Card className="w-full max-w-md">
@@ -177,6 +181,16 @@ export default function LoginPage({ }: LoginPageProps) {
               </Button>
             </form>
           </Form>
+
+          <div className="mt-4 text-center">
+            <Button
+              variant="link"
+              onClick={onForgotPassword}
+              className="text-sm text-muted-foreground"
+            >
+              {t('Forgot Password?')}
+            </Button>
+          </div>
 
           <div className="mt-6 text-center text-sm text-muted-foreground">
             <span>{t("Don't have an account?")}</span>

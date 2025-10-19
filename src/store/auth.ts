@@ -14,7 +14,9 @@ import {
   Device,
   DevicesResponse,
   AuditLogsResponse,
-  PasswordValidationResponse
+  PasswordValidationResponse,
+  PasswordResetResponse,
+  PasswordResetValidateResponse
 } from '~/types/auth'
 import { alovaInstance, isStandardizedError } from '~/utils/request'
 import { isErrorInCategory } from '~/types/errors'
@@ -54,6 +56,9 @@ interface AuthActions {
     limit?: number
     offset?: number
   }) => Promise<AuditLogsResponse>
+  requestPasswordReset: (email: string) => Promise<void>
+  validatePasswordResetToken: (token: string) => Promise<PasswordResetValidateResponse>
+  resetPassword: (token: string, newPassword: string) => Promise<void>
   setToken: (token: string) => void
   clearAuth: () => void
 }
@@ -345,6 +350,47 @@ export const useAuthStore = create<AuthState & AuthActions>()(
           params
         })
         return res
+      },
+
+      requestPasswordReset: async (email: string) => {
+        set({ isLoading: true })
+        try {
+          await alovaInstance.Post<PasswordResetResponse>('/api/auth/password-reset/request', {
+            email
+          })
+          set({ isLoading: false })
+        } catch (error) {
+          set({ isLoading: false })
+          throw error
+        }
+      },
+
+      validatePasswordResetToken: async (token: string) => {
+        set({ isLoading: true })
+        try {
+          const response = await alovaInstance.Post<PasswordResetValidateResponse>('/api/auth/password-reset/validate', {
+            token
+          })
+          set({ isLoading: false })
+          return response
+        } catch (error) {
+          set({ isLoading: false })
+          throw error
+        }
+      },
+
+      resetPassword: async (token: string, newPassword: string) => {
+        set({ isLoading: true })
+        try {
+          await alovaInstance.Post<PasswordResetResponse>('/api/auth/password-reset/reset', {
+            token,
+            new_password: newPassword
+          })
+          set({ isLoading: false })
+        } catch (error) {
+          set({ isLoading: false })
+          throw error
+        }
       }
     }),
     {
@@ -381,6 +427,9 @@ export const useAuthActions = () => useAuthStore(useShallow((state) => ({
   getDevices: state.getDevices,
   revokeDevice: state.revokeDevice,
   getAuditLogs: state.getAuditLogs,
+  requestPasswordReset: state.requestPasswordReset,
+  validatePasswordResetToken: state.validatePasswordResetToken,
+  resetPassword: state.resetPassword,
   setToken: state.setToken,
   clearAuth: state.clearAuth
 })))

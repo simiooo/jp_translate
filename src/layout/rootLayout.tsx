@@ -6,7 +6,7 @@ import { useAuthStore } from "~/store/auth";
 import { useEffect, useState } from "react";
 
 // 公开路由，不需要认证
-const PUBLIC_ROUTES = ["/login", "/register"];
+const PUBLIC_ROUTES = ["/login", "/register", "/email-verification", "/email-verification-success", "/password-reset"];
 
 export default function RootLayout() {
   const navigation = useNavigation();

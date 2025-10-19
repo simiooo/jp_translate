@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
@@ -7,7 +6,7 @@ import { Button } from '~/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card'
 import { Input } from '~/components/ui/input'
 import { Toast } from '~/components/ToastCompat'
-import { alovaInstance, getErrorMessage, isStandardizedError } from '~/utils/request'
+import { getErrorMessage, isStandardizedError } from '~/utils/request'
 import { HydrateFallbackTemplate } from '~/components/HydrateFallbackTemplate'
 import {
   Form,
@@ -17,6 +16,9 @@ import {
   FormLabel,
   FormMessage,
 } from '~/components/ui/form'
+import { useState, useEffect } from 'react'
+import { useAuthActions } from '~/store/auth'
+import { useNavigate, useSearchParams } from 'react-router'
 
 export function meta() {
   return [
@@ -45,8 +47,13 @@ type PasswordResetFormData = z.infer<typeof passwordResetSchema>
 
 export default function PasswordResetPage() {
   const { t } = useTranslation()
-  const [step, setStep] = useState<'request' | 'reset'>('request')
+  const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const { requestPasswordReset, validatePasswordResetToken, resetPassword } = useAuthActions()
+  const [step, setStep] = useState<'request' | 'validate' | 'reset'>('request')
   const [isLoading, setIsLoading] = useState(false)
+  const [validatedEmail, setValidatedEmail] = useState<string>('')
+  const [urlToken, setUrlToken] = useState<string | null>(null)
 
   const requestForm = useForm<PasswordResetRequestFormData>({
     resolver: zodResolver(passwordResetRequestSchema),
@@ -64,14 +71,22 @@ export default function PasswordResetPage() {
     },
   })
 
+  // Extract token from URL query string on component mount
+  useEffect(() => {
+    const token = searchParams.get('token')
+    if (token) {
+      setUrlToken(token)
+      // If token is provided in URL, automatically validate it
+      handleTokenValidation(token)
+    }
+  }, [searchParams])
+
   const handleRequestSubmit = async (data: PasswordResetRequestFormData) => {
     setIsLoading(true)
     try {
-      await alovaInstance.Post('/api/auth/password-reset/request', {
-        email: data.email,
-      })
+      await requestPasswordReset(data.email)
       Toast.success(t('If your email address is in our database, you will receive a password reset link shortly.'))
-      setStep('reset')
+      setStep('validate')
     } catch (error) {
       console.error('Failed to request password reset:', error)
       if (isStandardizedError(error)) {
@@ -84,15 +99,40 @@ export default function PasswordResetPage() {
     }
   }
 
+  const handleTokenValidation = async (token: string) => {
+    setIsLoading(true)
+    try {
+      const response = await validatePasswordResetToken(token)
+      setValidatedEmail(response.data.email)
+      setStep('reset')
+      // Pre-fill the token field in the reset form
+      resetForm.setValue('token', token)
+      Toast.success(t('Token validated successfully'))
+    } catch (error) {
+      console.error('Failed to validate token:', error)
+      if (isStandardizedError(error)) {
+        Toast.error(getErrorMessage(error) || t('Invalid or expired reset token'))
+      } else {
+        Toast.error(t('Invalid or expired reset token'))
+      }
+      // If token is from URL and validation fails, stay on validate step
+      if (!urlToken) {
+        throw error
+      }
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   const handleResetSubmit = async (data: PasswordResetFormData) => {
     setIsLoading(true)
     try {
-      await alovaInstance.Post('/api/auth/password-reset/reset', {
-        token: data.token,
-        new_password: data.new_password,
-      })
+      await resetPassword(data.token, data.new_password)
       Toast.success(t('Password reset successfully. You can now login with your new password.'))
-      // Redirect to login page or show success message
+      // Redirect to login page after successful reset
+      setTimeout(() => {
+        navigate('/login')
+      }, 2000)
     } catch (error) {
       console.error('Failed to reset password:', error)
       if (isStandardizedError(error)) {
@@ -106,12 +146,26 @@ export default function PasswordResetPage() {
   }
 
 
+  // Handle token input and validation
+  const handleTokenSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    const formData = new FormData(event.currentTarget)
+    const token = formData.get('token') as string
+    if (token.trim()) {
+      handleTokenValidation(token)
+    }
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle className="text-3xl font-extrabold">
-            {step === 'request' ? t('Reset Password') : t('Set New Password')}
+            {step === 'request'
+              ? t('Reset Password')
+              : step === 'validate'
+                ? t('Enter Reset Token')
+                : t('Set New Password')}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -147,10 +201,64 @@ export default function PasswordResetPage() {
                 </Button>
               </form>
             </Form>
+          ) : step === 'validate' ? (
+            <div className="space-y-6">
+              {urlToken && (
+                <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-md">
+                  <p className="text-sm text-blue-700 dark:text-blue-300 text-center">
+                    {t('Validating token from email link...')}
+                  </p>
+                </div>
+              )}
+              <p className="text-sm text-muted-foreground text-center">
+                {urlToken
+                  ? t('Please wait while we validate your reset token...')
+                  : t('Please enter the reset token sent to your email address.')}
+              </p>
+              {!urlToken && (
+                <form onSubmit={handleTokenSubmit} className="space-y-4">
+                  <div className="space-y-2">
+                    <label htmlFor="token" className="text-sm font-medium">
+                      {t('Reset Token')}
+                    </label>
+                    <Input
+                      id="token"
+                      name="token"
+                      type="text"
+                      placeholder={t('Enter the token from your email')}
+                      required
+                    />
+                  </div>
+                  <Button
+                    type="submit"
+                    className="w-full"
+                    disabled={isLoading}
+                  >
+                    {isLoading ? t('Validating...') : t('Validate Token')}
+                  </Button>
+                </form>
+              )}
+              {!urlToken && (
+                <div className="text-center">
+                  <Button
+                    variant="link"
+                    onClick={() => setStep('request')}
+                    className="text-sm"
+                  >
+                    {t('Back to request form')}
+                  </Button>
+                </div>
+              )}
+            </div>
           ) : (
             <Form {...resetForm}>
               <form onSubmit={resetForm.handleSubmit(handleResetSubmit)} className="space-y-6">
                 <div className="space-y-4">
+                  <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-md">
+                    <p className="text-sm text-blue-700 dark:text-blue-300">
+                      {t('Token validated for:')} <strong>{validatedEmail}</strong>
+                    </p>
+                  </div>
                   <FormField
                     control={resetForm.control}
                     name="token"
@@ -161,6 +269,7 @@ export default function PasswordResetPage() {
                           <Input
                             placeholder={t('Enter the token from your email')}
                             {...field}
+                            readOnly
                           />
                         </FormControl>
                         <FormMessage />
@@ -214,10 +323,10 @@ export default function PasswordResetPage() {
                 <div className="text-center">
                   <Button
                     variant="link"
-                    onClick={() => setStep('request')}
+                    onClick={() => setStep('validate')}
                     className="text-sm"
                   >
-                    {t('Back to request form')}
+                    {t('Back to token validation')}
                   </Button>
                 </div>
               </form>
