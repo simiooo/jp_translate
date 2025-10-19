@@ -54,7 +54,36 @@ const getBaseURL = (): string | undefined => {
 export const alovaInstance = createAlova({
   baseURL: getBaseURL(),
   requestAdapter: adapterFetch(),
-  responded: (response) => response.json(),
+  responded: async (response) => {
+    const data = await response.json()
+    
+    // Check if response indicates token expiration (401 Unauthorized)
+    if (response.status === 401) {
+      // Token expired or invalid, try to refresh
+      const refreshToken = localStorage.getItem('refresh_token')
+      if (refreshToken) {
+        try {
+          // Import auth store dynamically to avoid circular dependency
+          const { useAuthStore } = await import('~/store/auth')
+          const { refreshToken: refreshTokenAction } = useAuthStore.getState()
+          await refreshTokenAction()
+          
+          console.log('Token refreshed successfully after 401 response')
+        } catch (error) {
+          console.error('Failed to refresh token:', error)
+          // Clear auth state if refresh fails
+          const { useAuthStore } = await import('~/store/auth')
+          useAuthStore.getState().clearAuth()
+        }
+      } else {
+        // No refresh token available, clear auth
+        const { useAuthStore } = await import('~/store/auth')
+        useAuthStore.getState().clearAuth()
+      }
+    }
+    
+    return data
+  },
   cacheFor: null,
   beforeRequest: (method) => {
     if (typeof window !== 'undefined') {

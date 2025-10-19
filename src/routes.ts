@@ -1,17 +1,21 @@
 import { index, route, layout } from "@react-router/dev/routes";
 
 export default [
-  layout("./layout/rootLayout.tsx", [
-    index("./pages/Home.tsx"),
+  // 认证相关页面（不需要认证）
+  layout("./layout/authLayout.tsx", [
     route("login", "./pages/LoginPage.tsx"),
     route("register", "./pages/RegisterPage.tsx"),
-    route("profile", "./pages/ProfilePage.tsx"),
-    route("sessions", "./pages/SessionsPage.tsx"),
-    route("devices", "./pages/DevicesPage.tsx"),
     route("password-reset", "./pages/PasswordResetPage.tsx"),
     route("email-verification", "./pages/EmailVerificationPage.tsx"),
     route("email-verification-success", "./pages/EmailVerificationSuccessPage.tsx"),
-    route("recognize", "./pages/Recognize.tsx"),
+  ]),
+  
+  // 需要认证的页面
+  layout("./layout/rootLayout.tsx", [
+    index("./pages/Home.tsx"),
+    route("profile", "./pages/ProfilePage.tsx"),
+    route("sessions", "./pages/SessionsPage.tsx"),
+    route("devices", "./pages/DevicesPage.tsx"),
     layout("./layout/socialLayout.tsx", [
       route("social", "./pages/social/HomePage.tsx", { index: true }),
       route("social/my-posts", "./pages/social/MyPostsPage.tsx"),

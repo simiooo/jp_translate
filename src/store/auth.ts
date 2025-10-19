@@ -26,6 +26,8 @@ interface AuthState {
   user: User | null
   profile: UserProfile | null
   token: string | null
+  refresh_token: string | null
+  tokenExpiry: number | null
   isAuthenticated: boolean
   isLoading: boolean
 }
@@ -37,6 +39,9 @@ interface AuthActions {
   fetchProfile: () => Promise<void>
   verifyToken: () => Promise<boolean>
   refreshToken: () => Promise<void>
+  shouldRefreshToken: () => boolean
+  isTokenExpired: () => boolean
+  ensureValidToken: () => Promise<boolean>
   changePassword: (oldPassword: string, newPassword: string) => Promise<void>
   validatePassword: (password: string) => Promise<boolean>
   verifyEmail: (token: string) => Promise<void>
@@ -70,6 +75,8 @@ export const useAuthStore = create<AuthState & AuthActions>()(
       user: null,
       profile: null,
       token: null,
+      refresh_token: null,
+      tokenExpiry: null,
       isAuthenticated: false,
       isLoading: false,
 
@@ -91,9 +98,14 @@ export const useAuthStore = create<AuthState & AuthActions>()(
           localStorage.setItem('Authorization', token)
           localStorage.setItem('refresh_token', res.refresh_token)
 
+          // Calculate token expiry time
+          const tokenExpiry = Date.now() + (res.expires_in * 1000)
+
           set({
             user: res.user || null,
             token: res.access_token,
+            refresh_token: res.refresh_token,
+            tokenExpiry,
             isAuthenticated: true,
             isLoading: false
           })
@@ -140,9 +152,14 @@ export const useAuthStore = create<AuthState & AuthActions>()(
           localStorage.setItem('Authorization', token)
           localStorage.setItem('refresh_token', res.refresh_token)
 
+          // Calculate token expiry time
+          const tokenExpiry = Date.now() + (res.expires_in * 1000)
+
           set({
             user: res.user || null,
             token: res.access_token,
+            refresh_token: res.refresh_token,
+            tokenExpiry,
             isAuthenticated: true,
             isLoading: false
           })
@@ -186,8 +203,8 @@ export const useAuthStore = create<AuthState & AuthActions>()(
       verifyToken: async (): Promise<boolean> => {
         set({ isLoading: true })
         try {
-          // Use API-prefixed path to align with dev proxy and production reverse proxy
-          const response = await alovaInstance.Get<VerifyTokenResponse>('/api/user/verify')
+          // Use the correct auth verification endpoint
+          const response = await alovaInstance.Get<VerifyTokenResponse>('/api/auth/verify')
           
           set({
             user: response.user,
@@ -226,6 +243,8 @@ export const useAuthStore = create<AuthState & AuthActions>()(
           user: null,
           profile: null,
           token: null,
+          refresh_token: null,
+          tokenExpiry: null,
           isAuthenticated: false,
           isLoading: false
         })
@@ -244,9 +263,14 @@ export const useAuthStore = create<AuthState & AuthActions>()(
           localStorage.setItem('Authorization', token)
           localStorage.setItem('refresh_token', res.refresh_token)
 
+          // Calculate token expiry time
+          const tokenExpiry = Date.now() + (res.expires_in * 1000)
+
           set({
             user: res.user || null,
             token: res.access_token,
+            refresh_token: res.refresh_token,
+            tokenExpiry,
             isAuthenticated: true,
             isLoading: false
           })
@@ -254,6 +278,45 @@ export const useAuthStore = create<AuthState & AuthActions>()(
           set({ isLoading: false })
           throw error
         }
+      },
+
+      // Check if token needs refresh
+      shouldRefreshToken: (): boolean => {
+        const { tokenExpiry } = get()
+        if (!tokenExpiry) return false
+        // Refresh if token expires in less than 5 minutes
+        return tokenExpiry - Date.now() < 5 * 60 * 1000
+      },
+
+      // Check if token is expired
+      isTokenExpired: (): boolean => {
+        const { tokenExpiry } = get()
+        if (!tokenExpiry) return true
+        return tokenExpiry <= Date.now()
+      },
+
+      // Ensure we have a valid token, refreshing if needed
+      ensureValidToken: async (): Promise<boolean> => {
+        const { isTokenExpired, shouldRefreshToken, refreshToken, clearAuth } = get()
+        
+        if (isTokenExpired()) {
+          // Token is expired, clear auth
+          clearAuth()
+          return false
+        }
+        
+        if (shouldRefreshToken()) {
+          try {
+            await refreshToken()
+            return true
+          } catch (error) {
+            console.error('Failed to refresh token:', error)
+            clearAuth()
+            return false
+          }
+        }
+        
+        return true
       },
 
       changePassword: async (oldPassword: string, newPassword: string) => {

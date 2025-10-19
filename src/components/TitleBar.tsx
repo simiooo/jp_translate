@@ -3,8 +3,6 @@ import {
   FaWindowMaximize,
   FaTimes,
   FaHome,
-  FaBookmark,
-  FaCameraRetro,
   FaUser,
   FaUserFriends,
 } from "react-icons/fa";
@@ -71,15 +69,6 @@ export default function TitleBar({ }: TitleBarProps) {
           >
             <FaUserFriends />
           </Button>
-          {/* <Button
-            onClick={() => {
-              navigate("/recognize");
-            }}
-            size="sm"
-            variant={location.pathname === "/recognize" ? "outline" : "ghost"}
-          >
-            <FaCameraRetro className="" />
-          </Button> */}
           <Button
             onClick={() => {
               navigate("/profile");

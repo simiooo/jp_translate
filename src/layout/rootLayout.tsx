@@ -5,91 +5,80 @@ import { Toaster } from "~/components/ui/sonner";
 import { useAuthStore } from "~/store/auth";
 import { useEffect, useState } from "react";
 
-// 公开路由，不需要认证
-const PUBLIC_ROUTES = ["/login", "/register", "/email-verification", "/email-verification-success", "/password-reset"];
-
 export default function RootLayout() {
   const navigation = useNavigation();
   const location = useLocation();
   const navigate = useNavigate();
-  const { verifyToken, isAuthenticated, isLoading, clearAuth } = useAuthStore();
-  // Zustand persist helpers for hydration (typed, no any)
-  type PersistHelpers = {
-    hasHydrated?: () => boolean;
-    onFinishHydration?: (fn: () => void) => () => void;
-  };
-  type StoreWithPersist = typeof useAuthStore & { persist?: PersistHelpers };
-  const storeWithPersist = useAuthStore as StoreWithPersist;
- 
+  const {
+    verifyToken,
+    isAuthenticated,
+    isLoading,
+    clearAuth,
+    ensureValidToken
+  } = useAuthStore();
+  
   const [isVerifying, setIsVerifying] = useState(false);
-  const [hasHydrated, setHasHydrated] = useState<boolean>(() => storeWithPersist.persist?.hasHydrated?.() ?? false);
+  const [hasCheckedAuth, setHasCheckedAuth] = useState(false);
   const isNavigating = Boolean(navigation.location);
- 
-  // Hydration guard for persisted auth store
+
+  // SSR-friendly authentication check
   useEffect(() => {
-    const unsub = storeWithPersist.persist?.onFinishHydration?.(() => setHasHydrated(true));
-    return () => unsub?.();
-  }, []);
- 
-  // 验证用户token
-  useEffect(() => {
-    const verifyUser = async () => {
-      // Wait for persisted auth to hydrate before checking
-      if (!hasHydrated) {
-        return;
-      }
-      // 如果是公开路由，不需要验证
-      if (PUBLIC_ROUTES.includes(location.pathname)) {
-        return;
-      }
-
-      // 如果已经认证，不需要重复验证
-      if (isAuthenticated) {
-        return;
-      }
-
-      // 检查是否有token
-      const token = localStorage.getItem('Authorization');
-
-      if (!token) {
-        // 没有token，重定向到登录页
-        navigate('/login', { replace: true });
+    const checkAuthentication = async () => {
+      // Skip if we're already authenticated or on client-side without localStorage
+      if (isAuthenticated || typeof window === 'undefined') {
+        setHasCheckedAuth(true);
         return;
       }
 
       setIsVerifying(true);
+      
       try {
-        const isValid = await verifyToken();
-        if (!isValid) {
-          // token验证失败，重定向到登录页
+        // Check if we have a token
+        const token = localStorage.getItem('Authorization');
+        
+        if (!token) {
+          // No token, redirect to login
           navigate('/login', { replace: true });
+          setHasCheckedAuth(true);
           return;
         }
+
+        // Ensure token is valid and refresh if needed
+        const isValid = await ensureValidToken();
+        
+        if (!isValid) {
+          // Token is invalid or couldn't be refreshed
+          navigate('/login', { replace: true });
+          setHasCheckedAuth(true);
+          return;
+        }
+
+        // Verify token with server
+        const tokenValid = await verifyToken();
+        
+        if (!tokenValid) {
+          // Token verification failed
+          navigate('/login', { replace: true });
+          setHasCheckedAuth(true);
+          return;
+        }
+
+        setHasCheckedAuth(true);
       } catch (error) {
-        console.error('Token verification failed:', error);
-        // 验证过程中出错，清除认证状态并重定向
+        console.error('Authentication check failed:', error);
         clearAuth();
         navigate('/login', { replace: true });
+        setHasCheckedAuth(true);
       } finally {
         setIsVerifying(false);
       }
     };
 
-    verifyUser();
-  }, [location.pathname, isAuthenticated, hasHydrated ]);
+    checkAuthentication();
+  }, [location.pathname, isAuthenticated]);
 
-  // 对于公开路由，直接渲染内容
-  if (PUBLIC_ROUTES.includes(location.pathname)) {
-    return (
-      <>
-        <Outlet />
-        <Toaster />
-      </>
-    );
-  }
-
-  // 显示加载状态
-  if (isLoading || isVerifying) {
+  // Show loading state while checking authentication
+  if ((isLoading || isVerifying || !hasCheckedAuth) && !isAuthenticated) {
     return (
       <div className="h-screen bg-gray-50 flex items-center justify-center dark:bg-gray-900">
         <HydrateFallbackTemplate />
@@ -97,8 +86,12 @@ export default function RootLayout() {
     );
   }
 
+  // If not authenticated and we've checked, show nothing (will redirect)
+  if (!isAuthenticated && hasCheckedAuth) {
+    return null;
+  }
 
-  // 认证成功，渲染主要内容
+  // Authenticated, render main content
   return (
     <div className="h-screen bg-gray-50 flex flex-col dark:bg-gray-900">
       
@@ -106,7 +99,7 @@ export default function RootLayout() {
         <TitleBar />
       </div>
 
-      {/* 主要内容区域 - 使用响应式字体大小 */}
+      {/* Main content area - responsive font size */}
       <main className="h-[calc(100vh-54px)] overflow-y-auto dark:bg-gray-900 text-base 2xl:text-lg">
         {isNavigating ? <HydrateFallbackTemplate /> : <Outlet />}
       </main>
