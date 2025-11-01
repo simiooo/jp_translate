@@ -45,7 +45,22 @@ export default {
         'zoom-in-95': 'zoom-in-95 0.3s ease-out',
         'slide-in-from-bottom-4': 'slide-in-from-bottom-4 0.3s ease-out',
         'in': 'fade-in-0 0.3s ease-out, zoom-in-95 0.3s ease-out, slide-in-from-bottom-4 0.3s ease-out'
-      }
+      },
+      colors: {
+        // 自定义柔和色
+        'soft-green-bg': 'var(--color-soft-green-bg)',
+        'soft-green-text': 'var(--color-soft-green-text)',
+        'soft-purple-bg': 'var(--color-soft-purple-bg)',
+        'soft-purple-text': 'var(--color-soft-purple-text)',
+        'soft-orange-bg': 'var(--color-soft-orange-bg)',
+        'soft-orange-text': 'var(--color-soft-orange-text)',
+        'soft-pink-bg': 'var(--color-soft-pink-bg)',
+        'soft-pink-text': 'var(--color-soft-pink-text)',
+        'soft-cyan-bg': 'var(--color-soft-cyan-bg)',
+        'soft-cyan-text': 'var(--color-soft-cyan-text)',
+        'soft-red-bg': 'var(--color-soft-red-bg)', // 新增的柔和红
+        'soft-red-text': 'var(--color-soft-red-text)',
+      },
     },
   },
   plugins: [
