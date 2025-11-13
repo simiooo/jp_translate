@@ -1,11 +1,13 @@
 export interface LoginFormData {
   email: string
   password: string
+  turnstileToken?: string
 }
 
 export interface RegisterFormData extends LoginFormData {
   username: string
   confirmPassword: string
+  turnstileToken?: string
 }
 
 export interface Role {

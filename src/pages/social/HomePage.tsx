@@ -251,14 +251,13 @@ const HomePage: React.FC = () => {
                   <>
                     <VList
                       ref={listContainerRef}
-                      count={posts.length}
-                      overscan={10}
+                      data={posts}
                       itemSize={160}
                       onScroll={handleScroll}
                       key={`vlist-${vlistKey}`}
                     >
-                      {(index) => {
-                        const post = posts[index];
+                      {(post,index) => {
+                        
                         if (!post) return <></>;
                         return (
                           <Post

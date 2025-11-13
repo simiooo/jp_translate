@@ -33,15 +33,16 @@ interface AuthState {
 }
 
 interface AuthActions {
-  login: (email: string, password: string) => Promise<void>
+  login: (email: string, password: string, turnstileToken?: string) => Promise<void>
   logout: () => Promise<void>
-  register: (username: string, email: string, password: string) => Promise<void>
+  register: (username: string, email: string, password: string, turnstileToken?: string) => Promise<void>
   fetchProfile: () => Promise<void>
   verifyToken: () => Promise<boolean>
   refreshToken: () => Promise<void>
   shouldRefreshToken: () => boolean
   isTokenExpired: () => boolean
   ensureValidToken: () => Promise<boolean>
+  initializeAuth: () => Promise<boolean>
   changePassword: (oldPassword: string, newPassword: string) => Promise<void>
   validatePassword: (password: string) => Promise<boolean>
   verifyEmail: (token: string) => Promise<void>
@@ -81,12 +82,13 @@ export const useAuthStore = create<AuthState & AuthActions>()(
       isLoading: false,
 
       // Actions
-      login: async (email: string, password: string) => {
+      login: async (email: string, password: string, turnstileToken?: string) => {
         set({ isLoading: true })
         try {
           const res = await alovaInstance.Post<TokenResponse | ErrorResponse>('/api/auth/login', {
             email,
-            password
+            password,
+            turnstile_token: turnstileToken
           })
 
           // Check if response is an error
@@ -108,6 +110,9 @@ export const useAuthStore = create<AuthState & AuthActions>()(
 
           // Calculate token expiry time
           const tokenExpiry = Date.now() + (tokenRes.expires_in * 1000)
+          
+          // Store expiry in localStorage for initialization check
+          localStorage.setItem('token_expiry', tokenExpiry.toString())
 
           set({
             user: tokenRes.user || null,
@@ -142,13 +147,14 @@ export const useAuthStore = create<AuthState & AuthActions>()(
         }
       },
 
-      register: async (username: string, email: string, password: string) => {
+      register: async (username: string, email: string, password: string, turnstileToken?: string) => {
         set({ isLoading: true })
         try {
           const res = await alovaInstance.Post<TokenResponse | ErrorResponse>('/api/auth/register', {
             username,
             email,
-            password
+            password,
+            turnstile_token: turnstileToken
           })
 
           // Check if response is an error
@@ -170,6 +176,9 @@ export const useAuthStore = create<AuthState & AuthActions>()(
 
           // Calculate token expiry time
           const tokenExpiry = Date.now() + (tokenRes.expires_in * 1000)
+          
+          // Store expiry in localStorage for initialization check
+          localStorage.setItem('token_expiry', tokenExpiry.toString())
 
           set({
             user: tokenRes.user || null,
@@ -255,6 +264,7 @@ export const useAuthStore = create<AuthState & AuthActions>()(
       clearAuth: () => {
         localStorage.removeItem('Authorization')
         localStorage.removeItem('refresh_token')
+        localStorage.removeItem('token_expiry')
         set({
           user: null,
           profile: null,
@@ -293,6 +303,9 @@ export const useAuthStore = create<AuthState & AuthActions>()(
 
           // Calculate token expiry time
           const tokenExpiry = Date.now() + (tokenRes.expires_in * 1000)
+          
+          // Store expiry in localStorage for initialization check
+          localStorage.setItem('token_expiry', tokenExpiry.toString())
 
           set({
             user: tokenRes.user || null,
@@ -340,6 +353,76 @@ export const useAuthStore = create<AuthState & AuthActions>()(
         }
         
         return true
+      },
+
+      // Initialize authentication state from localStorage and validate with server
+      initializeAuth: async (): Promise<boolean> => {
+        set({ isLoading: true })
+        
+        try {
+          // Check if tokens exist in localStorage
+          const token = localStorage.getItem('Authorization')
+          const refreshToken = localStorage.getItem('refresh_token')
+          
+          if (!token || !refreshToken) {
+            // No tokens found, not authenticated
+            set({ isAuthenticated: false, isLoading: false })
+            return false
+          }
+
+          // Check if token is expired
+          const tokenExpiry = localStorage.getItem('token_expiry')
+          let isExpired = false
+          
+          if (tokenExpiry) {
+            const expiryTime = parseInt(tokenExpiry, 10)
+            isExpired = Date.now() >= expiryTime
+          }
+
+          // If token is expired, try to refresh it
+          if (isExpired) {
+            try {
+              await get().refreshToken()
+            } catch (error) {
+              console.error('Token refresh failed during initialization:', error)
+              get().clearAuth()
+              set({ isAuthenticated: false, isLoading: false })
+              return false
+            }
+          }
+
+          // Verify token with server
+          const isValid = await get().verifyToken()
+          
+          if (!isValid) {
+            // Token verification failed, try refresh once more
+            try {
+              await get().refreshToken()
+              const refreshedValid = await get().verifyToken()
+              
+              if (!refreshedValid) {
+                get().clearAuth()
+                set({ isAuthenticated: false, isLoading: false })
+                return false
+              }
+            } catch (error) {
+              console.error('Token verification and refresh failed:', error)
+              get().clearAuth()
+              set({ isAuthenticated: false, isLoading: false })
+              return false
+            }
+          }
+
+          // Successfully authenticated
+          set({ isAuthenticated: true, isLoading: false })
+          return true
+          
+        } catch (error) {
+          console.error('Authentication initialization failed:', error)
+          get().clearAuth()
+          set({ isAuthenticated: false, isLoading: false })
+          return false
+        }
       },
 
       changePassword: async (oldPassword: string, newPassword: string) => {

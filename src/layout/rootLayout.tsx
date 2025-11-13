@@ -5,81 +5,79 @@ import { Toaster } from "~/components/ui/sonner";
 import { useAuthStore } from "~/store/auth";
 import { useEffect, useState } from "react";
 import { ScrollArea } from "~/components/ui/scroll-area";
+import { ErrorResponse, isErrorInCategory } from "~/types/errors";
 
 export default function RootLayout() {
   const navigation = useNavigation();
   const location = useLocation();
   const navigate = useNavigate();
   const {
-    verifyToken,
     isAuthenticated,
     isLoading,
     clearAuth,
-    ensureValidToken
+    initializeAuth
   } = useAuthStore();
   
-  const [isVerifying, setIsVerifying] = useState(false);
-  const [hasCheckedAuth, setHasCheckedAuth] = useState(false);
+  const [isInitializing, setIsInitializing] = useState(false);
+  const [authChecked, setAuthChecked] = useState(false);
   const isNavigating = Boolean(navigation.location);
 
-  // SSR-friendly authentication check
+  // Authentication initialization on app load and route changes
   useEffect(() => {
-    const checkAuthentication = async () => {
-      // Skip if we're already authenticated or on client-side without localStorage
-      if (isAuthenticated || typeof window === 'undefined') {
-        setHasCheckedAuth(true);
+    const initializeAuthentication = async () => {
+      // Skip if we're on server-side or already authenticated
+      if (typeof window === 'undefined') {
+        setAuthChecked(true);
         return;
       }
 
-      setIsVerifying(true);
+      // Skip authentication check for auth routes
+      const publicRoutes = ['/login', '/register', '/password-reset', '/email-verification'];
+      const isPublicRoute = publicRoutes.some(route => location.pathname.startsWith(route));
+      
+      if (isPublicRoute) {
+        setAuthChecked(true);
+        return;
+      }
+
+      setIsInitializing(true);
       
       try {
-        // Check if we have a token
-        const token = localStorage.getItem('Authorization');
+        // Initialize authentication state from localStorage and validate with server
+        const authSuccess = await initializeAuth();
         
-        if (!token) {
-          // No token, redirect to login
+        if (!authSuccess) {
+          // Authentication failed, redirect to login
           navigate('/login', { replace: true });
-          setHasCheckedAuth(true);
-          return;
         }
-
-        // Ensure token is valid and refresh if needed
-        const isValid = await ensureValidToken();
-        
-        if (!isValid) {
-          // Token is invalid or couldn't be refreshed
-          navigate('/login', { replace: true });
-          setHasCheckedAuth(true);
-          return;
-        }
-
-        // Verify token with server
-        const tokenValid = await verifyToken();
-        
-        if (!tokenValid) {
-          // Token verification failed
-          navigate('/login', { replace: true });
-          setHasCheckedAuth(true);
-          return;
-        }
-
-        setHasCheckedAuth(true);
       } catch (error) {
-        console.error('Authentication check failed:', error);
-        clearAuth();
-        navigate('/login', { replace: true });
-        setHasCheckedAuth(true);
+        console.error('Authentication initialization failed:', error);
+        
+        // Handle standardized errors
+        if (error && typeof error === 'object' && 'code' in error) {
+          const err = error as ErrorResponse;
+          
+          // Clear auth state for authentication errors
+          if (isErrorInCategory(err.code, 'AUTHENTICATION')) {
+            clearAuth();
+            navigate('/login', { replace: true });
+          }
+        } else {
+          // For unexpected errors, clear auth and redirect to login
+          clearAuth();
+          navigate('/login', { replace: true });
+        }
       } finally {
-        setIsVerifying(false);
+        setIsInitializing(false);
+        setAuthChecked(true);
       }
     };
 
-    checkAuthentication();
-  }, [location.pathname, isAuthenticated]);
+    initializeAuthentication();
+  }, [location.pathname, navigate, initializeAuth, clearAuth]);
 
   // Show loading state while checking authentication
-  if ((isLoading || isVerifying || !hasCheckedAuth) && !isAuthenticated) {
+  if (!authChecked || isInitializing || isLoading) {
     return (
       <div className="h-screen bg-gray-50 flex items-center justify-center dark:bg-gray-900">
         <HydrateFallbackTemplate />
@@ -87,15 +85,32 @@ export default function RootLayout() {
     );
   }
 
+  // For public routes, render without authentication check
+  const publicRoutes = ['/login', '/register', '/password-reset', '/email-verification'];
+  const isPublicRoute = publicRoutes.some(route => location.pathname.startsWith(route));
+  
+  if (isPublicRoute) {
+    return (
+      <div className="h-screen bg-gray-50 flex flex-col dark:bg-gray-900">
+        <div className="grow-0 shrink-0">
+          <TitleBar />
+        </div>
+        <ScrollArea className="h-[calc(100vh-54px)] overflow-y-auto dark:bg-gray-900 text-base 2xl:text-lg">
+          {isNavigating ? <HydrateFallbackTemplate className="" /> : <Outlet />}
+        </ScrollArea>
+        <Toaster />
+      </div>
+    );
+  }
+
   // If not authenticated and we've checked, show nothing (will redirect)
-  if (!isAuthenticated && hasCheckedAuth) {
+  if (!isAuthenticated && authChecked) {
     return null;
   }
 
   // Authenticated, render main content
   return (
     <div className="h-screen bg-gray-50 flex flex-col dark:bg-gray-900">
-      
       <div className="grow-0 shrink-0">
         <TitleBar />
       </div>

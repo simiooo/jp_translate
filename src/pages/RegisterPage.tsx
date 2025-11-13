@@ -25,6 +25,8 @@ import {
   ErrCodePasswordTooWeak,
   ErrCodeUserCreationFailed
 } from '~/types/errors'
+import { TurnstileWidget } from '~/components/TurnstileWidget'
+import { useState } from 'react'
 
 interface RegisterPageProps {
   onSwitchToLogin: () => void;
@@ -36,6 +38,7 @@ const registerSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
   confirmPassword: z.string().min(6, 'Please enter password again'),
+  turnstileToken: z.string().optional(),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords do not match",
   path: ["confirmPassword"],
@@ -53,6 +56,9 @@ export default function RegisterPage({}: RegisterPageProps) {
   const { register } = useAuthActions();
   const isLoading = useIsLoading();
   const navigate = useNavigate()
+  const [turnstileToken, setTurnstileToken] = useState<string>('');
+  const [turnstileResetKey, setTurnstileResetKey] = useState<number>(0);
+  
   const form = useForm<z.infer<typeof registerSchema>>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
@@ -60,15 +66,26 @@ export default function RegisterPage({}: RegisterPageProps) {
       email: '',
       password: '',
       confirmPassword: '',
+      turnstileToken: '',
     },
   });
 
   const onSubmit = async (data: z.infer<typeof registerSchema>) => {
     try {
-      await register(data.username, data.email, data.password);
+      // Update form data with turnstile token
+      const formData = {
+        ...data,
+        turnstileToken
+      };
+      
+      await register(formData.username, formData.email, formData.password, formData.turnstileToken);
       navigate('/email-verification')
     } catch (error) {
       console.log('Registration error:', error);
+      
+      // Reset Turnstile on error
+      setTurnstileResetKey(prev => prev + 1);
+      setTurnstileToken('');
       
       // Handle standardized error format
       if (isStandardizedError(error)) {
@@ -94,6 +111,23 @@ export default function RegisterPage({}: RegisterPageProps) {
       }
     }
   };
+
+  const handleTurnstileVerify = (token: string) => {
+    setTurnstileToken(token);
+    form.setValue('turnstileToken', token);
+  }
+
+  const handleTurnstileError = () => {
+    Toast.error(t('Security verification failed'));
+    setTurnstileToken('');
+    form.setValue('turnstileToken', '');
+  }
+
+  const handleTurnstileExpire = () => {
+    Toast.error(t('Verification expired, please try again'));
+    setTurnstileToken('');
+    form.setValue('turnstileToken', '');
+  }
 
   const onSwitchToLogin =() => {
     navigate('/login')
@@ -178,10 +212,22 @@ export default function RegisterPage({}: RegisterPageProps) {
                   />
               </div>
 
+              <div className="space-y-2">
+                <p className="text-sm text-muted-foreground">{t('Please complete the security verification')}</p>
+                <TurnstileWidget
+                  siteKey={import.meta.env.VITE_CLOUDFLARE_TURNSTILE_SITE_KEY || '1x00000000000000000000AA'}
+                  onVerify={handleTurnstileVerify}
+                  onError={handleTurnstileError}
+                  onExpire={handleTurnstileExpire}
+                  resetKey={turnstileResetKey}
+                  className="w-full"
+                />
+              </div>
+
               <Button
                 type="submit"
                 className="w-full"
-                disabled={form.formState.isSubmitting || isLoading}
+                disabled={form.formState.isSubmitting || isLoading || !turnstileToken}
               >
                 {(form.formState.isSubmitting || isLoading) ? t('Registering...') : t('Register')}
               </Button>

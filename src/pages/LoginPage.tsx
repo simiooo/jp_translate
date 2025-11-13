@@ -28,6 +28,8 @@ import {
   ErrCodeDailyLimitExceeded
 } from '~/types/errors'
 import { PaginatedResponse, TranslationRecord } from '~/types/history'
+import { TurnstileWidget } from '~/components/TurnstileWidget'
+import { useState } from 'react'
 
 
 
@@ -42,6 +44,7 @@ export function meta({}: Route.MetaArgs) {
 const loginSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
+  turnstileToken: z.string().optional(),
 })
 
 interface LoginPageProps {
@@ -57,11 +60,15 @@ export default function LoginPage({ }: LoginPageProps) {
   const { t } = useTranslation();
   const { login } = useAuthActions();
   const isLoading = useIsLoading();
+  const [turnstileToken, setTurnstileToken] = useState<string>('');
+  const [turnstileResetKey, setTurnstileResetKey] = useState<number>(0);
+  
   const form = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
       email: '',
       password: '',
+      turnstileToken: '',
     },
   })
   
@@ -69,10 +76,20 @@ export default function LoginPage({ }: LoginPageProps) {
   
   const onSubmit = async (data: z.infer<typeof loginSchema>) => {
     try {
-      await login(data.email, data.password);
+      // Update form data with turnstile token
+      const formData = {
+        ...data,
+        turnstileToken
+      };
+      
+      await login(formData.email, formData.password, formData.turnstileToken);
       navigate('/')
     } catch (error) {
       console.log('Login error:', error);
+      
+      // Reset Turnstile on error
+      setTurnstileResetKey(prev => prev + 1);
+      setTurnstileToken('');
       
       // Handle standardized error format
       if (isStandardizedError(error)) {
@@ -96,6 +113,23 @@ export default function LoginPage({ }: LoginPageProps) {
         Toast.error(t('Login failed, please try again'));
       }
     }
+  }
+
+  const handleTurnstileVerify = (token: string) => {
+    setTurnstileToken(token);
+    form.setValue('turnstileToken', token);
+  }
+
+  const handleTurnstileError = () => {
+    Toast.error(t('Security verification failed'));
+    setTurnstileToken('');
+    form.setValue('turnstileToken', '');
+  }
+
+  const handleTurnstileExpire = () => {
+    Toast.error(t('Verification expired, please try again'));
+    setTurnstileToken('');
+    form.setValue('turnstileToken', '');
   }
 
    useRequest(async () => {
@@ -176,10 +210,22 @@ export default function LoginPage({ }: LoginPageProps) {
                 />
               </div>
 
+              <div className="space-y-2">
+                <p className="text-sm text-muted-foreground">{t('Please complete the security verification')}</p>
+                <TurnstileWidget
+                  siteKey={import.meta.env.VITE_CLOUDFLARE_TURNSTILE_SITE_KEY || '1x00000000000000000000AA'}
+                  onVerify={handleTurnstileVerify}
+                  onError={handleTurnstileError}
+                  onExpire={handleTurnstileExpire}
+                  resetKey={turnstileResetKey}
+                  className="w-full"
+                />
+              </div>
+
               <Button
                 type="submit"
                 className="w-full"
-                disabled={form.formState.isSubmitting || isLoading}
+                disabled={form.formState.isSubmitting || isLoading || !turnstileToken}
               >
                 {(form.formState.isSubmitting || isLoading) ? t('Logging in...') : t('Login')}
               </Button>
