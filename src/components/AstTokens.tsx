@@ -145,7 +145,7 @@ export const AstTokens: React.FC<AstTokensProps> = ({
  if (!ast) return null;
 
   return (
-    <div className="flex flex-col gap-4 p-1">
+    <div className="h-full flex flex-col gap-4">
       {/* Display current level tokens */}
       {ast.tk && (
           ast.tk.map((token, index) => (

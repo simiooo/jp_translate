@@ -4,7 +4,6 @@ import TitleBar from "~/components/TitleBar";
 import { Toaster } from "~/components/ui/sonner";
 import { useAuthStore } from "~/store/auth";
 import { useEffect, useState } from "react";
-import { ScrollArea } from "~/components/ui/scroll-area";
 import { ErrorResponse, isErrorInCategory } from "~/types/errors";
 
 export default function RootLayout() {
@@ -74,7 +73,7 @@ export default function RootLayout() {
     };
 
     initializeAuthentication();
-  }, [location.pathname, navigate, initializeAuth, clearAuth]);
+  }, [ navigate, initializeAuth, clearAuth]);
 
   // Show loading state while checking authentication
   if (!authChecked || isInitializing || isLoading) {
@@ -95,9 +94,9 @@ export default function RootLayout() {
         <div className="grow-0 shrink-0">
           <TitleBar />
         </div>
-        <ScrollArea className="h-[calc(100vh-54px)] overflow-y-auto dark:bg-gray-900 text-base 2xl:text-lg">
+        <div className="flex-1 min-h-0 dark:bg-gray-900 text-base 2xl:text-lg">
           {isNavigating ? <HydrateFallbackTemplate className="" /> : <Outlet />}
-        </ScrollArea>
+        </div>
         <Toaster />
       </div>
     );
@@ -116,11 +115,11 @@ export default function RootLayout() {
       </div>
 
       {/* Main content area - responsive font size */}
-      <ScrollArea className="h-[calc(100vh-54px)] overflow-y-auto dark:bg-gray-900 text-base 2xl:text-lg">
+      <div className="flex-1 min-h-0 dark:bg-gray-900 text-base 2xl:text-lg">
         {isNavigating ? <HydrateFallbackTemplate
-        className="h-[calc(100vh-54px)]"
+        className="h-full"
         /> : <Outlet />}
-      </ScrollArea>
+      </div>
       <Toaster />
     </div>
   );

@@ -212,8 +212,8 @@ function App() {
   };
 
   return (
-    <div>
-      <div className="h-full bg-background overflow-x-hidden flex">
+    <div className="h-full">
+      <div className="h-full bg-background flex">
         {/* 侧边栏历史记录 */}
         <HistorySidebar
           isHistoryCollapsed={isHistoryCollapsed}
