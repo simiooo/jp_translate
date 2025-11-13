@@ -1,6 +1,6 @@
 import React from "react";
 import { TranslationRecord } from "~/types/history";
-import { VList, VListHandle } from "virtua";
+import { VListHandle } from "virtua";
 import { ChevronLeft, ChevronRight, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,6 +8,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { useTranslation } from 'react-i18next';
+import { ScrollArea } from "./ui/scroll-area";
 
 
 // Define the structure of the parsed translated_text
@@ -39,7 +40,7 @@ const getAvatarColor = (index: number) => {
     "bg-pink-100 text-pink-700 dark:bg-pink-900 dark:text-pink-300",
     "bg-cyan-100 text-cyan-700 dark:bg-cyan-900 dark:text-cyan-300"
   ];
-  return colors[index % colors.length];
+  return colors[index % colors?.length];
 };
 export const HistorySidebar: React.FC<HistorySidebarProps> = ({
   isHistoryCollapsed,
@@ -56,14 +57,9 @@ export const HistorySidebar: React.FC<HistorySidebarProps> = ({
  const { t } = useTranslation();
  const listContainerRef = React.useRef<VListHandle>(null);
   const [searchQuery, setSearchQuery] = React.useState("");
-  const [vlistKey, setVlistKey] = React.useState(0);
   const [fetching, setFetching] = React.useState(false);
   const fetchedCountRef = React.useRef(-1);
 
-  // Reset VList key when collapsing/expanding to prevent rendering artifacts
-  React.useEffect(() => {
-    setVlistKey(prev => prev + 1);
-  }, [isHistoryCollapsed]);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
@@ -83,14 +79,13 @@ export const HistorySidebar: React.FC<HistorySidebarProps> = ({
 
   const handleScroll = React.useCallback(async () => {
     if (!listContainerRef.current) return;
-    
-    const count = translations.length;
+    const count = translations?.length;
     if (fetchedCountRef.current < count &&
         listContainerRef.current.findEndIndex() + 50 > count) {
       fetchedCountRef.current = count;
       await fetchItems();
     }
-  }, [translations.length, fetchItems]);
+  }, [translations?.length, fetchItems]);
 
   // Check if we need to load more data on initial render
   React.useEffect(() => {
@@ -102,7 +97,7 @@ export const HistorySidebar: React.FC<HistorySidebarProps> = ({
     if (hasEmptySpace) {
       fetchItems();
     }
-  }, [translations.length, hasMore, isError, fetchItems]);
+  }, [translations?.length, hasMore, isError, fetchItems]);
 
   // Reset VList only when search query changes or when collapsing/expanding
   // This prevents unwanted scroll reset during infinite loading
@@ -153,7 +148,7 @@ export const HistorySidebar: React.FC<HistorySidebarProps> = ({
           </div>
         )}
         <CardContent className="flex-1 p-0 overflow-hidden">
-          {historyLoading && translations.length === 0 ? (
+          {historyLoading && translations?.length === 0 ? (
             <div className="space-y-4 p-4">
               {Array.from({ length: 5 }).map((_, i) => (
                 <div key={i} className="space-y-2">
@@ -164,17 +159,12 @@ export const HistorySidebar: React.FC<HistorySidebarProps> = ({
               ))}
             </div>
           ) : (
-            <div className="h-full">
-              <VList
-                ref={listContainerRef}
-                count={translations?.length || 0}
-                overscan={10}
-                onScroll={handleScroll}
-                itemSize={isHistoryCollapsed ? 60 : 100}
-                key={`vlist-${vlistKey}-${isHistoryCollapsed ? 'collapsed' : 'expanded'}`}
-              >
-                {(index: number) => {
-                  const record = translations?.[index];
+            <ScrollArea className="h-full"
+            onScroll={handleScroll}
+            vlistRef={listContainerRef}
+            >
+              
+                {translations.map((record,index: number) => {
                   if (!record) return <></>;
                   return (
                     <div
@@ -225,8 +215,7 @@ export const HistorySidebar: React.FC<HistorySidebarProps> = ({
                       )}
                     </div>
                   );
-                }}
-              </VList>
+                })}
               {fetching && (
                 <div className="space-y-4 p-4">
                   {Array.from({ length: 3 }).map((_, i) => (
@@ -238,7 +227,7 @@ export const HistorySidebar: React.FC<HistorySidebarProps> = ({
                   ))}
                 </div>
               )}
-              {!hasMore && translations.length > 0 && (
+              {!hasMore && translations?.length > 0 && (
                 <div className="p-4 text-center text-sm text-muted-foreground">
                   {t('No more data')}
                 </div>
@@ -248,7 +237,7 @@ export const HistorySidebar: React.FC<HistorySidebarProps> = ({
                   {t('Load failed, please try again')}
                 </div>
               )}
-            </div>
+            </ScrollArea>
           )}
           
         </CardContent>

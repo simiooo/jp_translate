@@ -14,7 +14,7 @@ import {
   FormLabel,
   FormMessage,
 } from '~/components/ui/form';
-import { useNavigate } from 'react-router';
+import { ErrorResponse, useNavigate } from 'react-router';
 import { alovaInstance, getErrorMessage, isStandardizedError } from '~/utils/request';
 import { useRequest } from 'ahooks';
 import { HydrateFallbackTemplate } from '~/components/HydrateFallbackTemplate'
@@ -27,6 +27,7 @@ import {
   ErrCodeInvalidCredentials,
   ErrCodeDailyLimitExceeded
 } from '~/types/errors'
+import { PaginatedResponse, TranslationRecord } from '~/types/history'
 
 
 
@@ -99,7 +100,10 @@ export default function LoginPage({ }: LoginPageProps) {
 
    useRequest(async () => {
     try {
-      const data = await alovaInstance.Get<{[key: string]: string | number} | null>("/api/translation");
+      const data = await alovaInstance.Get<ErrorResponse | {
+                    translations?: TranslationRecord[];
+                    pagination?: PaginatedResponse;
+                  }>("/api/translation");
       if(!data) throw Error('Not logined')
       if ("message" in data) {
         throw Error(String(data.message))

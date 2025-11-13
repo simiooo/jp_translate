@@ -34,11 +34,11 @@ const WordCard: React.FC<WordCardProps> = ({
       <div className="flex justify-between items-start mb-5">
         <div className="flex-1">
           <h3 className={`text-2xl font-semibold ${isSelected ? 'text-blue-900 dark:text-blue-100' : 'text-gray-700 dark:text-gray-300'}`}>
-            {token.word}
+            {token.w}
           </h3>
-          {token.kana && (
+          {token.k && (
             <p className={`text-xs ${isSelected ? 'text-blue-800 dark:text-blue-200' : 'text-gray-600 dark:text-gray-400'}`}>
-              {token.kana}
+              {token.k}
             </p>
           )}
         </div>
@@ -51,30 +51,30 @@ const WordCard: React.FC<WordCardProps> = ({
 
       {/* Content area */}
       <div className="space-y-2">
-        {token.inflection && <div className="flex items-center gap-2">
-          <Tag type="inflection" label={t('Conjugation')} value={token.inflection}></Tag>
+        {token.i && <div className="flex items-center gap-2">
+          <Tag type="inflection" label={t('Conjugation')} value={token.i}></Tag>
         </div>}
         
-        {token.meaning && (
+        {token.m && (
           <div>
             <p className={`text-xs font-medium ${isSelected ? 'text-blue-800 dark:text-blue-200' : 'text-gray-700 dark:text-gray-300'}`}>
-              {t('Meaning')}: {token.meaning}
+              {t('Meaning')}: {token.m}
             </p>
           </div>
         )}
         
-        {token.lemma && (
+        {token.l && (
           <div>
             <p className={`text-xs font-medium ${isSelected ? 'text-blue-800 dark:text-blue-200' : 'text-gray-700 dark:text-gray-300'}`}>
-              {t('Original form')}: {token.lemma}
+              {t('Original form')}: {token.l}
             </p>
           </div>
         )}
         
-        {token.inflection && (
+        {token.i && (
           <div>
             <p className={`text-sm font-medium ${isSelected ? 'text-blue-800 dark:text-blue-200' : 'text-gray-700 dark:text-gray-300'}`}>
-              {t('Conjugation')}: {token.inflection}
+              {t('Conjugation')}: {token.i}
             </p>
           </div>
         )}

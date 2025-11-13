@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from "react";
-import { useThrottle, useKeyPress } from "ahooks";
+import { useThrottle, useKeyPress, useResponsive } from "ahooks";
 import { jsonrepair } from "jsonrepair";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
@@ -73,16 +73,16 @@ function App() {
     historyLoad,
     PAGE_SIZE,
   } = useTranslationHistory();
-
+  const responsiveInfo = useResponsive()
   // SSR-compatible responsive direction logic
   const getResizableDirection = useMemo(() => {
-    if (!history?.responsiveInfo) return "horizontal";
+    if (!responsiveInfo) return "horizontal";
     
-    const { xs, sm } = history.responsiveInfo;
+    const { xs,sm,md } = responsiveInfo;
     // Use vertical layout for mobile devices (xs and sm breakpoints)
     // Use horizontal layout for larger screens (md, lg, xl, etc.)
-    return (xs || sm) ? "vertical" : "horizontal";
-  }, [history?.responsiveInfo]);
+    return (!md && (sm || xs)) ? "vertical" : "horizontal";
+  }, [responsiveInfo]);
 
   const {
     isOpen,
@@ -241,15 +241,6 @@ function App() {
             );
           }}
         />
-
-        {/* 遮罩层 - 移动端显示 */}
-        {showHistory && (
-          <div
-            className="fixed inset-0 blur-2xl bg-black/10 z-10 md:hidden"
-            onClick={() => setShowHistory(false)}
-          ></div>
-        )}
-
         {/* 主要内容区域 */}
         <div className="flex-1 min-w-0">
           <ResizablePanelGroup

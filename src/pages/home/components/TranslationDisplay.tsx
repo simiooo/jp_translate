@@ -1,6 +1,5 @@
 import { Cursor } from "~/components/Cursor";
 import { AstTokens } from "~/components/AstTokens";
-import { Skeleton } from "~/components/ui/skeleton";
 import Markdown from "react-markdown";
 import { useTranslation } from "react-i18next";
 
@@ -24,12 +23,7 @@ export function TranslationDisplay({
   const { t } = useTranslation();
 
   return (
-    <div className="relative h-[calc(100vh-121px)]">
-      {loading && (
-        <div className="absolute top-4 right-4 z-10">
-          <Skeleton className="h-8 w-8 rounded-full" />
-        </div>
-      )}
+    <div className="relative h-full">
       <div className="h-full flex flex-col bg-card rounded-lg">
         {translation || loading ? (
           <>

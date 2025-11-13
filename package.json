@@ -85,7 +85,7 @@
     "tailwind-scrollbar": "^3.1.0",
     "tailwindcss": "^4.1.12",
     "uuid": "^11.1.0",
-    "virtua": "^0.41.5",
+    "virtua": "^0.46.7",
     "win32-api": "^26.1.2",
     "zod": "^3.25.76",
     "zustand": "^5.0.8"

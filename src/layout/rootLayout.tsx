@@ -4,6 +4,7 @@ import TitleBar from "~/components/TitleBar";
 import { Toaster } from "~/components/ui/sonner";
 import { useAuthStore } from "~/store/auth";
 import { useEffect, useState } from "react";
+import { ScrollArea } from "~/components/ui/scroll-area";
 
 export default function RootLayout() {
   const navigation = useNavigation();
@@ -100,9 +101,11 @@ export default function RootLayout() {
       </div>
 
       {/* Main content area - responsive font size */}
-      <main className="h-[calc(100vh-54px)] overflow-y-auto dark:bg-gray-900 text-base 2xl:text-lg">
-        {isNavigating ? <HydrateFallbackTemplate /> : <Outlet />}
-      </main>
+      <ScrollArea className="h-[calc(100vh-54px)] overflow-y-auto dark:bg-gray-900 text-base 2xl:text-lg">
+        {isNavigating ? <HydrateFallbackTemplate
+        className="h-[calc(100vh-54px)]"
+        /> : <Outlet />}
+      </ScrollArea>
       <Toaster />
     </div>
   );

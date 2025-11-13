@@ -276,7 +276,7 @@ export const useAuthStore = create<AuthState & AuthActions>()(
           },{
             cacheFor: {
               mode: 'memory',
-              expire: 60 * 10 * 1000
+              expire: 60 * 5 * 1000
             }
           })
 
@@ -325,13 +325,8 @@ export const useAuthStore = create<AuthState & AuthActions>()(
 
       // Ensure we have a valid token, refreshing if needed
       ensureValidToken: async (): Promise<boolean> => {
-        const { isTokenExpired, shouldRefreshToken, refreshToken, clearAuth } = get()
+        const { shouldRefreshToken, refreshToken, clearAuth } = get()
         
-        if (isTokenExpired()) {
-          // Token is expired, clear auth
-          clearAuth()
-          return false
-        }
         
         if (shouldRefreshToken()) {
           try {

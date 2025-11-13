@@ -9,7 +9,7 @@ import {
 
 import type { Route } from "./+types/root";
 import "./app.css";
-import icon from "~/assets/favicon.ico";
+import icon from "~/assets/favicon.svg";
 import { ThemeProvider } from "./components/theme-provider";
 import "./i18n"; // Import i18n configuration
 

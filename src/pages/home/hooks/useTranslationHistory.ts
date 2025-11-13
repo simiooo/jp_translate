@@ -6,6 +6,7 @@ import { Toast } from "~/components/ToastCompat";
 import type { TranslationRecord } from "~/types/history";
 import { alovaInstance } from "~/utils/request";
 import { PaginatedResponse } from "~/types/history";
+import { ErrorResponse } from "~/types/errors";
 
 const PAGE_SIZE = 50;
 
@@ -42,7 +43,7 @@ export function useTranslationHistory() {
     ): Promise<{ total: number; list: TranslationRecord[] }> => {
       try {
         const data = await alovaInstance.Get<
-          | { message: string }
+          | ErrorResponse
           | {
               translations?: TranslationRecord[];
               pagination?: PaginatedResponse;
