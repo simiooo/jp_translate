@@ -1,6 +1,6 @@
 
 import { cn } from '@/lib/utils';
-import logo from '@/assets/logo.png'
+import logo from '@/assets/favicon.svg'
 
 interface HydrateFallbackProps {
   /**
