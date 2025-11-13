@@ -19,7 +19,7 @@ import {
   PasswordResetValidateResponse
 } from '~/types/auth'
 import { alovaInstance, isStandardizedError } from '~/utils/request'
-import { isErrorInCategory } from '~/types/errors'
+import { ErrorResponse, isErrorInCategory } from '~/types/errors'
 import { useShallow } from 'zustand/shallow';
 
 interface AuthState {
@@ -84,27 +84,35 @@ export const useAuthStore = create<AuthState & AuthActions>()(
       login: async (email: string, password: string) => {
         set({ isLoading: true })
         try {
-          const res = await alovaInstance.Post<TokenResponse>('/api/auth/login', {
+          const res = await alovaInstance.Post<TokenResponse | ErrorResponse>('/api/auth/login', {
             email,
             password
           })
 
+          // Check if response is an error
+          if (res && typeof res === 'object' && 'success' in res && res.success === false) {
+            throw new Error((res as ErrorResponse).message || 'Login failed')
+          }
+
+          // Cast to TokenResponse since we've confirmed it's not an ErrorResponse
+          const tokenRes = res as TokenResponse
+          
           // Check if response has the expected structure
-          if (!res.access_token) {
+          if (!tokenRes.access_token) {
             throw new Error('Access token not found in response')
           }
 
-          const token = `Bearer ${res.access_token}`
+          const token = `Bearer ${tokenRes.access_token}`
           localStorage.setItem('Authorization', token)
-          localStorage.setItem('refresh_token', res.refresh_token)
+          localStorage.setItem('refresh_token', tokenRes.refresh_token)
 
           // Calculate token expiry time
-          const tokenExpiry = Date.now() + (res.expires_in * 1000)
+          const tokenExpiry = Date.now() + (tokenRes.expires_in * 1000)
 
           set({
-            user: res.user || null,
-            token: res.access_token,
-            refresh_token: res.refresh_token,
+            user: tokenRes.user || null,
+            token: tokenRes.access_token,
+            refresh_token: tokenRes.refresh_token,
             tokenExpiry,
             isAuthenticated: true,
             isLoading: false
@@ -137,28 +145,36 @@ export const useAuthStore = create<AuthState & AuthActions>()(
       register: async (username: string, email: string, password: string) => {
         set({ isLoading: true })
         try {
-          const res = await alovaInstance.Post<TokenResponse>('/api/auth/register', {
+          const res = await alovaInstance.Post<TokenResponse | ErrorResponse>('/api/auth/register', {
             username,
             email,
             password
           })
 
+          // Check if response is an error
+          if (res && typeof res === 'object' && 'success' in res && res.success === false) {
+            throw new Error((res as ErrorResponse).message || 'Registration failed')
+          }
+
+          // Cast to TokenResponse since we've confirmed it's not an ErrorResponse
+          const tokenRes = res as TokenResponse
+          
           // Check if response has the expected structure
-          if (!res.access_token) {
+          if (!tokenRes.access_token) {
             throw new Error('Access token not found in response')
           }
 
-          const token = `Bearer ${res.access_token}`
+          const token = `Bearer ${tokenRes.access_token}`
           localStorage.setItem('Authorization', token)
-          localStorage.setItem('refresh_token', res.refresh_token)
+          localStorage.setItem('refresh_token', tokenRes.refresh_token)
 
           // Calculate token expiry time
-          const tokenExpiry = Date.now() + (res.expires_in * 1000)
+          const tokenExpiry = Date.now() + (tokenRes.expires_in * 1000)
 
           set({
-            user: res.user || null,
-            token: res.access_token,
-            refresh_token: res.refresh_token,
+            user: tokenRes.user || null,
+            token: tokenRes.access_token,
+            refresh_token: tokenRes.refresh_token,
             tokenExpiry,
             isAuthenticated: true,
             isLoading: false
@@ -255,21 +271,33 @@ export const useAuthStore = create<AuthState & AuthActions>()(
         set({ isLoading: true })
         try {
           const refreshToken = localStorage.getItem('refresh_token')
-          const res = await alovaInstance.Post<TokenResponse>('/api/auth/refresh', {
+          const res = await alovaInstance.Post<TokenResponse | ErrorResponse>('/api/auth/refresh', {
             refresh_token: refreshToken
+          },{
+            cacheFor: {
+              mode: 'memory',
+              expire: 60 * 10 * 1000
+            }
           })
 
-          const token = `Bearer ${res.access_token}`
+          // Check if response is an error
+          if (res && typeof res === 'object' && 'success' in res && res.success === false) {
+            throw new Error((res as ErrorResponse).message || 'Token refresh failed')
+          }
+
+          // Cast to TokenResponse since we've confirmed it's not an ErrorResponse
+          const tokenRes = res as TokenResponse
+          const token = `Bearer ${tokenRes.access_token}`
           localStorage.setItem('Authorization', token)
-          localStorage.setItem('refresh_token', res.refresh_token)
+          localStorage.setItem('refresh_token', tokenRes.refresh_token)
 
           // Calculate token expiry time
-          const tokenExpiry = Date.now() + (res.expires_in * 1000)
+          const tokenExpiry = Date.now() + (tokenRes.expires_in * 1000)
 
           set({
-            user: res.user || null,
-            token: res.access_token,
-            refresh_token: res.refresh_token,
+            user: tokenRes.user || null,
+            token: tokenRes.access_token,
+            refresh_token: tokenRes.refresh_token,
             tokenExpiry,
             isAuthenticated: true,
             isLoading: false
