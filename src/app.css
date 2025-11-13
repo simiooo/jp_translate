@@ -4,6 +4,26 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+  /* 新增的自定义柔和色 */
+  --color-soft-green-bg: oklch(0.93 0.05 160); /* 柔和浅绿背景 */
+  --color-soft-green-text: oklch(0.35 0.08 160); /* 柔和深绿文本 */
+
+  --color-soft-purple-bg: oklch(0.93 0.04 290); /* 柔和浅紫背景 */
+  --color-soft-purple-text: oklch(0.35 0.06 290); /* 柔和深紫文本 */
+
+  --color-soft-orange-bg: oklch(0.93 0.06 80); /* 柔和浅橙背景 (近似Accent) */
+  --color-soft-orange-text: oklch(0.35 0.09 80); /* 柔和深橙文本 */
+
+  --color-soft-pink-bg: oklch(0.93 0.05 340); /* 柔和浅粉背景 */
+  --color-soft-pink-text: oklch(0.35 0.08 340); /* 柔和深粉文本 */
+
+  --color-soft-cyan-bg: oklch(0.93 0.04 200); /* 柔和浅青背景 */
+  --color-soft-cyan-text: oklch(0.35 0.07 200); /* 柔和深青文本 */
+
+  /* 为图表或特定情绪添加的柔和红 (Destructive的柔和版) */
+  --color-soft-red-bg: oklch(0.93 0.06 20); /* 柔和浅红背景 */
+  --color-soft-red-text: oklch(0.35 0.09 20); /* 柔和深红文本 */
+
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -39,88 +59,119 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+
+  /* 新增的自定义柔和色 (暗色模式) */
+  --color-soft-green-bg: oklch(0.3 0.08 160);
+  --color-soft-green-text: oklch(0.7 0.1 160);
+
+  --color-soft-purple-bg: oklch(0.3 0.06 290);
+  --color-soft-purple-text: oklch(0.7 0.08 290);
+
+  --color-soft-orange-bg: oklch(0.3 0.09 80);
+  --color-soft-orange-text: oklch(0.7 0.12 80);
+
+  --color-soft-pink-bg: oklch(0.3 0.08 340);
+  --color-soft-pink-text: oklch(0.7 0.1 340);
+
+  --color-soft-cyan-bg: oklch(0.3 0.07 200);
+  --color-soft-cyan-text: oklch(0.7 0.09 200);
+
+  --color-soft-red-bg: oklch(0.3 0.09 20);
+  --color-soft-red-text: oklch(0.7 0.12 20);
 }
 
 :root {
-  --radius: 0.625rem;
-  --text-xs: 0.84rem;    /* 12px → ~13.4px (12% increase) */
-  --text-sm: 0.98rem;    /* 14px → ~15.7px (12% increase) */
-  --text-base: 1.12rem;  /* 16px → ~17.9px (12% increase) */
-  --text-lg: 1.26rem;    /* 18px → ~20.2px (12% increase) */
-  --text--xl: 1.4rem;     /* 20px → ~22.4px (12% increase) */
-  --text-2xl: 1.68rem;   /* 24px → ~26.9px (12% increase) */
-  --text-3xl: 2.1rem;    /* 30px → ~33.6px (12% increase) */
-  --text-4xl: 2.52rem;   /* 36px → ~40.3px (12% increase) */
-  --text-5xl: 3.36rem;   /* 48px → ~53.8px (12% increase) */
-  --text-6xl: 4.2rem;    /* 60px → ~67.2px (12% increase) */
-  --text-7xl: 5.04rem;   /* 72px → ~80.6px (12% increase) */
-  --text-8xl: 6.72rem;   /* 96px → ~107.5px (12% increase) */
-  --text-9xl: 8.96rem;   /* 128px → ~143.4px (12% increase) */
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --radius: 0.625rem; /* 保持中等圆角 */
+  
+  /* 基础颜色 - 温暖柔和 */
+  --background: oklch(0.985 0.005 60); /* 温暖米白/浅灰 */
+  --foreground: oklch(0.2 0.005 60);    /* 深炭灰文本 */
+  --card: oklch(1 0 0);                 /* 纯白卡片 */
+  --card-foreground: var(--foreground);
+  --popover: var(--card);
+  --popover-foreground: var(--foreground);
+  
+  /* 强调色 - 浅绿主色调 */
+  --primary: oklch(0.5 0.1 160);         /* 柔和浅绿 (Primary) */
+  --primary-foreground: oklch(1 0 0);
+  
+  /* 辅助色 - 浅紫/浅灰 */
+  --secondary: oklch(0.93 0.01 290);     /* 淡雅浅紫 (Secondary) */
+  --secondary-foreground: var(--foreground);
+  --muted: oklch(0.96 0.005 60);         /* 柔和静音灰 */
+  --muted-foreground: oklch(0.5 0.005 60);
+  --accent: oklch(0.96 0.015 80);        /* 活力浅黄 (Accent) */
+  --accent-foreground: var(--foreground);
+
+  /* 状态与边框 */
+  --destructive: oklch(0.7 0.15 20);     /* 柔和警示红 */
+  --destructive-foreground: oklch(1 0 0);
+  --border: oklch(0.9 0.005 60);         /* 柔和边框 */
+  --input: oklch(0.95 0.005 60);         /* 输入框背景 */
+  --ring: oklch(0.7 0.05 160);           /* 浅绿焦点环 */
+  
+  /* 统计图表颜色 (参考图中的情绪色) */
+  --chart-1: oklch(0.65 0.15 120);       /* 成长绿 */
+  --chart-2: oklch(0.75 0.1 270);        /* 平静蓝紫 */
+  --chart-3: oklch(0.85 0.15 80);        /* 幸福黄 */
+  --chart-4: oklch(0.7 0.1 20);          /* 压力/愤怒红 */
+  --chart-5: oklch(0.7 0.05 60);         /* 悲伤灰 */
+
+  /* 侧边栏保持与主色调一致，如果应用有侧边栏 */
+  --sidebar: var(--background);
+  --sidebar-foreground: var(--foreground);
+  --sidebar-primary: var(--primary);
+  --sidebar-primary-foreground: var(--primary-foreground);
+  --sidebar-accent: var(--secondary);
+  --sidebar-accent-foreground: var(--secondary-foreground);
+  --sidebar-border: var(--border);
+  --sidebar-ring: var(--ring);
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  /* 基础颜色 - 柔和深色 */
+  --background: oklch(0.18 0.01 250);   /* 柔和深灰蓝 */
+  --foreground: oklch(0.95 0.005 60);    /* 亮米白文本 */
+  --card: oklch(0.25 0.01 250);          /* 略深的卡片背景 */
+  --card-foreground: var(--foreground);
+  --popover: oklch(0.3 0.01 250);        /* 弹窗背景 */
+  --popover-foreground: var(--foreground);
+  
+  /* 强调色 - 浅绿主色调 */
+  --primary: oklch(0.6 0.15 160);        /* 柔和浅绿 (Primary) */
+  --primary-foreground: oklch(0.1 0 0);  /* 深色文本 */
+  
+  /* 辅助色 */
+  --secondary: oklch(0.3 0.01 290);      /* 深紫 (Secondary) */
+  --secondary-foreground: var(--foreground);
+  --muted: oklch(0.3 0.005 60);
+  --muted-foreground: oklch(0.6 0.005 60);
+  --accent: oklch(0.35 0.015 80);        /* 略深的浅黄 (Accent) */
+  --accent-foreground: var(--foreground);
+
+  /* 状态与边框 */
+  --destructive: oklch(0.7 0.15 20);
+  --destructive-foreground: oklch(0.1 0 0);
+  --border: oklch(0.3 0.005 60);
+  --input: oklch(0.35 0.005 60);
+  --ring: oklch(0.6 0.1 160);
+  
+  /* 统计图表颜色 (在暗色模式下略微调亮) */
+  --chart-1: oklch(0.7 0.15 120);
+  --chart-2: oklch(0.7 0.1 270);
+  --chart-3: oklch(0.85 0.15 80);
+  --chart-4: oklch(0.8 0.1 20);
+  --chart-5: oklch(0.6 0.05 60);
+
+  /* 侧边栏保持一致 */
+  --sidebar: var(--background);
+  --sidebar-foreground: var(--foreground);
+  --sidebar-primary: var(--primary);
+  --sidebar-primary-foreground: var(--primary-foreground);
+  --sidebar-accent: var(--secondary);
+  --sidebar-accent-foreground: var(--secondary-foreground);
+  --sidebar-border: var(--border);
+  --sidebar-ring: var(--ring);
 }
 
 @layer base {
