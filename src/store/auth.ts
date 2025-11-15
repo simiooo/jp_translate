@@ -88,7 +88,7 @@ export const useAuthStore = create<AuthState & AuthActions>()(
           const res = await alovaInstance.Post<TokenResponse | ErrorResponse>('/api/auth/login', {
             email,
             password,
-            turnstile_token: turnstileToken
+            turnstileToken: turnstileToken
           })
 
           // Check if response is an error
@@ -154,7 +154,7 @@ export const useAuthStore = create<AuthState & AuthActions>()(
             username,
             email,
             password,
-            turnstile_token: turnstileToken
+            turnstileToken: turnstileToken
           })
 
           // Check if response is an error

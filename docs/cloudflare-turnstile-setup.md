@@ -84,7 +84,7 @@ interface TurnstileWidgetProps {
 
 为了完成 Turnstile 集成，后端需要：
 
-1. 接收前端发送的 `turnstile_token` 字段
+1. 接收前端发送的 `turnstileToken` 字段
 2. 使用 Cloudflare Secret Key 验证 token
 3. 验证 API 调用示例：
 
@@ -94,7 +94,7 @@ const response = await fetch('https://challenges.cloudflare.com/turnstile/v0/sit
   headers: {
     'Content-Type': 'application/x-www-form-urlencoded',
   },
-  body: `secret=${secret_key}&response=${turnstile_token}`,
+  body: `secret=${secret_key}&response=${turnstileToken}`,
 });
 
 const result = await response.json();
