@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, useCallback } from "react";
 import { useKeyPress } from "ahooks";
 import { MdAutoFixHigh, MdOutlineTranslate, MdVolumeUp, MdMoreVert } from "react-icons/md";
 import { IoImageOutline } from "react-icons/io5";
@@ -73,6 +73,49 @@ export function TranslationForm({
     form.setFocus("text");
   });
 
+  // 处理文件上传的方法，封装为独立方法方便调用
+  const handleFileUpload = useCallback(async (files: File[]) => {
+    try {
+      for (const file of files) {
+        let uploadableFile: UploadFileItem | undefined;
+        if (
+          (uploadableFile = fileList?.find?.(
+            (el) => el.FileName === file.name
+          ))
+        ) {
+          await retryUpload(uploadableFile.uid);
+          continue;
+        }
+        if (file.name && file.size > 0) {
+          await addFiles([file]);
+        }
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  }, [fileList, addFiles, retryUpload]);
+
+  // 处理粘贴事件，检测是否粘贴了图片
+  const handlePaste = useCallback(async (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    const items = Array.from(e.clipboardData.items);
+    const imageFiles: File[] = [];
+
+    for (const item of items) {
+      if (item.type.indexOf('image') !== -1) {
+        const file = item.getAsFile();
+        if (file) {
+          imageFiles.push(file);
+        }
+      }
+    }
+
+    // 如果有图片文件，则调用文件上传方法
+    if (imageFiles.length > 0) {
+      e.preventDefault();
+      await handleFileUpload(imageFiles);
+    }
+  }, [handleFileUpload]);
+
   return (
     <Form {...form}>
       <form className="h-full" onSubmit={form.handleSubmit(onSubmit)}>
@@ -108,22 +151,9 @@ export function TranslationForm({
                           id="image-upload-input"
                           ref={uploadBtnRef}
                           onChange={async (e) => {
-                            try {
-                              const thisFile = e.target.files?.[0];
-                              let uploadableFile: UploadFileItem | undefined;
-                              if (
-                                (uploadableFile = fileList?.find?.(
-                                  (el) => el.FileName === thisFile?.name
-                                ))
-                              ) {
-                                await retryUpload(uploadableFile.uid);
-                                return;
-                              }
-                              if (thisFile?.name && thisFile.size > 0) {
-                                await addFiles([thisFile]);
-                              }
-                            } catch (error) {
-                              console.error(error);
+                            const files = e.target.files;
+                            if (files && files.length > 0) {
+                              await handleFileUpload(Array.from(files));
                             }
                           }}
                         />
@@ -266,6 +296,7 @@ export function TranslationForm({
                           placeholder={t(
                             "Enter Japanese text here\nExample: こんにちは、元気ですか？\nAlt + Q to focus input"
                           )}
+                          onPaste={handlePaste}
                         />
                       </FormControl>
                       <FormMessage />
