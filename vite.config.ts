@@ -25,7 +25,8 @@ export default defineConfig({
   ],
   server: {
     proxy: {
-      "/api": "https://risureader.top",
+      // "/api": "https://risureader.top",
+      "/api": "http://localhost:8080",
     },
   },
   resolve: {

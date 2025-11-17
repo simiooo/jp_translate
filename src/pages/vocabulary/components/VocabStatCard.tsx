@@ -11,7 +11,7 @@ interface VocabStatCardProps {
 
 const VocabStatCard: React.FC<VocabStatCardProps> = ({ item, index, type }) => {
   const getPosColor = (pos: string) => {
-    switch (pos.toLowerCase()) {
+    switch (pos?.toLowerCase?.()) {
       case 'verb':
         return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300';
       case 'noun':

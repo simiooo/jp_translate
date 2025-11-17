@@ -200,7 +200,7 @@ export const useFileUpload = (options: UseFileUploadOptions = {}): UseFileUpload
     if (accept.length > 0) {
       const isAcceptable = accept.some(type => {
         if (type.startsWith('.')) {
-          return file.name.toLowerCase().endsWith(type.toLowerCase());
+          return file.name?.toLowerCase().endsWith(type?.toLowerCase());
         }
         return file.type.match(type.replace('*', '.*'));
       });

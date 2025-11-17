@@ -38,6 +38,9 @@ type Pages = {
   "/devices": {
     params: {};
   };
+  "/vocabulary": {
+    params: {};
+  };
   "/social": {
     params: {};
   };
@@ -64,7 +67,7 @@ type Pages = {
 type RouteFiles = {
   "root.tsx": {
     id: "root";
-    page: "/" | "/login" | "/register" | "/password-reset" | "/email-verification" | "/email-verification-success" | "/profile" | "/sessions" | "/devices" | "/social" | "/social/my-posts" | "/social/recommended" | "/social/notifications" | "/social/following" | "/social/followers" | "/social/trends";
+    page: "/" | "/login" | "/register" | "/password-reset" | "/email-verification" | "/email-verification-success" | "/profile" | "/sessions" | "/devices" | "/vocabulary" | "/social" | "/social/my-posts" | "/social/recommended" | "/social/notifications" | "/social/following" | "/social/followers" | "/social/trends";
   };
   "./layout/authLayout.tsx": {
     id: "layout/authLayout";
@@ -92,7 +95,7 @@ type RouteFiles = {
   };
   "./layout/rootLayout.tsx": {
     id: "layout/rootLayout";
-    page: "/" | "/profile" | "/sessions" | "/devices" | "/social" | "/social/my-posts" | "/social/recommended" | "/social/notifications" | "/social/following" | "/social/followers" | "/social/trends";
+    page: "/" | "/profile" | "/sessions" | "/devices" | "/vocabulary" | "/social" | "/social/my-posts" | "/social/recommended" | "/social/notifications" | "/social/following" | "/social/followers" | "/social/trends";
   };
   "./pages/Home.tsx": {
     id: "pages/Home";
@@ -109,6 +112,10 @@ type RouteFiles = {
   "./pages/DevicesPage.tsx": {
     id: "pages/DevicesPage";
     page: "/devices";
+  };
+  "./pages/vocabulary/HomePage.tsx": {
+    id: "pages/vocabulary/HomePage";
+    page: "/vocabulary";
   };
   "./layout/socialLayout.tsx": {
     id: "layout/socialLayout";
@@ -157,6 +164,7 @@ type RouteModules = {
   "pages/ProfilePage": typeof import("./src/./pages/ProfilePage.tsx");
   "pages/SessionsPage": typeof import("./src/./pages/SessionsPage.tsx");
   "pages/DevicesPage": typeof import("./src/./pages/DevicesPage.tsx");
+  "pages/vocabulary/HomePage": typeof import("./src/./pages/vocabulary/HomePage.tsx");
   "layout/socialLayout": typeof import("./src/./layout/socialLayout.tsx");
   "pages/social/HomePage": typeof import("./src/./pages/social/HomePage.tsx");
   "pages/social/MyPostsPage": typeof import("./src/./pages/social/MyPostsPage.tsx");
