@@ -199,7 +199,11 @@ export function TranslationForm({
                         onClick={(e) => {
                           e.preventDefault();
                           e.stopPropagation();
-                          handleTTS(form.getValues("text"));
+                          const text = form.getValues("text")
+                          if(!text) {
+                            return
+                          }
+                          handleTTS(text);
                         }}
                       >
                         <MdVolumeUp />
@@ -244,7 +248,11 @@ export function TranslationForm({
                         onClick={(e) => {
                           e.preventDefault();
                           e.stopPropagation();
-                          handleTTS(form.getValues("text"));
+                          const text = form.getValues("text")
+                          if(!text) {
+                            return
+                          }
+                          handleTTS(text);
                         }}
                         disabled={ttsLoading || !form.getValues("text")}
                       >
