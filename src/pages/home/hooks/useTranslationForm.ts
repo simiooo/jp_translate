@@ -24,7 +24,7 @@ export function useTranslationForm() {
     defaultValues: {
       text: "",
       sourceLanguage: "ja",
-      imgURL: "",
+      imgURL: undefined,
     },
   });
 
