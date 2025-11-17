@@ -16,6 +16,7 @@ export default [
     route("profile", "./pages/ProfilePage.tsx"),
     route("sessions", "./pages/SessionsPage.tsx"),
     route("devices", "./pages/DevicesPage.tsx"),
+    route("vocabulary", "./pages/vocabulary/HomePage.tsx"),
     layout("./layout/socialLayout.tsx", [
       route("social", "./pages/social/HomePage.tsx", { index: true }),
       route("social/my-posts", "./pages/social/MyPostsPage.tsx"),
