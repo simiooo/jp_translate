@@ -6,6 +6,7 @@ import {
   FaUser,
   FaUserFriends,
   FaBook,
+  FaBars,
 } from "react-icons/fa";
 import { Button } from "~/components/ui/button";
 import { isElectron, electronAPI } from "~/utils/electron";
@@ -13,6 +14,12 @@ import { useToggle } from "ahooks";
 import { useNavigate, useLocation } from "react-router";
 import {
 } from "~/components/ui/tooltip";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "~/components/ui/dropdown-menu";
 import styles from "./TitleBar.module.css";
 import { ModeToggle } from "./mode-toggle";
 import { LanguageSwitcher } from "./LanguageSwitcher";
@@ -51,7 +58,8 @@ export default function TitleBar({ }: TitleBarProps) {
 
       {/* Navigation Bar */}
       <div className="flex items-center px-4 py-2">
-        <div className="flex space-x-4">
+        {/* Desktop Navigation */}
+        <div className="hidden md:flex space-x-4">
           <Button
             size="sm"
             variant={location.pathname === "/" ? "outline" : "ghost"}
@@ -88,6 +96,55 @@ export default function TitleBar({ }: TitleBarProps) {
           >
             <FaUser className="" />
           </Button>
+        </div>
+
+        {/* Mobile Navigation */}
+        <div className="md:hidden">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm">
+                <FaBars className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start">
+              <DropdownMenuItem
+                onClick={() => {
+                  navigate("/");
+                }}
+                className={location.pathname === "/" ? "bg-accent" : ""}
+              >
+                <FaHome className="mr-2 h-4 w-4" />
+                Home
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => {
+                  navigate("/social");
+                }}
+                className={location.pathname === "/social" ? "bg-accent" : ""}
+              >
+                <FaUserFriends className="mr-2 h-4 w-4" />
+                Social
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => {
+                  navigate("/vocabulary");
+                }}
+                className={location.pathname === "/vocabulary" ? "bg-accent" : ""}
+              >
+                <FaBook className="mr-2 h-4 w-4" />
+                Vocabulary
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => {
+                  navigate("/profile");
+                }}
+                className={location.pathname === "/profile" ? "bg-accent" : ""}
+              >
+                <FaUser className="mr-2 h-4 w-4" />
+                Profile
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
 
         <div className="ml-auto flex items-center space-x-4">
