@@ -13,6 +13,7 @@ export default [
   // 需要认证的页面
   layout("./layout/rootLayout.tsx", [
     index("./pages/Home.tsx"),
+    route("teach", "./pages/teach/HomePage.tsx"),
     route("profile", "./pages/ProfilePage.tsx"),
     route("sessions", "./pages/SessionsPage.tsx"),
     route("devices", "./pages/DevicesPage.tsx"),

@@ -29,6 +29,9 @@ type Pages = {
   "/email-verification-success": {
     params: {};
   };
+  "/teach": {
+    params: {};
+  };
   "/profile": {
     params: {};
   };
@@ -67,7 +70,7 @@ type Pages = {
 type RouteFiles = {
   "root.tsx": {
     id: "root";
-    page: "/" | "/login" | "/register" | "/password-reset" | "/email-verification" | "/email-verification-success" | "/profile" | "/sessions" | "/devices" | "/vocabulary" | "/social" | "/social/my-posts" | "/social/recommended" | "/social/notifications" | "/social/following" | "/social/followers" | "/social/trends";
+    page: "/" | "/login" | "/register" | "/password-reset" | "/email-verification" | "/email-verification-success" | "/teach" | "/profile" | "/sessions" | "/devices" | "/vocabulary" | "/social" | "/social/my-posts" | "/social/recommended" | "/social/notifications" | "/social/following" | "/social/followers" | "/social/trends";
   };
   "./layout/authLayout.tsx": {
     id: "layout/authLayout";
@@ -95,11 +98,15 @@ type RouteFiles = {
   };
   "./layout/rootLayout.tsx": {
     id: "layout/rootLayout";
-    page: "/" | "/profile" | "/sessions" | "/devices" | "/vocabulary" | "/social" | "/social/my-posts" | "/social/recommended" | "/social/notifications" | "/social/following" | "/social/followers" | "/social/trends";
+    page: "/" | "/teach" | "/profile" | "/sessions" | "/devices" | "/vocabulary" | "/social" | "/social/my-posts" | "/social/recommended" | "/social/notifications" | "/social/following" | "/social/followers" | "/social/trends";
   };
   "./pages/Home.tsx": {
     id: "pages/Home";
     page: "/";
+  };
+  "./pages/teach/HomePage.tsx": {
+    id: "pages/teach/HomePage";
+    page: "/teach";
   };
   "./pages/ProfilePage.tsx": {
     id: "pages/ProfilePage";
@@ -161,6 +168,7 @@ type RouteModules = {
   "pages/EmailVerificationSuccessPage": typeof import("./src/./pages/EmailVerificationSuccessPage.tsx");
   "layout/rootLayout": typeof import("./src/./layout/rootLayout.tsx");
   "pages/Home": typeof import("./src/./pages/Home.tsx");
+  "pages/teach/HomePage": typeof import("./src/./pages/teach/HomePage.tsx");
   "pages/ProfilePage": typeof import("./src/./pages/ProfilePage.tsx");
   "pages/SessionsPage": typeof import("./src/./pages/SessionsPage.tsx");
   "pages/DevicesPage": typeof import("./src/./pages/DevicesPage.tsx");

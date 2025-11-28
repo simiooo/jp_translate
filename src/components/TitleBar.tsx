@@ -7,6 +7,7 @@ import {
   FaUserFriends,
   FaBook,
   FaBars,
+  FaGraduationCap,
 } from "react-icons/fa";
 import { Button } from "~/components/ui/button";
 import { isElectron, electronAPI } from "~/utils/electron";
@@ -80,6 +81,15 @@ export default function TitleBar({ }: TitleBarProps) {
           </Button>
           <Button
             onClick={() => {
+              navigate("/teach");
+            }}
+            size="sm"
+            variant={location.pathname === "/teach" ? "outline" : "ghost"}
+          >
+            <FaGraduationCap className="" />
+          </Button>
+          <Button
+            onClick={() => {
               navigate("/vocabulary");
             }}
             size="sm"
@@ -124,6 +134,15 @@ export default function TitleBar({ }: TitleBarProps) {
               >
                 <FaUserFriends className="mr-2 h-4 w-4" />
                 Social
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => {
+                  navigate("/teach");
+                }}
+                className={location.pathname === "/teach" ? "bg-accent" : ""}
+              >
+                <FaGraduationCap className="mr-2 h-4 w-4" />
+                Teach
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => {
