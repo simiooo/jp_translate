@@ -27,6 +27,7 @@ export default function TeachPage() {
     handleNewConversation,
     conversationList,
     conversationListLoad,
+    conversationListRefresh,
   } = useTeachHistory();
 
   const {
@@ -40,7 +41,8 @@ export default function TeachPage() {
     messagesEndRef,
   } = useTeachConversation({
     conversationId: selectedConversationId,
-    onConversationCreated: (conversationId) => {
+    onConversationCreated: async (conversationId) => {
+      await conversationListRefresh()
       handleSelectConversation(conversationId);
     },
   });

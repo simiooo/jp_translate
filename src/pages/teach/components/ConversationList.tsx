@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { ChevronLeft, ChevronRight, Search, Plus } from "lucide-react";
+import { ChevronLeft, ChevronRight, Search, Plus, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -184,8 +184,12 @@ export const ConversationList: React.FC<ConversationListProps> = ({
                 )}
                 
                 {!hasMore && conversations.length > 0 && (
-                  <div className="p-4 text-center text-sm text-muted-foreground">
-                    {t('No more conversations')}
+                  <div className={cn("p-4 text-center text-muted-foreground", isCollapsed ? "flex justify-center" : "text-sm")}>
+                    {isCollapsed ? (
+                      <MessageSquare className="h-4 w-4 opacity-50" />
+                    ) : (
+                      t('No more conversations')
+                    )}
                   </div>
                 )}
                 
