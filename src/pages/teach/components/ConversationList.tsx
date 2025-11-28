@@ -80,7 +80,7 @@ export const ConversationList: React.FC<ConversationListProps> = ({
           ? "h-full w-full rounded-none border-0 shadow-none overflow-hidden"
           : [
               "rounded-r-2xl rounded-l-none border-l-0 overflow-hidden",
-              isCollapsed ? "w-16" : "w-80"
+              isCollapsed ? "w-16" : "w-60"
             ]
       )}
       style={!isFullscreen ? { height: 'calc(100vh - 53px)' } : undefined}
@@ -154,7 +154,6 @@ export const ConversationList: React.FC<ConversationListProps> = ({
               <div className="py-2">
                 {conversations.filter(conv => {
                   // Robust null/undefined checking
-                  console.log(conv)
                   if (!conv) return false;
                   if (typeof conv !== 'object') return false;
                   // Ensure id exists and is a valid number
