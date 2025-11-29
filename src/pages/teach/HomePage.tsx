@@ -27,7 +27,6 @@ export default function TeachPage() {
     handleNewConversation,
     conversationList,
     conversationListLoad,
-    conversationListRefresh,
   } = useTeachHistory();
 
   const {
@@ -145,13 +144,15 @@ export default function TeachPage() {
             </div>
 
             {/* Input */}
-            <ChatInput
-              onSendMessage={handleSendMessage}
-              onStopStreaming={handleStopStreaming}
-              isStreaming={isStreaming}
-              placeholder={t('Type your message...')}
-              disabled={isLoading}
-            />
+            <div className="sticky bottom-0 bg-background border-t">
+              <ChatInput
+                onSendMessage={handleSendMessage}
+                onStopStreaming={handleStopStreaming}
+                isStreaming={isStreaming}
+                placeholder={t('Type your message...')}
+                disabled={isLoading}
+              />
+            </div>
           </div>
         )}
       </div>
@@ -250,13 +251,15 @@ export default function TeachPage() {
         </div>
 
         {/* Input */}
-        <ChatInput
-          onSendMessage={handleSendMessage}
-          onStopStreaming={handleStopStreaming}
-          isStreaming={isStreaming}
-          placeholder={t('Type your message...')}
-          disabled={isLoading}
-        />
+        <div className="sticky bottom-0 bg-background border-t">
+          <ChatInput
+            onSendMessage={handleSendMessage}
+            onStopStreaming={handleStopStreaming}
+            isStreaming={isStreaming}
+            placeholder={t('Type your message...')}
+            disabled={isLoading}
+          />
+        </div>
       </div>
     </div>
   );
