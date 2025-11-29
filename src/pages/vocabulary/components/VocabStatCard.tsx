@@ -1,7 +1,6 @@
 import React from 'react';
-import { Card, CardContent } from "~/components/ui/card";
-import { Badge } from "~/components/ui/badge";
 import { WordStat, LemmaStat } from "~/types/vocabulary";
+import { Badge } from "~/components/ui/badge";
 
 interface VocabStatCardProps {
   item: WordStat | LemmaStat;
@@ -28,48 +27,95 @@ const VocabStatCard: React.FC<VocabStatCardProps> = ({ item, index, type }) => {
   };
 
   const getRankColor = (rank: number) => {
-    if (rank === 1) return 'text-yellow-500 font-bold';
-    if (rank === 2) return 'text-gray-400 font-bold';
-    if (rank === 3) return 'text-amber-600 font-bold';
-    return 'text-muted-foreground';
+    if (rank === 1) return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300';
+    if (rank === 2) return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300';
+    if (rank === 3) return 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300';
+    return 'bg-muted text-muted-foreground';
   };
 
+  const getRankSize = (rank: number) => {
+    if (rank <= 3) return 'text-lg font-bold';
+    return 'text-base font-medium';
+  };
+
+  const displayWord = type === 'word' ? (item as WordStat).word : (item as LemmaStat).lemma;
+  const kana = item.kana || '';
+  const meaning = item.meaning || '';
+  const inflection = (item as WordStat).inflection;
+
   return (
-    <Card className="hover:shadow-md transition-shadow">
-      <CardContent className="p-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className={`text-lg font-mono w-6 ${getRankColor(index + 1)}`}>
-              {index + 1}
-            </div>
-            <div className="flex flex-col">
-              <div className="flex items-center gap-2">
-                <span className="text-lg font-medium">
-                  {type === 'word' ? (item as WordStat).word : (item as LemmaStat).lemma}
-                </span>
-                <Badge className={getPosColor(item.pos)}>
-                  {item.pos}
-                </Badge>
-              </div>
-              {type === 'word' && (item as WordStat).lemma && (item as WordStat).lemma !== (item as WordStat).word && (
-                <div className="text-sm text-muted-foreground">
-                  原形: {(item as WordStat).lemma}
-                </div>
-              )}
-            </div>
+    <div className="group hover:bg-muted/50 transition-colors duration-200">
+      <div className="px-6 py-4">
+        <div className="flex items-start gap-4">
+          {/* Rank Badge */}
+          <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${getRankColor(index + 1)} ${getRankSize(index + 1)}`}>
+            {index + 1}
           </div>
-          <div className="text-right">
-            <div className="text-lg font-semibold">{item.count}</div>
-            <div className="text-xs text-muted-foreground">访问次数</div>
-            {item.write_count > 0 && (
-              <div className="text-sm text-blue-600 dark:text-blue-400">
-                书写: {item.write_count}
+          
+          {/* Main Content */}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex-1 min-w-0">
+                {/* Word and Kana */}
+                <div className="flex items-center gap-3 flex-wrap">
+                  <span className="text-xl font-semibold text-foreground">
+                    {displayWord}
+                  </span>
+                  {kana && (
+                    <span className="text-sm text-muted-foreground font-medium">
+                      {kana}
+                    </span>
+                  )}
+                </div>
+                
+                {/* Meaning */}
+                {meaning && (
+                  <div className="mt-1 text-base text-foreground font-medium">
+                    {meaning}
+                  </div>
+                )}
+                
+                {/* Metadata Row */}
+                <div className="mt-2 flex items-center gap-3 flex-wrap">
+                  {item.pos && (
+                    <Badge className={`px-2 py-0.5 text-xs font-medium ${getPosColor(item.pos)}`}>
+                      {item.pos}
+                    </Badge>
+                  )}
+                  
+                  {inflection && (
+                    <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded">
+                      {inflection}
+                    </span>
+                  )}
+                  
+                  {type === 'word' && (item as WordStat).lemma && (item as WordStat).lemma !== displayWord && (
+                    <span className="text-xs text-muted-foreground">
+                      原形: {(item as WordStat).lemma}
+                    </span>
+                  )}
+                </div>
               </div>
-            )}
+              
+              {/* Stats */}
+              <div className="flex-shrink-0 text-right">
+                <div className="text-lg font-bold text-foreground">
+                  {item.count}
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  访问
+                </div>
+                {item.write_count > 0 && (
+                  <div className="mt-1 text-xs text-blue-600 dark:text-blue-400 font-medium">
+                    书写: {item.write_count}
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 };
 

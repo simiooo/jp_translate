@@ -42,7 +42,7 @@ export default function TeachPage() {
   } = useTeachConversation({
     conversationId: selectedConversationId,
     onConversationCreated: async (conversationId) => {
-      await conversationListRefresh()
+      await conversationListLoad({ current: 1, pageSize: 20 }, {init: true})
       handleSelectConversation(conversationId);
     },
   });

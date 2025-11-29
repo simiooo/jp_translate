@@ -6,6 +6,9 @@ export interface WordStat {
   pos: string;
   count: number;
   write_count: number;
+  kana?: string;
+  meaning?: string;
+  inflection?: string;
 }
 
 export interface LemmaStat {
@@ -13,6 +16,8 @@ export interface LemmaStat {
   pos: string;
   count: number;
   write_count: number;
+  kana?: string;
+  meaning?: string;
 }
 
 export interface UserTopWordsResponse {

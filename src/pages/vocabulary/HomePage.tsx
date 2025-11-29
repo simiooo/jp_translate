@@ -22,28 +22,28 @@ const VocabularyHomePage: React.FC = () => {
     loading: userTopWordsLoading,
     error: userTopWordsError,
     refresh: refreshUserTopWords
-  } = useUserTopWords(period, 10);
+  } = useUserTopWords(period, 50);
   
   const {
     data: userTopLemmas,
     loading: userTopLemmasLoading,
     error: userTopLemmasError,
     refresh: refreshUserTopLemmas
-  } = useUserTopLemmas(period, 10);
+  } = useUserTopLemmas(period, 50);
   
   const {
     data: globalTopWords,
     loading: globalTopWordsLoading,
     error: globalTopWordsError,
     refresh: refreshGlobalTopWords
-  } = useGlobalTopWords(period, 10);
+  } = useGlobalTopWords(period, 50);
   
   const {
     data: globalTopLemmas,
     loading: globalTopLemmasLoading,
     error: globalTopLemmasError,
     refresh: refreshGlobalTopLemmas
-  } = useGlobalTopLemmas(period, 10);
+  } = useGlobalTopLemmas(period, 50);
 
   // Refresh all data when period changes
   useEffect(() => {

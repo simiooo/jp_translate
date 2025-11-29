@@ -1,6 +1,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Skeleton } from "~/components/ui/skeleton";
+import { ScrollArea } from "~/components/ui/scroll-area";
 import VocabStatCard from './VocabStatCard';
 import { WordStat, LemmaStat } from "~/types/vocabulary";
 import { AlertCircle, RefreshCw } from 'lucide-react';
@@ -15,36 +16,40 @@ interface VocabRankingListProps {
   onRetry?: () => void;
 }
 
-const VocabRankingList: React.FC<VocabRankingListProps> = ({ 
-  title, 
-  data, 
-  loading, 
-  error, 
+const VocabRankingList: React.FC<VocabRankingListProps> = ({
+  title,
+  data,
+  loading,
+  error,
   type,
-  onRetry 
+  onRetry
 }) => {
   if (loading) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>{title}</CardTitle>
+      <Card className="border-0 shadow-none">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-lg">{title}</CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            {Array.from({ length: 10 }).map((_, i) => (
-              <div key={i} className="flex items-center gap-3 p-3 border rounded-lg">
-                <Skeleton className="w-6 h-6" />
-                <div className="flex-1">
-                  <Skeleton className="h-5 w-24 mb-2" />
-                  <Skeleton className="h-4 w-16" />
+        <CardContent className="p-0">
+          <ScrollArea className="h-[500px]">
+            <div className="space-y-0">
+              {Array.from({ length: 10 }).map((_, i) => (
+                <div key={i} className="p-4 border-b last:border-b-0">
+                  <div className="flex items-center gap-4">
+                    <Skeleton className="w-8 h-8 rounded-full" />
+                    <div className="flex-1 space-y-2">
+                      <Skeleton className="h-5 w-32" />
+                      <Skeleton className="h-4 w-24" />
+                    </div>
+                    <div className="text-right space-y-1">
+                      <Skeleton className="h-5 w-8" />
+                      <Skeleton className="h-3 w-12" />
+                    </div>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <Skeleton className="h-5 w-8 mb-1" />
-                  <Skeleton className="h-3 w-16" />
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          </ScrollArea>
         </CardContent>
       </Card>
     );
@@ -52,9 +57,9 @@ const VocabRankingList: React.FC<VocabRankingListProps> = ({
 
   if (error) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>{title}</CardTitle>
+      <Card className="border-0 shadow-none">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-lg">{title}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col items-center justify-center py-8 text-center">
@@ -77,9 +82,9 @@ const VocabRankingList: React.FC<VocabRankingListProps> = ({
 
   if (!data || data.length === 0) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>{title}</CardTitle>
+      <Card className="border-0 shadow-none">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-lg">{title}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col items-center justify-center py-8 text-center">
@@ -93,21 +98,23 @@ const VocabRankingList: React.FC<VocabRankingListProps> = ({
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{title}</CardTitle>
+    <Card className="border-0 shadow-none">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-lg">{title}</CardTitle>
       </CardHeader>
-      <CardContent>
-        <div className="space-y-3">
-          {data.map((item, index) => (
-            <VocabStatCard 
-              key={`${type}-${index}-${type === 'word' ? (item as WordStat).word : (item as LemmaStat).lemma}`}
-              item={item} 
-              index={index} 
-              type={type} 
-            />
-          ))}
-        </div>
+      <CardContent className="p-0">
+        <ScrollArea className="h-[500px]">
+          <div className="space-y-0">
+            {data.map((item, index) => (
+              <VocabStatCard
+                key={`${type}-${index}-${type === 'word' ? (item as WordStat).word : (item as LemmaStat).lemma}`}
+                item={item}
+                index={index}
+                type={type}
+              />
+            ))}
+          </div>
+        </ScrollArea>
       </CardContent>
     </Card>
   );
