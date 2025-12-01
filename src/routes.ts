@@ -25,7 +25,8 @@ export default [
       route("social/notifications", "./pages/social/NotificationsPage.tsx"),
       route("social/following", "./pages/social/FollowingPage.tsx"),
       route("social/followers", "./pages/social/FollowersPage.tsx"),
-      route("social/trends", "./pages/social/TrendsPage.tsx")
+      route("social/trends", "./pages/social/TrendsPage.tsx"),
+      route("social/post/$postId", "./pages/social/PostDetailPage.tsx")
     ])
   ]),
 ];

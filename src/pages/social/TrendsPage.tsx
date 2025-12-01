@@ -10,6 +10,7 @@ import { useSocialStore } from "~/store/social";
 
 // Components
 import Post from "~/components/Post";
+import CommentModal from "~/components/CommentModal";
 
 // Shadcn/ui imports
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -27,6 +28,8 @@ const TrendsPage: React.FC = () => {
     const hashtag = searchParams.get('hashtag');
     return hashtag ? decodeURIComponent(hashtag) : null;
   });
+  const [selectedPost, setSelectedPost] = useState<PostResponse | null>(null);
+  const [isCommentModalOpen, setIsCommentModalOpen] = useState(false);
   
   // Social store for batch like operations
   const { addToLikeQueue, updatePostInList } = useSocialStore();
@@ -120,9 +123,9 @@ const TrendsPage: React.FC = () => {
   }, [selectedTimeRange, selectedHashtag]);
 
 
-  const handlePostComment = (post: { id: number }) => {
-    console.log("Comment on post:", post);
-    // TODO: Implement comment modal or navigation
+  const handlePostComment = (post: PostResponse) => {
+    setSelectedPost(post);
+    setIsCommentModalOpen(true);
   };
 
   const handlePostShare = (post: { id: number }) => {
@@ -190,6 +193,11 @@ const TrendsPage: React.FC = () => {
             {t('Try again')}
           </Button>
         </div>
+        <CommentModal
+          isOpen={isCommentModalOpen}
+          onClose={() => setIsCommentModalOpen(false)}
+          post={selectedPost}
+        />
       </div>
     );
   }

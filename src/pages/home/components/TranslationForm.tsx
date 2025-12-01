@@ -5,7 +5,6 @@ import { IoImageOutline } from "react-icons/io5";
 import { useTranslation } from "react-i18next";
 
 import { Button } from "~/components/ui/button";
-import { Textarea } from "~/components/ui/textarea";
 import { Input } from "~/components/ui/input";
 import {
   Form,
@@ -26,6 +25,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupTextarea,
+} from "~/components/ui/input-group";
 import TextHighlightMask from "~/components/TextHighlightMask";
 
 import { useTranslationForm } from "../hooks/useTranslationForm";
@@ -298,14 +303,107 @@ export function TranslationForm({
                   render={({ field }) => (
                     <FormItem>
                       <FormControl>
-                        <Textarea
-                          {...field}
-                          className="min-h-[200px] sm:h-60 text-sm sm:text-base 2xl:text-lg resize-y"
-                          placeholder={t(
-                            "Enter Japanese text here\nExample: こんにちは、元気ですか？\nAlt + Q to focus input"
-                          )}
-                          onPaste={handlePaste}
-                        />
+                        <InputGroup>
+                          <InputGroupTextarea
+                            {...field}
+                            className="min-h-[200px] sm:h-60 text-sm sm:text-base 2xl:text-lg resize-y"
+                            placeholder={t(
+                              "Enter Japanese text here\nExample: こんにちは、元気ですか？\nAlt + Q to focus input"
+                            )}
+                            onPaste={handlePaste}
+                          />
+                          <InputGroupAddon align="block-end">
+                            <div className="flex items-center gap-1">
+                              <FormField
+                                control={form.control}
+                                name="imgURL"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>
+                                      <InputGroupButton
+                                        variant="ghost"
+                                        size="icon-xs"
+                                        disabled={fileUploadLoading}
+                                        onClick={(e) => {
+                                          e.preventDefault();
+                                          uploadBtnRef.current?.click();
+                                        }}
+                                      >
+                                        <IoImageOutline />
+                                      </InputGroupButton>
+                                    </FormLabel>
+                                    <Input
+                                      type="file"
+                                      accept="image/*"
+                                      className="hidden"
+                                      id="image-upload-input"
+                                      ref={uploadBtnRef}
+                                      onChange={async (e) => {
+                                        const files = e.target.files;
+                                        if (files && files.length > 0) {
+                                          await handleFileUpload(Array.from(files));
+                                        }
+                                      }}
+                                    />
+                                    <FormControl>
+                                      <input
+                                        {...field}
+                                        className="hidden"
+                                        type="text"
+                                      />
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <InputGroupButton
+                                    variant="ghost"
+                                    size="icon-xs"
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      const text = normanizeText(
+                                        form.getValues("text")
+                                      );
+                                      form.setValue("text", text ?? "");
+                                    }}
+                                  >
+                                    <MdAutoFixHigh />
+                                  </InputGroupButton>
+                                </TooltipTrigger>
+                                <TooltipContent side="bottom">
+                                  {t("Format Text")}
+                                </TooltipContent>
+                              </Tooltip>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <InputGroupButton
+                                    variant="ghost"
+                                    size="icon-xs"
+                                    disabled={
+                                      ttsLoading || !form.getValues("text")
+                                    }
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      e.stopPropagation();
+                                      const text = form.getValues("text")
+                                      if(!text) {
+                                        return
+                                      }
+                                      handleTTS(text);
+                                    }}
+                                  >
+                                    <MdVolumeUp />
+                                  </InputGroupButton>
+                                </TooltipTrigger>
+                                <TooltipContent side="bottom">
+                                  {t("Text-to-Speech")}
+                                </TooltipContent>
+                              </Tooltip>
+                            </div>
+                          </InputGroupAddon>
+                        </InputGroup>
                       </FormControl>
                       <FormMessage />
                     </FormItem>

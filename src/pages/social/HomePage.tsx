@@ -14,6 +14,7 @@ import { useSocialStore } from "~/store/social";
 import Post from "~/components/Post";
 import SocialRightSidebar from "~/components/SocialRightSidebar";
 import PostForm from "~/components/PostForm";
+import CommentModal from "~/components/CommentModal";
 
 // Shadcn/ui imports
 import { Skeleton } from "@/components/ui/skeleton";
@@ -24,6 +25,8 @@ const HomePage: React.FC = () => {
   const listContainerRef = useRef<VListHandle>(null);
   const [vlistKey] = useState(0);
   const fetchedCountRef = useRef(-1);
+  const [selectedPost, setSelectedPost] = useState<PostResponse | null>(null);
+  const [isCommentModalOpen, setIsCommentModalOpen] = useState(false);
   
   // Social store for batch like operations and feed data
   const { addToLikeQueue, updatePostInList, feed, getFeed } = useSocialStore();
@@ -127,9 +130,9 @@ const HomePage: React.FC = () => {
   }, [feed, feedLoading, getFeed]);
 
 
-  const handlePostComment = (post: { id: number }) => {
-    console.log("Comment on post:", post);
-    // TODO: Implement comment modal or navigation
+  const handlePostComment = (post: PostResponse) => {
+    setSelectedPost(post);
+    setIsCommentModalOpen(true);
   };
 
   const handlePostShare = (post: { id: number }) => {
@@ -291,6 +294,13 @@ const HomePage: React.FC = () => {
             onTrendClick={handleTrendClick}
           />
         </div>
+
+        <CommentModal
+          isOpen={isCommentModalOpen}
+          onClose={() => setIsCommentModalOpen(false)}
+          post={selectedPost}
+        />
+
       </div>
     </div>
   );

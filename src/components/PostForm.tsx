@@ -4,8 +4,20 @@ import { Button } from "@/components/ui/button";
 import { FaImage, FaSmile, FaMapMarkerAlt, FaPaperPlane } from "react-icons/fa";
 import { useTranslation } from 'react-i18next';
 import { useSocialActions } from '~/store/social';
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupTextarea,
+  InputGroupText,
+} from "@/components/ui/input-group";
+import { Separator } from "@/components/ui/separator";
 
 interface PostFormProps {
   onSubmit?: (content: string, contentType?: string, visibility?: string, parentPostId?: number, imageUrls?: string[]) => void;
@@ -26,16 +38,15 @@ const PostForm: React.FC<PostFormProps> = ({
   const { createPost } = useSocialActions();
   const [content, setContent] = useState('');
   const [visibility, setVisibility] = useState('public');
-  const [contentType, setContentType] = useState('text');
   const [imageUrls, setImageUrls] = useState<string[]>([]);
 
   const handleSubmit = async () => {
     try {
       if (content.trim()) {
         if (onSubmit) {
-          onSubmit(content, contentType, visibility, parentPost?.id, imageUrls);
+          onSubmit(content, 'text', visibility, parentPost?.id, imageUrls);
         } else {
-          await createPost(content, contentType, visibility, parentPost?.id, imageUrls);
+          await createPost(content, 'text', visibility, parentPost?.id, imageUrls);
         }
         
         // Reset form
@@ -69,30 +80,6 @@ const PostForm: React.FC<PostFormProps> = ({
 
           {/* Form content */}
           <div className="flex-1 space-y-3">
-            {/* Content type and visibility controls */}
-            <div className="flex items-center gap-2">
-              <Select value={contentType} onValueChange={setContentType}>
-                <SelectTrigger className="w-32">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="text">{t('Text')}</SelectItem>
-                  <SelectItem value="image">{t('Image')}</SelectItem>
-                  {parentPost && <SelectItem value="quote">{t('Quote')}</SelectItem>}
-                </SelectContent>
-              </Select>
-              
-              <Select value={visibility} onValueChange={setVisibility}>
-                <SelectTrigger className="w-32">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="public">{t('Public')}</SelectItem>
-                  <SelectItem value="followers">{t('Followers')}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
             {/* Quote post indicator */}
             {parentPost && (
               <div className="p-3 bg-muted rounded-lg border-l-4 border-primary">
@@ -110,16 +97,6 @@ const PostForm: React.FC<PostFormProps> = ({
                 </div>
               </div>
             )}
-
-            {/* Post content text area */}
-            <Textarea
-              placeholder={parentPost ? t('Add a comment...') : t("What's on your mind?")}
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              onKeyPress={handleKeyPress}
-              className="min-h-[80px] resize-none"
-              maxLength={280}
-            />
 
             {/* Image preview */}
             {imageUrls.length > 0 && (
@@ -144,41 +121,81 @@ const PostForm: React.FC<PostFormProps> = ({
               </div>
             )}
 
-            {/* Action buttons */}
-            <div className="flex items-center justify-between pt-2">
-              <div className="flex items-center gap-2">
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="text-muted-foreground"
+            {/* Input group with textarea and controls */}
+            <InputGroup>
+              <InputGroupTextarea
+                placeholder={parentPost ? t('Add a comment...') : t("What's on your mind?")}
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                onKeyPress={handleKeyPress}
+                className="min-h-[80px] resize-none"
+                maxLength={280}
+              />
+              <InputGroupAddon align="block-end">
+                {/* Visibility dropdown */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <InputGroupButton variant="ghost" size="sm">
+                      {visibility === 'public' ? t('Public') : t('Followers')}
+                    </InputGroupButton>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent side="top" align="start">
+                    <DropdownMenuItem onClick={() => setVisibility('public')}>
+                      {t('Public')}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setVisibility('followers')}>
+                      {t('Followers')}
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+
+                {/* Image upload button */}
+                <InputGroupButton
+                  variant="ghost"
+                  size="icon-xs"
                   onClick={handleImageUpload}
                 >
                   <FaImage className="w-4 h-4" />
-                </Button>
-                <Button variant="ghost" size="icon" className="text-muted-foreground">
-                  <FaSmile className="w-4 h-4" />
-                </Button>
-                <Button variant="ghost" size="icon" className="text-muted-foreground">
-                  <FaMapMarkerAlt className="w-4 h-4" />
-                </Button>
-              </div>
+                </InputGroupButton>
 
-              <div className="flex items-center gap-2">
+                {/* Emoji button */}
+                <InputGroupButton
+                  variant="ghost"
+                  size="icon-xs"
+                >
+                  <FaSmile className="w-4 h-4" />
+                </InputGroupButton>
+
+                {/* Location button */}
+                <InputGroupButton
+                  variant="ghost"
+                  size="icon-xs"
+                >
+                  <FaMapMarkerAlt className="w-4 h-4" />
+                </InputGroupButton>
+
                 {/* Character count */}
-                <span className={`text-xs ${content.length > 260 ? 'text-red-500' : 'text-muted-foreground'}`}>
-                  {content.length}/280
-                </span>
-                
-                <Button
+                <InputGroupText className="ml-auto text-xs">
+                  <span className={content.length > 260 ? 'text-red-500' : 'text-muted-foreground'}>
+                    {content.length}/280
+                  </span>
+                </InputGroupText>
+
+                <Separator orientation="vertical" className="!h-4" />
+
+                {/* Send button */}
+                <InputGroupButton
                   onClick={handleSubmit}
                   disabled={!content.trim()}
-                  className="bg-primary hover:bg-primary/90"
+                  variant="default"
+                  size="icon-xs"
+                  className="rounded-full"
                 >
-                  <FaPaperPlane className="w-4 h-4 mr-2" />
-                  {parentPost ? t('Reply') : t('Publish')}
-                </Button>
-              </div>
-            </div>
+                  <FaPaperPlane className="w-4 h-4" />
+                  <span className="sr-only">{parentPost ? t('Reply') : t('Publish')}</span>
+                </InputGroupButton>
+              </InputGroupAddon>
+            </InputGroup>
           </div>
         </div>
       </CardContent>

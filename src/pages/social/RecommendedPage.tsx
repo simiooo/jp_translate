@@ -10,6 +10,7 @@ import { useSocialStore } from "~/store/social";
 // Components
 import Post from "~/components/Post";
 import PostForm from "~/components/PostForm";
+import CommentModal from "~/components/CommentModal";
 
 // Shadcn/ui imports
 import { Card } from "@/components/ui/card";
@@ -22,6 +23,8 @@ const RecommendedPage: React.FC = () => {
   const [page, setPage] = useState(1);
   const [recommendedPosts, setRecommendedPosts] = useState<PostResponse[]>([]);
   const [hasMore, setHasMore] = useState(true);
+  const [selectedPost, setSelectedPost] = useState<PostResponse | null>(null);
+  const [isCommentModalOpen, setIsCommentModalOpen] = useState(false);
   
   // Social store for batch like operations
   const { addToLikeQueue, updatePostInList } = useSocialStore();
@@ -104,9 +107,9 @@ const RecommendedPage: React.FC = () => {
   }, []);
 
 
-  const handlePostComment = (post: { id: number }) => {
-    console.log("Comment on post:", post);
-    // TODO: Implement comment modal or navigation
+  const handlePostComment = (post: PostResponse) => {
+    setSelectedPost(post);
+    setIsCommentModalOpen(true);
   };
 
   const handlePostShare = (post: { id: number }) => {
@@ -270,6 +273,11 @@ const RecommendedPage: React.FC = () => {
           </Card>
         </div>
       </div>
+      <CommentModal
+        isOpen={isCommentModalOpen}
+        onClose={() => setIsCommentModalOpen(false)}
+        post={selectedPost}
+      />
     </div>
   );
 };

@@ -1,8 +1,12 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { Send, StopCircle } from "lucide-react";
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupTextarea,
+} from "@/components/ui/input-group";
 
 interface ChatInputProps {
   onSendMessage: (message: string) => void;
@@ -50,40 +54,40 @@ export const ChatInput: React.FC<ChatInputProps> = ({
 
   return (
     <div className="border-t bg-background p-4">
-      <div className="flex gap-2 items-end">
-          <Textarea
-            ref={textareaRef}
-            value={message}
-            onChange={handleInputChange}
-            onKeyDown={handleKeyDown}
-            placeholder={placeholder}
-            disabled={disabled}
-            className={cn("resize-none", "flex-1")}
-            rows={1}
-          />
-
-        {isStreaming ? (
-          <Button
-            type="button"
-            size="icon"
-            variant="destructive"
-            onClick={onStopStreaming}
-            className="h-10 w-10"
-          >
-            <StopCircle className="h-4 w-4" />
-          </Button>
-        ) : (
-          <Button
-            type="button"
-            size="icon"
-            onClick={handleSend}
-            disabled={disabled || !message.trim()}
-            className="h-10 w-10"
-          >
-            <Send className="h-4 w-4" />
-          </Button>
-        )}
-      </div>
+      <InputGroup>
+        <InputGroupTextarea
+          ref={textareaRef}
+          value={message}
+          onChange={handleInputChange}
+          onKeyDown={handleKeyDown}
+          placeholder={placeholder}
+          disabled={disabled}
+          className={cn("resize-none")}
+          rows={1}
+        />
+        <InputGroupAddon align="block-end">
+          {isStreaming ? (
+            <InputGroupButton
+              type="button"
+              variant="destructive"
+              size="icon-sm"
+              onClick={onStopStreaming}
+            >
+              <StopCircle className="h-4 w-4" />
+            </InputGroupButton>
+          ) : (
+            <InputGroupButton
+              type="button"
+              variant="default"
+              size="icon-sm"
+              onClick={handleSend}
+              disabled={disabled || !message.trim()}
+            >
+              <Send className="h-4 w-4" />
+            </InputGroupButton>
+          )}
+        </InputGroupAddon>
+      </InputGroup>
     </div>
   );
 };
