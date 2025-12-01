@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { FaImage, FaSmile, FaMapMarkerAlt, FaPaperPlane } from "react-icons/fa";
+import { FaImage, FaSmile, FaMapMarkerAlt } from "react-icons/fa";
 import { useTranslation } from 'react-i18next';
 import { useSocialActions } from '~/store/social';
 import {
@@ -18,6 +18,7 @@ import {
   InputGroupText,
 } from "@/components/ui/input-group";
 import { Separator } from "@/components/ui/separator";
+import { ArrowUpIcon } from 'lucide-react';
 
 interface PostFormProps {
   onSubmit?: (content: string, contentType?: string, visibility?: string, parentPostId?: number, imageUrls?: string[]) => void;
@@ -191,7 +192,7 @@ const PostForm: React.FC<PostFormProps> = ({
                   size="icon-xs"
                   className="rounded-full"
                 >
-                  <FaPaperPlane className="w-4 h-4" />
+                  <ArrowUpIcon />
                   <span className="sr-only">{parentPost ? t('Reply') : t('Publish')}</span>
                 </InputGroupButton>
               </InputGroupAddon>

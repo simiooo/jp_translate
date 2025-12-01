@@ -1,10 +1,11 @@
 import React, { useState, useRef, useEffect } from "react";
 import { cn } from "@/lib/utils";
-import { Send, StopCircle } from "lucide-react";
+import { ArrowUpIcon, StopCircle } from "lucide-react";
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupButton,
+  InputGroupText,
   InputGroupTextarea,
 } from "@/components/ui/input-group";
 
@@ -53,7 +54,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   }, [message]);
 
   return (
-    <div className="border-t bg-background p-4">
+    <div className="bg-background p-4">
       <InputGroup>
         <InputGroupTextarea
           ref={textareaRef}
@@ -65,12 +66,17 @@ export const ChatInput: React.FC<ChatInputProps> = ({
           className={cn("resize-none")}
           rows={1}
         />
+
         <InputGroupAddon align="block-end">
+          <InputGroupText className="ml-auto text-xs">
+            <span></span>
+          </InputGroupText>
           {isStreaming ? (
             <InputGroupButton
               type="button"
               variant="destructive"
               size="icon-sm"
+              className="rounded-full"
               onClick={onStopStreaming}
             >
               <StopCircle className="h-4 w-4" />
@@ -80,10 +86,11 @@ export const ChatInput: React.FC<ChatInputProps> = ({
               type="button"
               variant="default"
               size="icon-sm"
+              className="rounded-full"
               onClick={handleSend}
               disabled={disabled || !message.trim()}
             >
-              <Send className="h-4 w-4" />
+              <ArrowUpIcon />
             </InputGroupButton>
           )}
         </InputGroupAddon>

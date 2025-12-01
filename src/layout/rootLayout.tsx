@@ -16,7 +16,7 @@ export default function RootLayout() {
     clearAuth,
     initializeAuth
   } = useAuthStore();
-  
+  const {fetchProfile} = useAuthStore(state => state) 
   const [isInitializing, setIsInitializing] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
   const isNavigating = Boolean(navigation.location);
@@ -49,6 +49,7 @@ export default function RootLayout() {
           // Authentication failed, redirect to login
           navigate('/login', { replace: true });
         }
+        fetchProfile()
       } catch (error) {
         console.error('Authentication initialization failed:', error);
         

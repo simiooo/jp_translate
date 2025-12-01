@@ -1,4 +1,3 @@
-import React, { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useResponsive } from "ahooks";
 import { ArrowLeft, MessageSquare } from "lucide-react";

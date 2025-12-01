@@ -20,6 +20,7 @@ interface CommentModalProps {
 const CommentModal: React.FC<CommentModalProps> = ({ isOpen, onClose, post }) => {
   const { t } = useTranslation();
   const { user } = useAuthStore();
+  
   const {
     comments,
     commentsLoading,
@@ -153,7 +154,7 @@ const CommentModal: React.FC<CommentModalProps> = ({ isOpen, onClose, post }) =>
           </div>
         </div>
         {/* Replies */}
-        {comment.replies && comment.replies.length > 0 && (
+        {comment.replies && comment.replies?.length > 0 && (
           <div className="mt-4">
             {comment.replies.map(reply => renderComment(reply, depth + 1))}
           </div>
@@ -231,7 +232,7 @@ const CommentModal: React.FC<CommentModalProps> = ({ isOpen, onClose, post }) =>
             />
             <div className="flex items-center justify-between mt-2">
               <span className="text-xs text-muted-foreground">
-                {newComment.length}/280
+                {newComment?.length ?? 0}/280
               </span>
               <div className="flex items-center gap-2">
                 {replyingTo && (
@@ -271,7 +272,7 @@ const CommentModal: React.FC<CommentModalProps> = ({ isOpen, onClose, post }) =>
                 </div>
               </div>
             ))
-          ) : comments.length > 0 ? (
+          ) : comments?.length > 0 ? (
             comments.map(comment => renderComment(comment))
           ) : (
             <div className="text-center py-8 text-muted-foreground">

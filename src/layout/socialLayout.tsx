@@ -3,6 +3,7 @@ import SocialSidebar from "~/components/SocialSidebar";
 import SocialMobileNav from "~/components/SocialMobileNav";
 
 export default function SocialLayout() {
+  
   return (
     <div className="flex h-full">
       {/* Sidebar - hidden on mobile, visible on md and up */}

@@ -65,12 +65,15 @@ type Pages = {
   "/social/trends": {
     params: {};
   };
+  "/social/post/$postId": {
+    params: {};
+  };
 };
 
 type RouteFiles = {
   "root.tsx": {
     id: "root";
-    page: "/" | "/login" | "/register" | "/password-reset" | "/email-verification" | "/email-verification-success" | "/teach" | "/profile" | "/sessions" | "/devices" | "/vocabulary" | "/social" | "/social/my-posts" | "/social/recommended" | "/social/notifications" | "/social/following" | "/social/followers" | "/social/trends";
+    page: "/" | "/login" | "/register" | "/password-reset" | "/email-verification" | "/email-verification-success" | "/teach" | "/profile" | "/sessions" | "/devices" | "/vocabulary" | "/social" | "/social/my-posts" | "/social/recommended" | "/social/notifications" | "/social/following" | "/social/followers" | "/social/trends" | "/social/post/$postId";
   };
   "./layout/authLayout.tsx": {
     id: "layout/authLayout";
@@ -98,7 +101,7 @@ type RouteFiles = {
   };
   "./layout/rootLayout.tsx": {
     id: "layout/rootLayout";
-    page: "/" | "/teach" | "/profile" | "/sessions" | "/devices" | "/vocabulary" | "/social" | "/social/my-posts" | "/social/recommended" | "/social/notifications" | "/social/following" | "/social/followers" | "/social/trends";
+    page: "/" | "/teach" | "/profile" | "/sessions" | "/devices" | "/vocabulary" | "/social" | "/social/my-posts" | "/social/recommended" | "/social/notifications" | "/social/following" | "/social/followers" | "/social/trends" | "/social/post/$postId";
   };
   "./pages/Home.tsx": {
     id: "pages/Home";
@@ -126,7 +129,7 @@ type RouteFiles = {
   };
   "./layout/socialLayout.tsx": {
     id: "layout/socialLayout";
-    page: "/social" | "/social/my-posts" | "/social/recommended" | "/social/notifications" | "/social/following" | "/social/followers" | "/social/trends";
+    page: "/social" | "/social/my-posts" | "/social/recommended" | "/social/notifications" | "/social/following" | "/social/followers" | "/social/trends" | "/social/post/$postId";
   };
   "./pages/social/HomePage.tsx": {
     id: "pages/social/HomePage";
@@ -156,6 +159,10 @@ type RouteFiles = {
     id: "pages/social/TrendsPage";
     page: "/social/trends";
   };
+  "./pages/social/PostDetailPage.tsx": {
+    id: "pages/social/PostDetailPage";
+    page: "/social/post/$postId";
+  };
 };
 
 type RouteModules = {
@@ -181,4 +188,5 @@ type RouteModules = {
   "pages/social/FollowingPage": typeof import("./src/./pages/social/FollowingPage.tsx");
   "pages/social/FollowersPage": typeof import("./src/./pages/social/FollowersPage.tsx");
   "pages/social/TrendsPage": typeof import("./src/./pages/social/TrendsPage.tsx");
+  "pages/social/PostDetailPage": typeof import("./src/./pages/social/PostDetailPage.tsx");
 };

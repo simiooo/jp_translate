@@ -12,6 +12,7 @@ import {
   FaHashtag
 } from "react-icons/fa";
 import { useTranslation } from 'react-i18next';
+import { useAuthStore } from '~/store/auth';
 
 interface SocialSidebarProps {
   activeTab?: string;
@@ -23,6 +24,7 @@ const SocialSidebar: React.FC<SocialSidebarProps> = ({
 }) => {
   const { t } = useTranslation();
   const location = useLocation();
+  const profile = useAuthStore(state => state.profile)
   
   // If activeTab is not provided, determine it from the current path
   const currentActiveTab = activeTab || (() => {
@@ -76,11 +78,11 @@ const SocialSidebar: React.FC<SocialSidebarProps> = ({
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
-                <span className="text-white font-bold">U</span>
+                <span className="text-white font-bold">{profile?.user?.username?.[0]?.toUpperCase()}</span>
               </div>
               <div>
-                <p className="font-semibold text-sm">{t('Username')}</p>
-                <p className="text-muted-foreground text-xs">@username</p>
+                <p className="font-semibold text-sm">{profile?.user?.username ?? "-"}</p>
+                <p className="text-muted-foreground text-xs">@{profile?.user?.username ?? "-"}</p>
               </div>
             </div>
           </CardContent>
