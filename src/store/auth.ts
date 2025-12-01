@@ -30,6 +30,8 @@ interface AuthState {
   tokenExpiry: number | null
   isAuthenticated: boolean
   isLoading: boolean
+  isRefreshing: boolean
+  refreshPromise: Promise<void> | null
 }
 
 interface AuthActions {
@@ -80,6 +82,8 @@ export const useAuthStore = create<AuthState & AuthActions>()(
       tokenExpiry: null,
       isAuthenticated: false,
       isLoading: false,
+      isRefreshing: false,
+      refreshPromise: null,
 
       // Actions
       login: async (email: string, password: string, turnstileToken?: string) => {
@@ -132,9 +136,11 @@ export const useAuthStore = create<AuthState & AuthActions>()(
         set({ isLoading: true })
         try {
           const refreshToken = localStorage.getItem('refresh_token')
-          await alovaInstance.Post('/api/auth/logout', {
-            refresh_token: refreshToken
-          })
+          if (refreshToken) {
+            await alovaInstance.Post('/api/auth/logout', {
+              refresh_token: refreshToken
+            })
+          }
         } catch (error) {
           console.error('Logout API call failed:', error)
           if (isStandardizedError(error)) {
@@ -143,6 +149,7 @@ export const useAuthStore = create<AuthState & AuthActions>()(
         } finally {
           localStorage.removeItem('Authorization')
           localStorage.removeItem('refresh_token')
+          localStorage.removeItem('token_expiry')
           get().clearAuth()
         }
       },
@@ -272,53 +279,80 @@ export const useAuthStore = create<AuthState & AuthActions>()(
           refresh_token: null,
           tokenExpiry: null,
           isAuthenticated: false,
-          isLoading: false
+          isLoading: false,
+          isRefreshing: false,
+          refreshPromise: null
         })
       },
 
       // New authentication endpoints
       refreshToken: async () => {
-        set({ isLoading: true })
-        try {
-          const refreshToken = localStorage.getItem('refresh_token')
-          const res = await alovaInstance.Post<TokenResponse | ErrorResponse>('/api/auth/refresh', {
-            refresh_token: refreshToken
-          },{
-            cacheFor: {
-              mode: 'memory',
-              expire: 60 * 5 * 1000
-            }
-          })
-
-          // Check if response is an error
-          if (res && typeof res === 'object' && 'success' in res && res.success === false) {
-            throw new Error((res as ErrorResponse).message || 'Token refresh failed')
-          }
-
-          // Cast to TokenResponse since we've confirmed it's not an ErrorResponse
-          const tokenRes = res as TokenResponse
-          const token = `Bearer ${tokenRes.access_token}`
-          localStorage.setItem('Authorization', token)
-          localStorage.setItem('refresh_token', tokenRes.refresh_token)
-
-          // Calculate token expiry time
-          const tokenExpiry = Date.now() + (tokenRes.expires_in * 1000)
-          
-          // Store expiry in localStorage for initialization check
-          localStorage.setItem('token_expiry', tokenExpiry.toString())
-
-          set({
-            user: tokenRes.user || null,
-            token: tokenRes.access_token,
-            refresh_token: tokenRes.refresh_token,
-            tokenExpiry,
-            isAuthenticated: true,
-            isLoading: false
-          })
-        } catch (error) {
-          set({ isLoading: false })
-          throw error
+        const { isRefreshing, refreshPromise } = get()
+        
+        // If already refreshing, return the existing promise
+        if (isRefreshing && refreshPromise) {
+          return refreshPromise
         }
+        
+        // Create a new refresh promise
+        const newRefreshPromise = (async () => {
+          try {
+            set({ isLoading: true, isRefreshing: true })
+            const refreshToken = localStorage.getItem('refresh_token')
+            
+            if (!refreshToken) {
+              throw new Error('No refresh token available')
+            }
+            
+            const res = await alovaInstance.Post<TokenResponse | ErrorResponse>('/api/auth/refresh', {
+              refresh_token: refreshToken
+            },{
+              cacheFor: {
+                mode: 'memory',
+                expire: 60 * 5 * 1000
+              }
+            })
+
+            // Check if response is an error
+            if (res && typeof res === 'object' && 'success' in res && res.success === false) {
+              throw new Error((res as ErrorResponse).message || 'Token refresh failed')
+            }
+
+            // Cast to TokenResponse since we've confirmed it's not an ErrorResponse
+            const tokenRes = res as TokenResponse
+            const token = `Bearer ${tokenRes.access_token}`
+            localStorage.setItem('Authorization', token)
+            localStorage.setItem('refresh_token', tokenRes.refresh_token)
+
+            // Calculate token expiry time
+            const tokenExpiry = Date.now() + (tokenRes.expires_in * 1000)
+            
+            // Store expiry in localStorage for initialization check
+            localStorage.setItem('token_expiry', tokenExpiry.toString())
+
+            set({
+              user: tokenRes.user || null,
+              token: tokenRes.access_token,
+              refresh_token: tokenRes.refresh_token,
+              tokenExpiry,
+              isAuthenticated: true,
+              isLoading: false,
+              isRefreshing: false,
+              refreshPromise: null
+            })
+          } catch (error) {
+            set({
+              isLoading: false,
+              isRefreshing: false,
+              refreshPromise: null
+            })
+            throw error
+          }
+        })()
+        
+        // Store the promise and return it
+        set({ refreshPromise: newRefreshPromise })
+        return newRefreshPromise
       },
 
       // Check if token needs refresh
@@ -339,7 +373,6 @@ export const useAuthStore = create<AuthState & AuthActions>()(
       // Ensure we have a valid token, refreshing if needed
       ensureValidToken: async (): Promise<boolean> => {
         const { shouldRefreshToken, refreshToken, clearAuth } = get()
-        
         
         if (shouldRefreshToken()) {
           try {

@@ -85,8 +85,22 @@ export const alovaInstance = createAlova({
     return data
   },
   cacheFor: null,
-  beforeRequest: (method) => {
+  beforeRequest: async (method) => {
     if (typeof window !== 'undefined') {
+      // Check if we need to refresh token before making the request
+      const { useAuthStore } = await import('~/store/auth')
+      const { shouldRefreshToken, ensureValidToken } = useAuthStore.getState()
+      
+      // If token will expire soon, refresh it before making the request
+      if (shouldRefreshToken()) {
+        try {
+          await ensureValidToken()
+        } catch (error) {
+          console.error('Failed to ensure valid token before request:', error)
+          // Continue with the request anyway, let the 401 handler deal with it
+        }
+      }
+      
       const token = localStorage.getItem('Authorization')
       if (token) {
         method.config.headers["Authorization"] = token
