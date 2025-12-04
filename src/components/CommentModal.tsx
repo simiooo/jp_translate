@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Modal } from './ModalCompat';
 import { PostResponse, CommentResponse } from '../types/social';
@@ -8,8 +8,26 @@ import { Button } from './ui/button';
 import { Textarea } from './ui/textarea';
 import { ScrollArea } from './ui/scroll-area';
 import { Skeleton } from './ui/skeleton';
-import { FaHeart, FaReply, FaTrash, FaPaperPlane } from 'react-icons/fa';
+import {
+  FaHeart,
+  FaReply,
+  FaTrash,
+  FaPaperPlane,
+  FaEllipsisV,
+  FaSpinner,
+} from 'react-icons/fa';
 import { useAuthStore } from '../store/auth';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from './ui/dropdown-menu';
+import {
+  Popover,
+  PopoverContent,
+} from './ui/popover';
+import { toast } from 'sonner';
 
 interface CommentModalProps {
   isOpen: boolean;
@@ -24,20 +42,39 @@ const CommentModal: React.FC<CommentModalProps> = ({ isOpen, onClose, post }) =>
   const {
     comments,
     commentsLoading,
+    commentsPagination,
     commentOnPost,
     getPostComments,
     deleteComment,
+    likeComment,
+    unlikeComment,
   } = useSocialStore();
 
   const [newComment, setNewComment] = useState('');
   const [replyingTo, setReplyingTo] = useState<CommentResponse | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [commentToDelete, setCommentToDelete] = useState<number | null>(null);
+  const [likingComments, setLikingComments] = useState<Set<number>>(new Set());
+  const [deletingComments, setDeletingComments] = useState<Set<number>>(new Set());
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
 
   // Load comments when modal opens
   useEffect(() => {
     if (isOpen && post) {
+      setCurrentPage(1);
+      setHasMore(true);
       getPostComments(post.id, 1, 20);
     }
   }, [isOpen, post, getPostComments]);
+
+  // Update hasMore based on pagination
+  useEffect(() => {
+    if (commentsPagination) {
+      setHasMore(commentsPagination.page < commentsPagination.pages);
+    }
+  }, [commentsPagination]);
 
   const handleSubmitComment = async () => {
     if (!post || !newComment.trim()) return;
@@ -50,25 +87,82 @@ const CommentModal: React.FC<CommentModalProps> = ({ isOpen, onClose, post }) =>
       );
       setNewComment('');
       setReplyingTo(null);
-      // Refresh comments
+      // Refresh comments from page 1
       getPostComments(post.id, 1, 20);
+      setCurrentPage(1);
     } catch (error) {
       console.error('Failed to post comment:', error);
     }
   };
 
   const handleDeleteComment = async (commentId: number) => {
-    if (!window.confirm(t('Are you sure you want to delete this comment?'))) return;
+    setDeletingComments(prev => new Set(prev).add(commentId));
     try {
       await deleteComment(commentId);
+      toast.success(t('Comment deleted successfully'));
       // Refresh comments
       if (post) {
         getPostComments(post.id, 1, 20);
+        setCurrentPage(1);
       }
     } catch (error) {
       console.error('Failed to delete comment:', error);
+      toast.error(t('Failed to delete comment'));
+    } finally {
+      setDeletingComments(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(commentId);
+        return newSet;
+      });
+      setCommentToDelete(null);
     }
   };
+
+  const handleLikeComment = async (comment: CommentResponse) => {
+    if (likingComments.has(comment.id)) return;
+    
+    setLikingComments(prev => new Set(prev).add(comment.id));
+    
+    try {
+      if (!comment.is_liked) {
+        await likeComment(comment.id);
+      } else {
+        await unlikeComment(comment.id);
+      }
+    } catch (error) {
+      console.error('Failed to like/unlike comment:', error);
+      toast.error(t('Failed to update like'));
+    } finally {
+      setLikingComments(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(comment.id);
+        return newSet;
+      });
+    }
+  };
+
+  const loadMoreComments = async () => {
+    if (!post || !hasMore || isLoadingMore) return;
+    const nextPage = currentPage + 1;
+    setIsLoadingMore(true);
+    try {
+      await getPostComments(post.id, nextPage, 20);
+      setCurrentPage(nextPage);
+    } catch (error) {
+      console.error('Failed to load more comments:', error);
+    } finally {
+      setIsLoadingMore(false);
+    }
+  };
+
+  const handleScroll = useCallback(() => {
+    if (!scrollAreaRef.current) return;
+    const { scrollTop, scrollHeight, clientHeight } = scrollAreaRef.current;
+    const scrollBottom = scrollHeight - scrollTop - clientHeight;
+    if (scrollBottom < 100 && !isLoadingMore && hasMore) {
+      loadMoreComments();
+    }
+  }, [isLoadingMore, hasMore, loadMoreComments]);
 
   const formatTimeAgo = (dateString: string) => {
     try {
@@ -86,9 +180,15 @@ const CommentModal: React.FC<CommentModalProps> = ({ isOpen, onClose, post }) =>
 
   const renderComment = (comment: CommentResponse, depth = 0) => {
     const isOwnComment = user?.id === comment.user.id;
+    const likeCount = comment.like_count || 0;
+    const isLiking = likingComments.has(comment.id);
+    const isDeleting = deletingComments.has(comment.id);
 
     return (
-      <div key={comment.id} className={`mb-4 ${depth > 0 ? 'ml-6 pl-4 border-l-2 border-border' : ''}`}>
+      <div
+        key={comment.id}
+        className={`mb-4 ${depth > 0 ? 'ml-6 pl-4 border-l-2 border-border' : ''} transition-all duration-200 hover:bg-muted/30 rounded-lg p-2 -m-2`}
+      >
         <div className="flex items-start gap-3">
           <Avatar className="w-8 h-8">
             {comment.user.avatar_url ? (
@@ -116,28 +216,58 @@ const CommentModal: React.FC<CommentModalProps> = ({ isOpen, onClose, post }) =>
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-6 px-2 text-xs text-muted-foreground hover:text-blue-500"
+                className={`h-6 px-2 text-xs gap-1 ${comment.is_liked ? 'text-red-500' : 'text-muted-foreground hover:text-red-500'}`}
+                onClick={() => handleLikeComment(comment)}
+                disabled={isLiking}
+              >
+                {isLiking ? (
+                  <FaSpinner className="w-3 h-3 animate-spin" />
+                ) : (
+                  <FaHeart className="w-3 h-3" />
+                )}
+                {likeCount > 0 && <span>{likeCount}</span>}
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className={`h-6 px-2 text-xs ${replyingTo?.id === comment.id ? 'text-blue-500' : 'text-muted-foreground hover:text-blue-500'}`}
                 onClick={() => setReplyingTo(replyingTo?.id === comment.id ? null : comment)}
               >
                 <FaReply className="w-3 h-3 mr-1" />
                 {t('Reply')}
               </Button>
               {isOwnComment && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-6 px-2 text-xs text-muted-foreground hover:text-destructive"
-                  onClick={() => handleDeleteComment(comment.id)}
-                >
-                  <FaTrash className="w-3 h-3 mr-1" />
-                  {t('Delete')}
-                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 px-2 text-xs text-muted-foreground hover:text-destructive"
+                      disabled={isDeleting}
+                    >
+                      {isDeleting ? (
+                        <FaSpinner className="w-3 h-3 animate-spin" />
+                      ) : (
+                        <FaEllipsisV className="w-3 h-3" />
+                      )}
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem
+                      className="text-destructive focus:text-destructive"
+                      onClick={() => setCommentToDelete(comment.id)}
+                    >
+                      <FaTrash className="w-3 h-3 mr-2" />
+                      {t('Delete')}
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               )}
             </div>
             {replyingTo?.id === comment.id && (
               <div className="mt-3 pl-4 border-l-2 border-blue-500">
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="text-xs text-blue-500">
+                  <span className="text-xs text-blue-500 font-medium">
                     {t('Replying to')} @{comment.user.username}
                   </span>
                   <Button
@@ -259,21 +389,41 @@ const CommentModal: React.FC<CommentModalProps> = ({ isOpen, onClose, post }) =>
       </div>
 
       {/* Comments list */}
-      <ScrollArea className="flex-1 pr-4 -mr-4">
+      <ScrollArea
+        className="flex-1 pr-4 -mr-4"
+        onScroll={handleScroll}
+        ref={scrollAreaRef}
+      >
         <div className="pr-4">
-          {commentsLoading ? (
-            Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="flex items-start gap-3 mb-4">
+          {commentsLoading && currentPage === 1 ? (
+            Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="flex items-start gap-3 mb-4 p-2">
                 <Skeleton className="w-8 h-8 rounded-full" />
                 <div className="flex-1">
                   <Skeleton className="h-4 w-24 mb-2" />
                   <Skeleton className="h-3 w-full mb-1" />
-                  <Skeleton className="h-3 w-3/4" />
+                  <Skeleton className="h-3 w-3/4 mb-3" />
+                  <Skeleton className="h-3 w-16" />
                 </div>
               </div>
             ))
           ) : comments?.length > 0 ? (
-            comments.map(comment => renderComment(comment))
+            <>
+              {comments.map(comment => renderComment(comment))}
+              {isLoadingMore && (
+                <div className="flex justify-center py-4">
+                  <div className="flex items-center gap-2">
+                    <FaSpinner className="w-4 h-4 animate-spin text-muted-foreground" />
+                    <span className="text-sm text-muted-foreground">{t('Loading more comments...')}</span>
+                  </div>
+                </div>
+              )}
+              {!hasMore && comments.length >= 10 && (
+                <div className="text-center py-4 text-muted-foreground text-sm">
+                  {t('No more comments')}
+                </div>
+              )}
+            </>
           ) : (
             <div className="text-center py-8 text-muted-foreground">
               <p>{t('No comments yet. Be the first to comment!')}</p>
@@ -281,6 +431,38 @@ const CommentModal: React.FC<CommentModalProps> = ({ isOpen, onClose, post }) =>
           )}
         </div>
       </ScrollArea>
+
+      {/* Delete Confirmation Popover */}
+      {commentToDelete !== null && (
+        <Popover open={true} onOpenChange={() => setCommentToDelete(null)}>
+          <PopoverContent className="w-80">
+            <div className="grid gap-4">
+              <div className="space-y-2">
+                <h4 className="leading-none font-medium">{t('Delete Comment')}</h4>
+                <p className="text-muted-foreground text-sm">
+                  {t('Are you sure you want to delete this comment? This action cannot be undone.')}
+                </p>
+              </div>
+              <div className="flex justify-end gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCommentToDelete(null)}
+                >
+                  {t('Cancel')}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  onClick={() => commentToDelete && handleDeleteComment(commentToDelete)}
+                >
+                  {t('Delete')}
+                </Button>
+              </div>
+            </div>
+          </PopoverContent>
+        </Popover>
+      )}
     </Modal>
   );
 };

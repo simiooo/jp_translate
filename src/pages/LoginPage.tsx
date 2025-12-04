@@ -14,12 +14,12 @@ import {
   FormLabel,
   FormMessage,
 } from '~/components/ui/form';
-import { ErrorResponse, useNavigate } from 'react-router';
-import { alovaInstance, getErrorMessage, isStandardizedError } from '~/utils/request';
+import { useNavigate } from 'react-router';
+import { getErrorMessage, isStandardizedError } from '~/utils/request';
 import { useRequest } from 'ahooks';
 import { HydrateFallbackTemplate } from '~/components/HydrateFallbackTemplate'
 import { useTranslation } from 'react-i18next'
-import { useAuthActions, useIsLoading } from '~/store/auth'
+import { useAuthActions, useIsLoading, useAuthStore } from '~/store/auth'
 import {
   ErrCodeInvalidToken,
   ErrCodeTokenExpired,
@@ -27,7 +27,6 @@ import {
   ErrCodeInvalidCredentials,
   ErrCodeDailyLimitExceeded
 } from '~/types/errors'
-import { PaginatedResponse, TranslationRecord } from '~/types/history'
 import { TurnstileWidget } from '~/components/TurnstileWidget'
 import { useState } from 'react'
 
@@ -134,14 +133,9 @@ export default function LoginPage({ }: LoginPageProps) {
 
    useRequest(async () => {
     try {
-      const data = await alovaInstance.Get<ErrorResponse | {
-                    translations?: TranslationRecord[];
-                    pagination?: PaginatedResponse;
-                  }>("/api/translation");
-      if(!data) throw Error('Not logined')
-      if ("message" in data) {
-        throw Error(String(data.message))
-      }
+      // Use fetchProfile from auth store to validate token
+      const { fetchProfile } = useAuthStore.getState();
+      await fetchProfile();
       navigate('/')
     } catch (error) {
       console.error('Auto login error:', error);
@@ -151,7 +145,13 @@ export default function LoginPage({ }: LoginPageProps) {
         console.log('Error code:', error.code, 'Message:', error.message);
       }
       
+      // fetchProfile already handles clearing auth state for authentication errors
+      // but we still need to ensure Authorization token is removed
       localStorage.removeItem("Authorization")
+    } finally {
+      // Ensure isLoading is set to false after auto-login check completes
+      // This prevents the login button from being permanently disabled
+      useAuthStore.setState({ isLoading: false });
     }
   },
   );

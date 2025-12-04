@@ -28,6 +28,12 @@ interface SocialState {
   comments: CommentResponse[]
   commentsLoading: boolean
   commentsError: string | null
+  commentsPagination: {
+    page: number
+    limit: number
+    total: number
+    pages: number
+  }
   
   // User relationships
   followers: RelationshipResponse[]
@@ -94,6 +100,8 @@ interface SocialActions {
   // Interaction actions
   likePost: (postId: number) => Promise<void>
   unlikePost: (postId: number) => Promise<void>
+  likeComment: (commentId: number) => Promise<void>
+  unlikeComment: (commentId: number) => Promise<void>
   commentOnPost: (postId: number, content: string, parentCommentId?: number) => Promise<void>
   deleteComment: (commentId: number) => Promise<void>
   getPostComments: (postId: number, page?: number, limit?: number) => Promise<void>
@@ -142,6 +150,12 @@ const initialState: SocialState = {
   comments: [],
   commentsLoading: false,
   commentsError: null,
+  commentsPagination: {
+    page: 1,
+    limit: 10,
+    total: 0,
+    pages: 0
+  },
   
   followers: [],
   following: [],
@@ -391,6 +405,56 @@ export const useSocialStore = create<SocialState & SocialActions>()(
         }
       },
 
+      likeComment: async (commentId: number) => {
+        // Optimistic update - we need to update comment in the comments array
+        set(state => ({
+          comments: state.comments.map(comment =>
+            comment.id === commentId
+              ? { ...comment, is_liked: true, like_count: (comment.like_count || 0) + 1 }
+              : comment
+          )
+        }))
+
+        try {
+          await alovaInstance.Post(`/api/social/comments/${commentId}/like`)
+        } catch (error) {
+          // Rollback
+          set(state => ({
+            comments: state.comments.map(comment =>
+              comment.id === commentId
+                ? { ...comment, is_liked: false, like_count: Math.max(0, (comment.like_count || 0) - 1) }
+                : comment
+            )
+          }))
+          throw error
+        }
+      },
+
+      unlikeComment: async (commentId: number) => {
+        // Optimistic update
+        set(state => ({
+          comments: state.comments.map(comment =>
+            comment.id === commentId
+              ? { ...comment, is_liked: false, like_count: Math.max(0, (comment.like_count || 0) - 1) }
+              : comment
+          )
+        }))
+
+        try {
+          await alovaInstance.Delete(`/api/social/comments/${commentId}/like`)
+        } catch (error) {
+          // Rollback
+          set(state => ({
+            comments: state.comments.map(comment =>
+              comment.id === commentId
+                ? { ...comment, is_liked: true, like_count: (comment.like_count || 0) + 1 }
+                : comment
+            )
+          }))
+          throw error
+        }
+      },
+
       commentOnPost: async (postId: number, content: string, parentCommentId?: number) => {
         const response = await alovaInstance.Post<{ comment: CommentResponse }>(`/api/social/posts/${postId}/comment`, {
           content,
@@ -430,6 +494,7 @@ export const useSocialStore = create<SocialState & SocialActions>()(
 
           set(state => ({
             comments: page === 1 ? response.comments : [...state.comments, ...response.comments],
+            commentsPagination: response.pagination,
             commentsLoading: false
           }))
         } catch (error) {

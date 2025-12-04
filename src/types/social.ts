@@ -50,6 +50,8 @@ export interface CommentResponse {
   created_at: string; // ISO 8601
   updated_at: string; // ISO 8601
   replies: CommentResponse[];
+  like_count?: number;
+  is_liked?: boolean;
 }
 
 export interface LikeResponse {
