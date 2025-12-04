@@ -75,7 +75,7 @@ export const alovaInstance = createAlova({
           // Clear auth state if refresh fails
           const { useAuthStore } = await import('~/store/auth')
           useAuthStore.getState().clearAuth()
-          replace("/new-location")
+          replace("/login")
         }
       } else {
         // No refresh token available, clear auth
