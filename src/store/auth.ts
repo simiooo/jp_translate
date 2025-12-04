@@ -22,6 +22,33 @@ import { alovaInstance, isStandardizedError } from '~/utils/request'
 import { ErrorResponse, isErrorInCategory } from '~/types/errors'
 import { useShallow } from 'zustand/shallow';
 
+/**
+ * Helper function to check if a response is an ErrorResponse
+ */
+function isErrorResponse(response: unknown): response is ErrorResponse {
+  return response !== null &&
+         typeof response === 'object' &&
+         'success' in response &&
+         response.success === false &&
+         'code' in response &&
+         'message' in response;
+}
+
+/**
+ * Helper function to handle API responses and throw standardized errors
+ */
+function handleApiResponse<T>(response: T | ErrorResponse, defaultErrorMessage: string): T {
+  if (isErrorResponse(response)) {
+    const error: Error & Partial<ErrorResponse> = new Error(response.message || defaultErrorMessage);
+    error.code = response.code;
+    error.details = response.details;
+    error.timestamp = response.timestamp;
+    error.request_id = response.request_id;
+    throw error;
+  }
+  return response;
+}
+
 interface AuthState {
   user: User | null
   profile: UserProfile | null
@@ -95,14 +122,9 @@ export const useAuthStore = create<AuthState & AuthActions>()(
             turnstileToken: turnstileToken
           })
 
-          // Check if response is an error
-          if (res && typeof res === 'object' && 'success' in res && res.success === false) {
-            throw new Error((res as ErrorResponse).message || 'Login failed')
-          }
+          // Handle potential ErrorResponse
+          const tokenRes = handleApiResponse<TokenResponse>(res, 'Login failed')
 
-          // Cast to TokenResponse since we've confirmed it's not an ErrorResponse
-          const tokenRes = res as TokenResponse
-          
           // Check if response has the expected structure
           if (!tokenRes.access_token) {
             throw new Error('Access token not found in response')
@@ -164,14 +186,9 @@ export const useAuthStore = create<AuthState & AuthActions>()(
             turnstileToken: turnstileToken
           })
 
-          // Check if response is an error
-          if (res && typeof res === 'object' && 'success' in res && res.success === false) {
-            throw new Error((res as ErrorResponse).message || 'Registration failed')
-          }
+          // Handle potential ErrorResponse
+          const tokenRes = handleApiResponse<TokenResponse>(res, 'Registration failed')
 
-          // Cast to TokenResponse since we've confirmed it's not an ErrorResponse
-          const tokenRes = res as TokenResponse
-          
           // Check if response has the expected structure
           if (!tokenRes.access_token) {
             throw new Error('Access token not found in response')
@@ -204,11 +221,17 @@ export const useAuthStore = create<AuthState & AuthActions>()(
       fetchProfile: async () => {
         set({ isLoading: true })
         try {
-          const profile = await alovaInstance.Get<UserProfile>('/api/user/profile')
+          const profile = await alovaInstance.Get<UserProfile | ErrorResponse>('/api/user/profile')
+          
+          // Handle potential ErrorResponse
+          const validProfile = handleApiResponse<UserProfile>(profile, 'Failed to fetch user profile')
+          
           set({
-            profile,
+            profile: validProfile,
             isLoading: false
           })
+          console.log(validProfile);
+          
         } catch (error) {
           set({ isLoading: false })
           
@@ -236,10 +259,13 @@ export const useAuthStore = create<AuthState & AuthActions>()(
         set({ isLoading: true })
         try {
           // Use the correct auth verification endpoint
-          const response = await alovaInstance.Get<VerifyTokenResponse>('/api/auth/verify')
+          const response = await alovaInstance.Get<VerifyTokenResponse | ErrorResponse>('/api/auth/verify')
+          
+          // Handle potential ErrorResponse
+          const validResponse = handleApiResponse<VerifyTokenResponse>(response, 'Token verification failed')
           
           set({
-            user: response.user,
+            user: validResponse.user,
             isAuthenticated: true,
             isLoading: false
           })
@@ -313,13 +339,9 @@ export const useAuthStore = create<AuthState & AuthActions>()(
               }
             })
 
-            // Check if response is an error
-            if (res && typeof res === 'object' && 'success' in res && res.success === false) {
-              throw new Error((res as ErrorResponse).message || 'Token refresh failed')
-            }
+            // Handle potential ErrorResponse
+            const tokenRes = handleApiResponse<TokenResponse>(res, 'Token refresh failed')
 
-            // Cast to TokenResponse since we've confirmed it's not an ErrorResponse
-            const tokenRes = res as TokenResponse
             const token = `Bearer ${tokenRes.access_token}`
             localStorage.setItem('Authorization', token)
             localStorage.setItem('refresh_token', tokenRes.refresh_token)
@@ -461,10 +483,14 @@ export const useAuthStore = create<AuthState & AuthActions>()(
       changePassword: async (oldPassword: string, newPassword: string) => {
         set({ isLoading: true })
         try {
-          await alovaInstance.Post('/api/user/change-password', {
+          const res = await alovaInstance.Post<ErrorResponse | { success: true }>('/api/user/change-password', {
             old_password: oldPassword,
             new_password: newPassword
           })
+          
+          // Handle potential ErrorResponse
+          handleApiResponse(res, 'Password change failed')
+          
           set({ isLoading: false })
         } catch (error) {
           set({ isLoading: false })
@@ -473,18 +499,25 @@ export const useAuthStore = create<AuthState & AuthActions>()(
       },
 
       validatePassword: async (password: string) => {
-        const res = await alovaInstance.Post<PasswordValidationResponse>('/api/auth/validate-password', {
+        const res = await alovaInstance.Post<PasswordValidationResponse | ErrorResponse>('/api/auth/validate-password', {
           password
         })
-        return res.data.valid
+        
+        // Handle potential ErrorResponse
+        const validRes = handleApiResponse<PasswordValidationResponse>(res, 'Password validation failed')
+        return validRes.data.valid
       },
 
       verifyEmail: async (token: string) => {
         set({ isLoading: true })
         try {
-          await alovaInstance.Post('/api/auth/verify-email', {
+          const res = await alovaInstance.Post<ErrorResponse | { success: true }>('/api/auth/verify-email', {
             token
           })
+          
+          // Handle potential ErrorResponse
+          handleApiResponse(res, 'Email verification failed')
+          
           set({ isLoading: false })
         } catch (error) {
           set({ isLoading: false })
@@ -495,7 +528,11 @@ export const useAuthStore = create<AuthState & AuthActions>()(
       resendVerification: async () => {
         set({ isLoading: true })
         try {
-          await alovaInstance.Post('/api/auth/resend-verification')
+          const res = await alovaInstance.Post<ErrorResponse | { success: true }>('/api/auth/resend-verification')
+          
+          // Handle potential ErrorResponse
+          handleApiResponse(res, 'Failed to resend verification email')
+          
           set({ isLoading: false })
         } catch (error) {
           set({ isLoading: false })
@@ -504,21 +541,31 @@ export const useAuthStore = create<AuthState & AuthActions>()(
       },
 
       getEmailVerificationStatus: async () => {
-        const res = await alovaInstance.Get<EmailVerificationStatusResponse>('/api/user/email-verification-status')
-        return res.data
+        const res = await alovaInstance.Get<EmailVerificationStatusResponse | ErrorResponse>('/api/user/email-verification-status')
+        
+        // Handle potential ErrorResponse
+        const validRes = handleApiResponse<EmailVerificationStatusResponse>(res, 'Failed to get email verification status')
+        return validRes.data
       },
 
       getSessions: async () => {
-        const res = await alovaInstance.Get<SessionsResponse>('/api/user/sessions')
-        return res.data.sessions
+        const res = await alovaInstance.Get<SessionsResponse | ErrorResponse>('/api/user/sessions')
+        
+        // Handle potential ErrorResponse
+        const validRes = handleApiResponse<SessionsResponse>(res, 'Failed to fetch sessions')
+        return validRes.data.sessions
       },
 
       revokeAllSessions: async (password: string) => {
         set({ isLoading: true })
         try {
-          await alovaInstance.Post('/api/user/sessions/revoke-all', {
+          const res = await alovaInstance.Post<ErrorResponse | { success: true }>('/api/user/sessions/revoke-all', {
             password
           })
+          
+          // Handle potential ErrorResponse
+          handleApiResponse(res, 'Failed to revoke all sessions')
+          
           set({ isLoading: false })
         } catch (error) {
           set({ isLoading: false })
@@ -527,19 +574,29 @@ export const useAuthStore = create<AuthState & AuthActions>()(
       },
 
       getSessionStats: async () => {
-        const res = await alovaInstance.Get<SessionStatsResponse>('/api/user/sessions/stats')
-        return res.data
+        const res = await alovaInstance.Get<SessionStatsResponse | ErrorResponse>('/api/user/sessions/stats')
+        
+        // Handle potential ErrorResponse
+        const validRes = handleApiResponse<SessionStatsResponse>(res, 'Failed to fetch session stats')
+        return validRes.data
       },
 
       getDevices: async () => {
-        const res = await alovaInstance.Get<DevicesResponse>('/api/user/devices')
-        return res.data.devices
+        const res = await alovaInstance.Get<DevicesResponse | ErrorResponse>('/api/user/devices')
+        
+        // Handle potential ErrorResponse
+        const validRes = handleApiResponse<DevicesResponse>(res, 'Failed to fetch devices')
+        return validRes.data.devices
       },
 
       revokeDevice: async (deviceId: number) => {
         set({ isLoading: true })
         try {
-          await alovaInstance.Delete(`/api/user/devices/${deviceId}`)
+          const res = await alovaInstance.Delete<ErrorResponse | { success: true }>(`/api/user/devices/${deviceId}`)
+          
+          // Handle potential ErrorResponse
+          handleApiResponse(res, 'Failed to revoke device')
+          
           set({ isLoading: false })
         } catch (error) {
           set({ isLoading: false })
@@ -548,18 +605,24 @@ export const useAuthStore = create<AuthState & AuthActions>()(
       },
 
       getAuditLogs: async (params = {}) => {
-        const res = await alovaInstance.Get<AuditLogsResponse>('/api/user/audit-logs', {
+        const res = await alovaInstance.Get<AuditLogsResponse | ErrorResponse>('/api/user/audit-logs', {
           params
         })
-        return res
+        
+        // Handle potential ErrorResponse
+        return handleApiResponse<AuditLogsResponse>(res, 'Failed to fetch audit logs')
       },
 
       requestPasswordReset: async (email: string) => {
         set({ isLoading: true })
         try {
-          await alovaInstance.Post<PasswordResetResponse>('/api/auth/password-reset/request', {
+          const res = await alovaInstance.Post<PasswordResetResponse | ErrorResponse>('/api/auth/password-reset/request', {
             email
           })
+          
+          // Handle potential ErrorResponse
+          handleApiResponse<PasswordResetResponse>(res, 'Failed to request password reset')
+          
           set({ isLoading: false })
         } catch (error) {
           set({ isLoading: false })
@@ -570,11 +633,15 @@ export const useAuthStore = create<AuthState & AuthActions>()(
       validatePasswordResetToken: async (token: string) => {
         set({ isLoading: true })
         try {
-          const response = await alovaInstance.Post<PasswordResetValidateResponse>('/api/auth/password-reset/validate', {
+          const response = await alovaInstance.Post<PasswordResetValidateResponse | ErrorResponse>('/api/auth/password-reset/validate', {
             token
           })
+          
+          // Handle potential ErrorResponse
+          const validResponse = handleApiResponse<PasswordResetValidateResponse>(response, 'Failed to validate password reset token')
+          
           set({ isLoading: false })
-          return response
+          return validResponse
         } catch (error) {
           set({ isLoading: false })
           throw error
@@ -584,10 +651,14 @@ export const useAuthStore = create<AuthState & AuthActions>()(
       resetPassword: async (token: string, newPassword: string) => {
         set({ isLoading: true })
         try {
-          await alovaInstance.Post<PasswordResetResponse>('/api/auth/password-reset/reset', {
+          const res = await alovaInstance.Post<PasswordResetResponse | ErrorResponse>('/api/auth/password-reset/reset', {
             token,
             new_password: newPassword
           })
+          
+          // Handle potential ErrorResponse
+          handleApiResponse<PasswordResetResponse>(res, 'Failed to reset password')
+          
           set({ isLoading: false })
         } catch (error) {
           set({ isLoading: false })

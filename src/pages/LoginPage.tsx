@@ -136,7 +136,7 @@ export default function LoginPage({ }: LoginPageProps) {
       // Use fetchProfile from auth store to validate token
       const { fetchProfile } = useAuthStore.getState();
       await fetchProfile();
-      navigate('/')
+      // navigate('/')
     } catch (error) {
       console.error('Auto login error:', error);
       
