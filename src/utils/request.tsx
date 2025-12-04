@@ -1,5 +1,6 @@
 import { createAlova } from "alova";
 import adapterFetch from "alova/fetch";
+import { replace } from "react-router";
 import { isElectron } from '~/utils/electron';
 
 // Define standardized error interface to match Go backend
@@ -74,6 +75,7 @@ export const alovaInstance = createAlova({
           // Clear auth state if refresh fails
           const { useAuthStore } = await import('~/store/auth')
           useAuthStore.getState().clearAuth()
+          replace("/new-location")
         }
       } else {
         // No refresh token available, clear auth
